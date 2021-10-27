@@ -1,33 +1,31 @@
-import process_directive
 import json
+import logging
+import dockerfile
+import sys
+import process_directive
 
-VALID_DIRECTIVES = [
-    'from',
-    'run',
-    'cmd',
-    'label',
-    'maintainer',
-    'expose',
-    'env',
-    'add',
-    'copy',
-    'entrypoint',
-    'volume',
-    'user',
-    'workdir',
-    'arg',
-    'onbuild',
-    'stopsignal',
-    'healthcheck',
-    'shell'
-]
+
+# TODO: import this from module
+class ConvertException(Exception):
+    pass
+
+
+class InvalidDirectiveException(ConvertException):
+    pass
+
+
+# TODO: import this from module
+globalLog = logging.getLogger('global')
+globalLog.setLevel(logging.INFO)
+
+VALID_DIRECTIVES = [*dockerfile.all_cmds()]
 
 
 def process(item):
     directive_processing = {cmd: getattr(process_directive, 'process_' + cmd) for cmd in VALID_DIRECTIVES}
 
     try:
-        parsed = item[0]
+        parsed = item
 
         dockerfile_ast = {
             'type': 'DOCKER-FILE',
@@ -36,17 +34,25 @@ def process(item):
 
         # Check directives
         for directive in parsed:
-            cmd = directive.cmd
+            cmd = str(directive.cmd).lower()
             if cmd not in VALID_DIRECTIVES:
                 # Not valid dockerfile
-                raise Exception('found invalid directive {}'.format(cmd))
+                raise InvalidDirectiveException(cmd)
             dockerfile_ast['children'].extend(directive_processing[cmd](directive))
-
-        dockerfile_ast['file_sha'] = item[1].split('/')[-1].replace(
-            '.Dockerfile', ''
-        ).strip()
 
         return json.dumps(dockerfile_ast)
 
-    except Exception as ex:
-        return None
+    except InvalidDirectiveException as ex:
+        globalLog.warning(ex)
+        return ''
+
+
+if __name__ == '__main__':
+    with open(sys.argv[1], mode='w') as out_f:
+        for line in sys.stdin:
+            globalLog.info(line)
+            try:
+                out_f.write(process(dockerfile.parse_file(line.strip())))
+            except Exception as ex:
+                globalLog.warning(ex)
+                continue
