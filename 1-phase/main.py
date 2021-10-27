@@ -1,22 +1,15 @@
 import json
-import logging
 import dockerfile
 import sys
 import process_directive
 
-
-# TODO: import this from module
-class ConvertException(Exception):
-    pass
+from exception import ConvertException
+from log import globalLog
 
 
 class InvalidDirectiveException(ConvertException):
     pass
 
-
-# TODO: import this from module
-globalLog = logging.getLogger('global')
-globalLog.setLevel(logging.INFO)
 
 VALID_DIRECTIVES = [*dockerfile.all_cmds()]
 
@@ -36,14 +29,13 @@ def process(item):
         for directive in parsed:
             cmd = str(directive.cmd).lower()
             if cmd not in VALID_DIRECTIVES:
-                # Not valid dockerfile
                 raise InvalidDirectiveException(cmd)
             dockerfile_ast['children'].extend(directive_processing[cmd](directive))
 
         return json.dumps(dockerfile_ast)
 
-    except InvalidDirectiveException as ex:
-        globalLog.warning(ex)
+    except InvalidDirectiveException as id_ex:
+        globalLog.warning(id_ex)
         return ''
 
 
