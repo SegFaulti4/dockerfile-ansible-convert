@@ -13,17 +13,15 @@ class InvalidDirectiveException(ConvertException):
 
 
 VALID_DIRECTIVES = [*dockerfile.all_cmds()]
+DIRECTIVE_PROCESSING = {cmd: getattr(process_directive, 'process_' + cmd) for cmd in VALID_DIRECTIVES}
 
 
-def process(item):
-    directive_processing = {cmd: getattr(process_directive, 'process_' + cmd) for cmd in VALID_DIRECTIVES}
-
+def process(parsed, source_name):
     try:
-        parsed = item
-
         dockerfile_ast = {
             'type': 'DOCKER-FILE',
-            'children': []
+            'children': [],
+            'source_name': source_name
         }
 
         # Check directives
@@ -31,7 +29,7 @@ def process(item):
             cmd = str(directive.cmd).lower()
             if cmd not in VALID_DIRECTIVES:
                 raise InvalidDirectiveException(cmd)
-            dockerfile_ast['children'].extend(directive_processing[cmd](directive))
+            dockerfile_ast['children'].extend(DIRECTIVE_PROCESSING[cmd](directive))
 
         return json.dumps(dockerfile_ast, indent=4, sort_keys=True)
 
@@ -47,12 +45,24 @@ def parse_arguments():
     return arguments
 
 
-def handle_str(string):
-    return process(dockerfile.parse_string(string.strip()))
+def handle_docker_str(string):
+    return process(dockerfile.parse_string(string.strip()), 'str')
 
 
 def handle_dockerfile(filepath):
-    return process(dockerfile.parse_file(filepath.strip()))
+    return process(dockerfile.parse_file(filepath.strip()), filepath)
+
+
+def _write_processed_dockerfile(out_file, line, prefix=None):
+    if prefix is None:
+        prefix = ''
+
+    globalLog.info('Reading from ' + line)
+    try:
+        out_file.write(prefix + handle_dockerfile(line))
+    except Exception as ex:
+        globalLog.warning(ex)
+        pass
 
 
 if __name__ == '__main__':
@@ -61,15 +71,14 @@ if __name__ == '__main__':
     out_file = sys.stdout
     if args.file:
         try:
-            out_file = open(args.file, 'w')
+            out_file = open(args.file, 'w', newline='')
         except OSError as os_ex:
             globalLog.warning(os_ex)
             globalLog.info("Redirect file output into stdout")
 
+    out_file.write('[')
+    line = sys.stdin.readline()
+    _write_processed_dockerfile(out_file=out_file, line=line, prefix='')
     for line in sys.stdin:
-        globalLog.info('Reading from ' + line)
-        try:
-            out_file.write(handle_dockerfile(line) + '\n')
-        except Exception as ex:
-            globalLog.warning(ex)
-            continue
+        _write_processed_dockerfile(out_file=out_file, line=line, prefix=',\n')
+    out_file.write(']\n')

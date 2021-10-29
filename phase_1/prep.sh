@@ -1,8 +1,8 @@
 #!/bin/bash
 
-mkdir "./dataset/gold"
+mkdir "./dataset/source"
 echo "Extracting..."
-tar -xJf ./dataset/gold.tar.xz -C ./dataset/
+tar -xJf ./dataset/source.tar.xz -C ./dataset/
 echo "Done!"
 
-find ./dataset/gold -type f | sort > ./phase_1/in.txt
+find ./dataset/source -type f | sort > ./phase_1/in.txt
