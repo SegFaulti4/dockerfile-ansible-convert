@@ -53,11 +53,11 @@ def handle_dockerfile(filepath):
     return process(dockerfile.parse_file(filepath.strip()), filepath)
 
 
-def _write_processed_dockerfile(out_file, line, prefix=None):
+def _write_processed_phase_1(out_file, line, prefix=None):
     if prefix is None:
         prefix = ''
 
-    globalLog.info('Reading from ' + line)
+    globalLog.info('Phase 1 of dockerfile from ' + line)
     try:
         out_file.write(prefix + handle_dockerfile(line))
     except Exception as ex:
@@ -78,7 +78,7 @@ if __name__ == '__main__':
 
     out_file.write('[')
     line = sys.stdin.readline()
-    _write_processed_dockerfile(out_file=out_file, line=line, prefix='')
+    _write_processed_phase_1(out_file=out_file, line=line, prefix='')
     for line in sys.stdin:
-        _write_processed_dockerfile(out_file=out_file, line=line, prefix=',\n')
+        _write_processed_phase_1(out_file=out_file, line=line, prefix=',\n')
     out_file.write(']\n')
