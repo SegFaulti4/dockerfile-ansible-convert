@@ -13,11 +13,14 @@ def stat_default(node, stats):
 
 
 def stat_word(node, stats):
-    stat_default(node, stats)
+    if len(node.parts):
+        stats[node.kind].append({'complexity': 'complex'})
+    else:
+        stats[node.kind].append({'complexity': 'trivial'})
 
 
 def stat_redirect(node, stats):
-    stat_default(node, stats)
+    stats[node.kind].append({'type': node.type})
 
 
 def stat_assignment(node, stats):
@@ -29,11 +32,11 @@ def stat_compound(node, stats):
 
 
 def stat_command(node, stats):
-    stat_default(node, stats)
+    stats[node.kind].append(1)
 
 
 def stat_list(node, stats):
-    stat_default(node, stats)
+    stats[node.kind].append(1)
 
 
 def stat_reservedword(node, stats):
@@ -41,7 +44,7 @@ def stat_reservedword(node, stats):
 
 
 def stat_operator(node, stats):
-    stat_default(node, stats)
+    stats[node.kind].append({'op': node.op})
 
 
 def stat_for(node, stats):
