@@ -12,26 +12,24 @@ globalLog.setLevel(logging.DEBUG)
 EXAMPLE_KIND_BLACKLIST = []
 BASHLEX_NODE_KINDS = ['word', 'redirect', 'assignment', 'compound', 'command', 'list',
                       'reservedword', 'operator', 'for', 'function', 'if', 'pipeline', 'pipe',
-                      'parameter', 'commandsubstitution', 'tilde', 'while']
+                      'parameter', 'commandsubstitution', 'tilde', 'while', 'until', 'heredoc',
+                      'processsubstitution', 'unknown']
+BLANK_BASHLEX_NODE_INDEX= {kind: 0 for kind in BASHLEX_NODE_KINDS}
 
-stats = {kind: {'values': list()} for kind in BASHLEX_NODE_KINDS}
-stats['operator'] = {}
-stats['word'] = {'trivial_count': 0, 'parent_count': {}}
-stats['UNKNOWN'] = {'values': list()}
-stats['usage'] = []
+
+stats = {'values': {kind: dict() for kind in BASHLEX_NODE_KINDS},
+         'usages': BLANK_BASHLEX_NODE_INDEX.copy(),
+         'appearances': BLANK_BASHLEX_NODE_INDEX.copy(),
+         'last_line_appearances': BLANK_BASHLEX_NODE_INDEX.copy()}
 examples = {}
 
 STAT_NODE = {kind: getattr(stat_bashlex_node, 'stat_' + kind) for kind in BASHLEX_NODE_KINDS}
-STAT_NODE['UNKNOWN'] = getattr(stat_bashlex_node, 'stat_unknown')
 
 
 def _stat_bashlex_node(node):
-    if stats['usage'][-1].get(node.kind, None) is None:
-        stats['usage'][-1][node.kind] = 0
-    stats['usage'][-1][node.kind] += 1
     kind = node.kind
     if kind not in BASHLEX_NODE_KINDS:
-        STAT_NODE['UNKNOWN'](node, stats)
+        STAT_NODE['unknown'](node, stats)
     else:
         STAT_NODE[kind](node, stats)
 
@@ -84,28 +82,30 @@ def mine_bashlex_node(line, node, top_command_node=None):
             mine_bashlex_node(line, subpart, top_command_node)
 
 
+def mine_bash_line(line):
+    parts = bashlex.parse(line)
+    for ast in parts:
+        globalLog.debug(line)
+        globalLog.debug(ast.dump())
+        mine_bashlex_node(line, ast, ast)
+
+    for bucket in stats['last_line_appearances']:
+        stats['appearances'][bucket] += stats['last_line_appearances'][bucket]
+
+    stats['last_line_appearances'] = BLANK_BASHLEX_NODE_INDEX.copy()
+
+
 if __name__ == '__main__':
     with open(sys.argv[1], 'r') as inF:
+        CUR_BASH_LINE_IDX = 0
+
         for line in inF.readlines():
             try:
-                parts = bashlex.parse(line)
-                for ast in parts:
-                    globalLog.debug(line)
-                    globalLog.debug(ast.dump())
-
-                    # TODO: find more suitable design
-                    stats['usage'].append(dict())
-
-                    mine_bashlex_node(line, ast, ast)
+                mine_bash_line(line)
             except ParsingError as er:
                 continue
             except NotImplementedError as er:
                 continue
-
-    usages = {kind: 0 for kind in BASHLEX_NODE_KINDS}
-    for usage in stats['usage']:
-        for key in usage:
-            usages[key] += 1
 
     pass
     # dump_examples()

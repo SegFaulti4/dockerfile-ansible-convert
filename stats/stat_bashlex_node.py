@@ -1,3 +1,5 @@
+import bashlex.ast
+
 import exception
 import sys
 import logging
@@ -6,31 +8,46 @@ from log import globalLog
 globalLog.setLevel(logging.INFO)
 
 
+def _stat_default(bucket, node, stats):
+    stats['usages'][bucket] += 1
+    if stats['last_line_appearances'][bucket] == 0:
+        stats['last_line_appearances'][bucket] = 1
+
+    d = dict(node.__dict__)
+    for key, value in sorted(d.items()):
+        if stats['values'][bucket].get(key, None) is None:
+            stats['values'][bucket][key] = {}
+        values = []
+        if isinstance(value, list):
+            values = value
+        else:
+            values.append(value)
+
+        for v in values:
+            if isinstance(v, bashlex.ast.node):
+                if stats['values'][bucket][key].get(v.kind, None) is None:
+                    stats['values'][bucket][key][v.kind] = 0
+                stats['values'][bucket][key][v.kind] += 1
+            else:
+                if stats['values'][bucket][key].get(v, None) is None:
+                    stats['values'][bucket][key][v] = 0
+                stats['values'][bucket][key][v] += 1
+
+
 def stat_unknown(node, stats):
-    stats['UNKNOWN']['values'].append(node)
+    _stat_default('UNKNOWN', node, stats)
 
 
 def stat_default(node, stats):
-    stats[node.kind]['values'].append(node)
+    _stat_default(node.kind, node, stats)
 
 
 def stat_word(node, stats):
-    if len(node.parts):
-        for part in node.parts:
-            if stats[node.kind]['parent_count'].get(part.kind, None) is None:
-                stats[node.kind]['parent_count'][part.kind] = 0
-            stats[node.kind]['parent_count'][part.kind] += 1
-    else:
-        stats[node.kind]['trivial_count'] += 1
-    # if len(node.parts):
-    #     stats[node.kind]['values'].append({'kind': node.kind, 'complexity': 'complex'})
-    # else:
-    #     stats[node.kind]['values'].append({'kind': node.kind, 'complexity': 'trivial'})
+    stat_default(node, stats)
 
 
 def stat_redirect(node, stats):
     stat_default(node, stats)
-    # stats[node.kind]['values'].append({'kind': node.kind, 'type': node.type})
 
 
 def stat_assignment(node, stats):
@@ -43,12 +60,10 @@ def stat_compound(node, stats):
 
 def stat_command(node, stats):
     stat_default(node, stats)
-    # stats[node.kind]['values'].append({'kind': node.kind})
 
 
 def stat_list(node, stats):
     stat_default(node, stats)
-    # stats[node.kind]['values'].append({'kind': node.kind})
 
 
 def stat_reservedword(node, stats):
@@ -56,9 +71,7 @@ def stat_reservedword(node, stats):
 
 
 def stat_operator(node, stats):
-    if stats[node.kind].get(node.op, None) is None:
-        stats[node.kind][node.op] = 0
-    stats[node.kind][node.op] += 1
+    stat_default(node, stats)
 
 
 def stat_for(node, stats):
@@ -94,4 +107,16 @@ def stat_tilde(node, stats):
 
 
 def stat_while(node, stats):
+    stat_default(node, stats)
+
+
+def stat_until(node, stats):
+    stat_default(node, stats)
+
+
+def stat_heredoc(node, stats):
+    stat_default(node, stats)
+
+
+def stat_processsubstitution(node, stats):
     stat_default(node, stats)
