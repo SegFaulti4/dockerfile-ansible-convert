@@ -90,6 +90,23 @@ def parse_bashlex_operator(node, line):
         return {'type': 'BASH-OPERATOR-OR'}
 
 
+def parse_bashlex_word(node, line):
+    if len(node.parts):
+        res = {'type': 'BASH-WORD-SUBSTITUTION', 'children': [], 'line': line[node.pos[0]:node.pos[1]]}
+        for part in node.parts:
+            child = parse_bashlex(part, line)
+            if child['type'] == 'BASH-PARAMETER':
+                child['pos'] = (child['pos'][0] - node.pos[0], child['pos'][1] - node.pos[0])
+                res['children'].append(child)
+    else:
+        res = {'type': 'BASH-WORD', 'value': line[node.pos[0]:node.pos[1]]}
+    return res
+
+
+def parse_bashlex_parameter(node, line):
+    return {'type': 'BASH-PARAMETER', 'value': node.value, 'pos': node.pos}
+
+
 def parse_bashlex(node, line):
     if node.kind == 'list':
         return parse_bashlex_list(node, line)
@@ -97,6 +114,10 @@ def parse_bashlex(node, line):
         return parse_bashlex_command(node, line)
     elif node.kind == 'operator':
         return parse_bashlex_operator(node, line)
+    elif node.kind == 'word':
+        return parse_bashlex_word(node, line)
+    elif node.kind == 'parameter':
+        return parse_bashlex_parameter(node, line)
     return None
 
 

@@ -15,7 +15,13 @@ def stat_default(node, stats):
 
 
 def stat_word(node, stats):
-    stat_default(node, stats)
+    if len(node.parts):
+        for part in node.parts:
+            if stats[node.kind]['parent_count'].get(part.kind, None) is None:
+                stats[node.kind]['parent_count'][part.kind] = 0
+            stats[node.kind]['parent_count'][part.kind] += 1
+    else:
+        stats[node.kind]['trivial_count'] += 1
     # if len(node.parts):
     #     stats[node.kind]['values'].append({'kind': node.kind, 'complexity': 'complex'})
     # else:
