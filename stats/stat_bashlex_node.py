@@ -35,7 +35,7 @@ def _stat_default(bucket, node, stats):
 
 
 def stat_unknown(node, stats):
-    _stat_default('UNKNOWN', node, stats)
+    _stat_default('unknown', node, stats)
 
 
 def stat_default(node, stats):
