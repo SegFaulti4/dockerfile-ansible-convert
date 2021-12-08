@@ -61,7 +61,9 @@ def _scenario_abstract_word_name(s):
 
 
 def _scenario_long_opt_name(s):
-    return s[s.find('--'):]
+    if s.find('=') == -1:
+        return s[s.find('--'):]
+    return s[s.find('--'):s.find('=')]
 
 
 def _scenario_short_opt_name(s):
@@ -90,6 +92,8 @@ def _scenario_fit_option(scenario, comm_list, node):
                     tmp_opt = _scenario_short_opt_name(opt)
                 if tmp_opt == value:
                     fitted_opt = tmp_opt
+                    if opt.find('=') != -1:
+                        comm_list = [opt[opt.find('='):]] + comm_list
                     break
 
             if fitted_opt is not None:
@@ -108,12 +112,17 @@ def _scenario_is_suitable(scenario, comm):
         cmd = scenario['cmd'].split()
         comm_list = [child['value'] for child in comm['children']]
         comm_list.pop(0)
+        accepting_command_options = True
         for i in range(1, len(cmd)):
             if not _scenario_word_is_abstract(cmd[i]):
                 if comm[0] != cmd[i]:
                     return False
             else:
-                while len(comm_list) and comm_list[0][0] == '-':
+                while len(comm_list) and accepting_command_options and comm_list[0][0] == '-':
+                    if comm_list[0] == '--':
+                        comm_list.pop(0)
+                        accepting_command_options = False
+                        break
                     _scenario_fit_option(scenario, comm_list, node)
                 if _scenario_word_is_required_abstraction(cmd[i]):
                     if len(comm_list) == 0:
@@ -124,10 +133,13 @@ def _scenario_is_suitable(scenario, comm):
                         node[_scenario_abstract_word_name(cmd[i])] = comm_list.pop(0)
                 elif _scenario_word_is_optional_abstraction_list(cmd[i]):
                     while len(comm_list) > 0:
-                        if comm_list[0][0] == '-':
+                        if accepting_command_options and comm_list[0][0] == '-':
                             _scenario_fit_option(scenario, comm_list, node)
                         else:
                             node[_scenario_abstract_word_name(cmd[i])] = comm_list.pop(0)
+
+        if len(comm_list):
+            raise exception.EnrichCommandException('Excessive arguments provided')
         return node
 
     except KeyError as exc:
