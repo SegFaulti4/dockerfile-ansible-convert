@@ -21,7 +21,7 @@ def init_commands_config():
             try:
                 commands_config[filename[len(path):filename.find('.yml')]] = yaml.safe_load(_f)
             except yaml.YAMLError as exc:
-                globalLog.warn(exc)
+                globalLog.warning(exc)
                 continue
 
 
@@ -61,30 +61,77 @@ def _scenario_abstract_word_name(s):
 
 
 def _scenario_long_opt_name(s):
-    if s.find('=') == -1:
-        return s[s.find('--'):]
-    return s[s.find('--'):s.find('=')]
+    if s.find('=') != -1:
+        return s[s.find('--'):s.find('=')]
+    return s[s.find('--'):]
 
 
 def _scenario_short_opt_name(s):
-    if s.find(',') == -1:
-        return s[s.find('-'):]
-    return s[s.find('-'):s.find(',')]
+    if s.find('=') != -1:
+        return s[s.find('-'):s.find('=')]
+    if s.find(',') != -1:
+        return s[s.find('-'):s.find(',')]
+    return s[s.find('-'):]
+
+
+def _scenario_fit_opt_type_values(full_value, comm_list):
+    return True
+
+
+def _scenario_fit_opt_type_strings(full_value, comm_list):
+    eq_pos = full_value.find('=')
+    if eq_pos != -1:
+        if eq_pos + 1 >= len(full_value):
+            opt_value = ''
+        else:
+            opt_value = full_value[eq_pos + 1:]
+    else:
+        if len(comm_list) == 0 or comm_list[0][0] == '-':
+            opt_value = ''
+        else:
+            opt_value = comm_list.pop(0)
+    return opt_value
+
+
+def _scenario_fit_opt_type_paths(full_value, comm_list):
+    opt_value = _scenario_fit_opt_type_strings(full_value, comm_list)
+    if opt_value == '':
+        raise exception.EnrichCommandException('Path option value is not provided')
+    return opt_value
+
+
+def _scenario_fit_opt_type_counts(full_value, comm_list):
+    opt_value = 0
+
+    return opt_value
+
+
+def _scenario_explode_option_list(comm_list):
+    if comm_list[0][0:2] == '--':
+        values = [comm_list[0]]
+    else:
+        if comm_list[0].find('=') != -1:
+            values = [comm_list[0]]
+        else:
+            values = ['-' + ch for ch in _scenario_short_opt_name(comm_list[0])[1:]]
+            comm_list.pop(0)
+            for value in values:
+                comm_list.insert(0, value)
+    return values
 
 
 def _scenario_fit_option(scenario, comm_list, node):
-    values = []
+    values = _scenario_explode_option_list(comm_list)
 
-    if comm_list[0][0:2] == '--':
-        values.append(_scenario_long_opt_name(comm_list[0]))
-    else:
-        values = ['-' + ch for ch in _scenario_short_opt_name(comm_list[0])[1:]]
-        comm_list.pop(0)
-        comm_list = values + comm_list
+    for full_value in values:
+        if full_value[0:2] == '--':
+            value = _scenario_long_opt_name(full_value)
+        else:
+            value = _scenario_short_opt_name(full_value)
 
-    for value in values:
+        fitted_opt = None
+        fitted_opt_type = None
         for opt_type in scenario['options']:
-            fitted_opt = None
             for opt in scenario['options'][opt_type]:
                 if value[0:2] == '--':
                     tmp_opt = _scenario_long_opt_name(opt)
@@ -92,31 +139,39 @@ def _scenario_fit_option(scenario, comm_list, node):
                     tmp_opt = _scenario_short_opt_name(opt)
                 if tmp_opt == value:
                     fitted_opt = tmp_opt
-                    if opt.find('=') != -1:
-                        comm_list = [opt[opt.find('='):]] + comm_list
+                    fitted_opt_type = opt_type
                     break
 
-            if fitted_opt is not None:
-                comm_list.pop(0)
-                if opt_type == 'booleans':
-                    node['options'].append(fitted_opt)
-                elif opt_type == 'strings':
-                    if len(comm_list) == 0:
-                        raise exception.EnrichCommandException('String option without string')
-                    node['options'].append((fitted_opt, comm_list.pop(0)))
+        if fitted_opt is None:
+            raise exception.EnrichCommandException('Unknown option ' + value)
+
+        comm_list.pop(0)
+        if fitted_opt_type == 'booleans':
+            opt_value = _scenario_fit_opt_type_values(full_value, comm_list)
+        elif fitted_opt_type == 'strings':
+            opt_value = _scenario_fit_opt_type_strings(full_value, comm_list)
+        elif fitted_opt_type == 'paths':
+            opt_value = _scenario_fit_opt_type_paths(full_value, comm_list)
+        elif fitted_opt_type == 'counts':
+            opt_value = _scenario_fit_opt_type_counts(full_value, comm_list)
+        else:
+            raise exception.EnrichCommandException('Opt type not implemented ' + fitted_opt_type)
+
+        node['options'][fitted_opt] = opt_value
 
 
 def _scenario_is_suitable(scenario, comm):
     try:
-        node = {'type': scenario['name'], 'options': list()}
+        node = {'type': scenario['name'], 'options': dict()}
         cmd = scenario['cmd'].split()
         comm_list = [child['value'] for child in comm['children']]
         comm_list.pop(0)
         accepting_command_options = True
         for i in range(1, len(cmd)):
             if not _scenario_word_is_abstract(cmd[i]):
-                if comm[0] != cmd[i]:
+                if comm_list[0] != cmd[i]:
                     return False
+                comm_list.pop(0)
             else:
                 while len(comm_list) and accepting_command_options and comm_list[0][0] == '-':
                     if comm_list[0] == '--':
@@ -143,11 +198,11 @@ def _scenario_is_suitable(scenario, comm):
         return node
 
     except KeyError as exc:
-        globalLog.warn(exc)
+        globalLog.warning(exc)
         return None
     except exception.EnrichCommandException as exc:
-        globalLog.warn(exc)
-        globalLog.warn(comm['line'])
+        globalLog.warning(exc)
+        globalLog.warning(comm['line'])
         return None
 
 

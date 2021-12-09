@@ -1,1 +1,3 @@
-rm -- -file.txt
+rm --interactive=never
+rm --interactive never
+rm -rf --interactive=never
