@@ -74,11 +74,7 @@ def _scenario_short_opt_name(s):
     return s[s.find('-'):]
 
 
-def _scenario_fit_opt_type_values(full_value, comm_list):
-    return True
-
-
-def _scenario_fit_opt_type_strings(full_value, comm_list):
+def _scenario_opt_obtain_str_value(comm_list, full_value):
     eq_pos = full_value.find('=')
     if eq_pos != -1:
         if eq_pos + 1 >= len(full_value):
@@ -93,17 +89,41 @@ def _scenario_fit_opt_type_strings(full_value, comm_list):
     return opt_value
 
 
-def _scenario_fit_opt_type_paths(full_value, comm_list):
-    opt_value = _scenario_fit_opt_type_strings(full_value, comm_list)
+def _scenario_fit_opt_type_values(comm_list, fitted_options, fitted_opt, full_value):
+    fitted_options[fitted_opt] = True
+
+
+def _scenario_fit_opt_type_strings(comm_list, fitted_options, fitted_opt, full_value):
+    opt_value = _scenario_opt_obtain_str_value(comm_list, full_value)
+    fitted_options[fitted_opt] = opt_value
+
+
+def _scenario_fit_opt_type_paths(comm_list, fitted_options, fitted_opt, full_value):
+    opt_value = _scenario_opt_obtain_str_value(comm_list, full_value)
     if opt_value == '':
         raise exception.EnrichCommandException('Path option value is not provided')
-    return opt_value
+    fitted_options[fitted_opt] = opt_value
 
 
-def _scenario_fit_opt_type_counts(full_value, comm_list):
-    opt_value = 0
+def _scenario_fit_opt_type_counts(comm_list, fitted_options, fitted_opt, full_value):
+    eq_pos = full_value.find('=')
+    if eq_pos == -1:
+        if fitted_options.get(fitted_opt, None) is None:
+            fitted_options[fitted_opt] = 1
+        else:
+            fitted_options[fitted_opt] += 1
+    else:
+        if eq_pos + 1 >= len(full_value):
+            fitted_options[fitted_opt] = 0
+        else:
+            fitted_options[fitted_opt] = int(full_value[eq_pos + 1:])
 
-    return opt_value
+
+def _scenario_fit_opt_type_arrays(comm_list, fitted_options, fitted_opt, full_value):
+    opt_value = _scenario_opt_obtain_str_value(comm_list, full_value)
+    if fitted_options.get(fitted_opt, None) is None:
+        fitted_options[fitted_opt] = list()
+    fitted_options[fitted_opt].append(opt_value)
 
 
 def _scenario_explode_option_list(comm_list):
@@ -147,17 +167,17 @@ def _scenario_fit_option(scenario, comm_list, node):
 
         comm_list.pop(0)
         if fitted_opt_type == 'booleans':
-            opt_value = _scenario_fit_opt_type_values(full_value, comm_list)
+            _scenario_fit_opt_type_values(comm_list, node['options'], fitted_opt, full_value)
         elif fitted_opt_type == 'strings':
-            opt_value = _scenario_fit_opt_type_strings(full_value, comm_list)
+            _scenario_fit_opt_type_strings(comm_list, node['options'], fitted_opt, full_value)
         elif fitted_opt_type == 'paths':
-            opt_value = _scenario_fit_opt_type_paths(full_value, comm_list)
+            _scenario_fit_opt_type_paths(comm_list, node['options'], fitted_opt, full_value)
         elif fitted_opt_type == 'counts':
-            opt_value = _scenario_fit_opt_type_counts(full_value, comm_list)
+            _scenario_fit_opt_type_counts(comm_list, node['options'], fitted_opt, full_value)
+        elif fitted_opt_type == 'arrays':
+            _scenario_fit_opt_type_arrays(comm_list, node['options'], fitted_opt, full_value)
         else:
             raise exception.EnrichCommandException('Opt type not implemented ' + fitted_opt_type)
-
-        node['options'][fitted_opt] = opt_value
 
 
 def _scenario_is_suitable(scenario, comm):
@@ -197,6 +217,9 @@ def _scenario_is_suitable(scenario, comm):
             raise exception.EnrichCommandException('Excessive arguments provided')
         return node
 
+    except ValueError as exc:
+        globalLog.warning(exc)
+        return None
     except KeyError as exc:
         globalLog.warning(exc)
         return None
