@@ -29,6 +29,23 @@ command:
       - -o, --option
   optionsInstall: &optionsInstall
     booleans:
+      - -y, --yes
+      - -f, --fix-broken
+      - -m, --ignore-missing
+      - --fix-missing
+      - --allow-unauthenticated
+      - --allow-downgrades
+      - --allow-remove-essential
+      - --allow-change-held-packages
+      - -s, --simulate
+      - -u, --show-upgraded
+      - --no-install-recommends
+      - -h, --help
+      - -v, --version
+      - --purge
+      - --auto-remove
+      - --autoremove
+      - --force-yes
       - -d, --download-only
       - --no-download
       - --upgrade
@@ -52,9 +69,15 @@ command:
       - --trivial-only
       - --no-remove
       - --only-source
+    paths:
+      - -C, --config
+    counts:
+      - -q, --quiet
+    arrays:
+      - -o, --option
   scenarios:
     - cmd: $0 install [packages...]
-      options: [*optionsAll, *optionsInstall]
+      options: *optionsInstall
       name: SC-APT-GET-INSTALL
     - cmd: $0 purge [packages...]
       options: *optionsAll

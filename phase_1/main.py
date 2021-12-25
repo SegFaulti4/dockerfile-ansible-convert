@@ -77,7 +77,7 @@ def parse_arguments():
     return arguments
 
 
-if __name__ == '__main__':
+def main():
     args = parse_arguments()
 
     out_stream = sys.stdout
@@ -90,3 +90,7 @@ if __name__ == '__main__':
             out_stream = sys.stdout
 
     dump_phase_1(sys.stdin, out_stream)
+
+
+if __name__ == '__main__':
+    main()

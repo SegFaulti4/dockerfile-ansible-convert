@@ -8,10 +8,9 @@ from bashlex.errors import ParsingError
 
 import exception
 from log import globalLog
-from parse_bashlex import parse_bashlex_node
+from phase_2.parse_bashlex import parse_bashlex_node
 
 globalLog.setLevel(logging.DEBUG)
-
 
 # BASHLEX_IMPLEMENTED_NODES = ['list', 'command', 'operator', 'word', 'parameter']
 # BASHLEX_NODE_PARSING = {node_kind: getattr(parse_bashlex, 'parse_bashlex_' + node_kind)
@@ -22,7 +21,7 @@ def load_phase_1(in_stream):
     return json.load(in_stream)
 
 
-def parse_bash_with_bashlex(bash_line):
+def phase_2_parse_bash(bash_line):
     parts = None
     res = None
     try:
@@ -44,7 +43,7 @@ def parse_bash_with_bashlex(bash_line):
 
 def phase_2_ast_visit(obj):
     if obj['type'] == 'MAYBE-BASH':
-        res = parse_bash_with_bashlex(obj['value'])
+        res = phase_2_parse_bash(obj['value'])
         if res is None:
             globalLog.info(obj['type'] + ' node is untouched')
             return obj
@@ -89,7 +88,7 @@ def parse_arguments():
     return arguments
 
 
-if __name__ == '__main__':
+def main():
     args = parse_arguments()
 
     out_stream = sys.stdout
@@ -102,3 +101,7 @@ if __name__ == '__main__':
             globalLog.info("Redirect file output into stdout")
 
     dump_phase_2(sys.stdin, out_stream)
+
+
+if __name__ == '__main__':
+    main()

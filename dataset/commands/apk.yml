@@ -17,9 +17,27 @@ command:
       - -v, --verbose
   optionsInfo: &optionsInfo
     booleans:
+      - --print-arch
+      - --no-cache
+      - --force
+      - -u, --update
+      - -U, --update-cache
+      - -q, --quiet
+      - --no-progress
       - --installed
+    arrays:
+      - -X, --repository
+    counts:
+      - -v, --verbose
   optionsAdd: &optionsAdd
     booleans:
+      - --print-arch
+      - --no-cache
+      - --force
+      - -u, --update
+      - -U, --update-cache
+      - -q, --quiet
+      - --no-progress
       - --no-network
       - --initdb
       - --allow-untrusted
@@ -27,18 +45,32 @@ command:
     strings:
       - -p
       - -t, --virtual
+    arrays:
+      - -X, --repository
+    counts:
+      - -v, --verbose
   optionsDel: &optionsDel
     booleans:
+      - --print-arch
+      - --no-cache
+      - --force
+      - -u, --update
+      - -U, --update-cache
+      - -q, --quiet
+      - --no-progress
       - --no-network
       - --purge
+    arrays:
+      - -X, --repository
+    counts:
+      - -v, --verbose
   scenarios:
     - cmd: $0 add [packages...]
-      options:
-        merge: [ *optionsAll, *optionsAdd ]
+      options: *optionsAdd
       name: SC-APK-ADD
     - cmd: $0 del [packages...]
       options:
-        merge: [ *optionsAll, *optionsDel ]
+        merge: *optionsDel
       name: SC-APK-DEL
     - cmd: $0 fix
       unsupported: true
@@ -49,7 +81,7 @@ command:
       name: SC-APK-UPDATE
     - cmd: $0 info
       options:
-        merge: [ *optionsAll, *optionsInfo ]
+        merge: *optionsInfo
       name: SC-APK-INFO
     - cmd: $0 search
       unsupported: true

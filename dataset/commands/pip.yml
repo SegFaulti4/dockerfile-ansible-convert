@@ -26,6 +26,13 @@ command:
       - --cache-dir
   optionsInstall: &optionsInstall
       booleans:
+        - -h, --help
+        - --isolated
+        - -v, --verbose
+        - -V, --version
+        - -q, --quiet
+        - --no-cache-dir
+        - --disable-pip-version-check
         - -U, --upgrade
         - --force-reinstall
         - -I, --ignore-installed
@@ -43,6 +50,11 @@ command:
         - --no-index
         - --process-dependency-links
       strings:
+        - --proxy
+        - --retries
+        - --timeout
+        - --exists-action
+        - --trusted-host
         - -i, --index-url
         - -e, --editable
         - --upgrade-strategy
@@ -50,6 +62,10 @@ command:
         - --only-binary
         - -f, --find-links
       paths:
+        - --log
+        - --cert
+        - --client-cert
+        - --cache-dir
         - -c, --constraint
         - -r, --requirements
         - -b, --build
@@ -64,17 +80,32 @@ command:
         - --global-option
   optionsUninstall: &optionsUnistall
     booleans:
+      - -h, --help
+      - --isolated
+      - -v, --verbose
+      - -V, --version
+      - -q, --quiet
+      - --no-cache-dir
+      - --disable-pip-version-check
       - -y, --yes
+    strings:
+      - --proxy
+      - --retries
+      - --timeout
+      - --exists-action
+      - --trusted-host
     paths:
+      - --log
+      - --cert
+      - --client-cert
+      - --cache-dir
       - -r, --requirements
   scenarios:
     - cmd: $0 install [targets...]
-      options:
-        merge: [ *optionsAll, *optionsInstall ]
+      options: *optionsInstall
       name: SC-PIP-INSTALL
     - cmd: $0 uninstall [targets...]
-      options:
-        merge: [ *optionsAll, *optionsUnistall ]
+      options: *optionsUnistall
       name: SC-PIP-UNINSTALL
     - cmd: $0 freeze
       options: *optionsAll

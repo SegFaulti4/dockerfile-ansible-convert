@@ -15,7 +15,7 @@ command:
       - --help
       - --version
       - -E, --regexp-extended
-      - -E, -r
+      - -r, --regexp-extended
     arrays:
       - -e, --expression
     paths:
