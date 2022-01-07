@@ -1,5 +1,5 @@
 import bashlex
-
+import json
 import logging
 from phase_2 import parse_bashlex
 from phase_2.main import phase_2_parse_bash
@@ -18,7 +18,7 @@ with open('./dataset/in.txt', 'r') as inF:
         print(parsed)
         if parsed is not None:
             parsed = phase_3_process(parsed)
-            print(parsed)
+            print(json.dumps(parsed, indent=4, sort_keys=True))
 
     '''children = [{'type': 'BASH-COMMAND'}, {'type': 'BASH-OPERATOR-AND'}, {'type': 'BASH-COMMAND'},
                 {'type': 'BASH-OPERATOR-OR'}, {'type': 'BASH-COMMAND'},

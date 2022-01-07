@@ -8,3 +8,7 @@ class BashlexParsingException(ConvertException):
 
 class EnrichCommandException(ConvertException):
     pass
+
+
+class GenerateAnsibleASTException(ConvertException):
+    pass

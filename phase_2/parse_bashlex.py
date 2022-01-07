@@ -9,7 +9,6 @@ def _bashlex_logical_expression_tree(command_list):
     but might be not)
     """
 
-    # Merging BASH-OPERATOR-AND in one command
     res = []
     i = 0
     prev_command = None
@@ -24,28 +23,6 @@ def _bashlex_logical_expression_tree(command_list):
         elif child['type'] == 'BASH-OPERATOR-AND':
             prev_command = {'type': 'BASH-OPERATOR-AND', 'children': [prev_command, command_list[i + 1]]}
             i += 1
-        elif child['type'] == 'BASH-OPERATOR-OR':
-            if prev_command is not None:
-                res.append(prev_command)
-                prev_command = None
-            res.append(child)
-        i += 1
-    if prev_command is not None:
-        res.append(prev_command)
-
-    # Merging BASH-OPERATOR-OR in one command
-    command_list = res
-    res = []
-    i = 0
-    prev_command = None
-    while i < len(command_list):
-        child = command_list[i]
-        if child['type'] == 'BASH-COMMAND' or child['type'] == 'BASH-OPERATOR-AND':
-            if prev_command is None:
-                prev_command = child
-            else:
-                res.append(prev_command)
-                prev_command = child
         elif child['type'] == 'BASH-OPERATOR-OR':
             prev_command = {'type': 'BASH-OPERATOR-OR', 'children': [prev_command, command_list[i + 1]]}
             i += 1

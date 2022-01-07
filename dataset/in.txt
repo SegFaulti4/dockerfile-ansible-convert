@@ -1,1 +1,1 @@
-dpkg --add-architecture i386
+apt-get update && apt-get install tk-dev || my_command
