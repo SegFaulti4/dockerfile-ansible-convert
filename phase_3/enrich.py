@@ -173,9 +173,10 @@ def _scenario_fit_option(scenario, comm_list, node):
             raise exception.EnrichCommandException('Opt type not implemented ' + fitted_opt_type)
 
 
-def _scenario_is_suitable(scenario, comm):
+def _scenario_is_suitable(scenario, comm, name):
     try:
-        node = {'type': scenario['name'], 'options': dict()}
+        node = {'type': 'ENRICHED-COMMAND', 'name': name, 'full name': scenario['name'], 'options': dict(),
+                'line': comm['line']}
         cmd = scenario['cmd'].split()
         comm_list = [child['value'] for child in comm['children']]
         comm_list.pop(0)
@@ -241,7 +242,7 @@ def enrich_command(comm):
         conf = commands_config[comm['children'][0]['value']]['command']
         suitable_scenarios = conf['scenarios'].copy()
         for scenario in suitable_scenarios:
-            scenario_res = _scenario_is_suitable(scenario, comm)
+            scenario_res = _scenario_is_suitable(scenario, comm, conf['name'])
             if scenario_res is not None:
                 return scenario_res
         globalLog.warning("Suitable scenario not found for command " + comm['line'])

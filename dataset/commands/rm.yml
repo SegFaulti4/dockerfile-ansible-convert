@@ -1,7 +1,5 @@
 command:
-  providerFor:
-    - rm
-  prefix: SC-RM
+  name: rm
   scenarios:
     - cmd: $0 [paths...]
       options:
@@ -19,4 +17,4 @@ command:
           - --no-preserve-root
         strings:
           - --interactive
-      name: SC-RM
+      name: rm

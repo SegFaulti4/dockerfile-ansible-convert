@@ -1,7 +1,5 @@
 command:
-  providerFor:
-    - echo
-  prefix: SC-ECHO
+  name: echo
   scenarios:
     - cmd: $0 [items...]
       options:
@@ -11,4 +9,4 @@ command:
           - -E
           - --version
           - --help
-      name: SC-ECHO
+      name: echo

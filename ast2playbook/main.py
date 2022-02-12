@@ -6,6 +6,8 @@ import yaml
 
 import exception
 from log import globalLog
+from match_module import match_ansible_module, default_match
+
 
 globalLog.setLevel(logging.DEBUG)
 
@@ -37,10 +39,24 @@ def new_task_name():
     return 'Generated task ' + str(Global.BASH_COMMAND_COUNT)
 
 
-def ansible_module_task_append(new_task, command):
-    # TODO: check for appropriate ansible module
-    # TODO: pass options
-    new_task[command['type'][3:]] = ''
+def match_ansible_task(new_task, command):
+    try:
+        match = None
+        if command['type'] == 'MAYBE-BASH':
+            match = {'shell': {'cmd': command['value']}}
+        elif command['type'] == 'BASH-COMMAND':
+            match = default_match(command)
+        elif command['type'] == 'ENRICHED-COMMAND':
+            match = match_ansible_module(command)
+        if match is None:
+            globalLog.warning('Unknown command type ' + command['type'])
+        else:
+            for key in match:
+                new_task[key] = match[key]
+    except exception.MatchAnsibleModuleException as exc:
+        globalLog.warning(exc)
+        globalLog.warning('Failed to match command ' + command['name'])
+        new_task['shell'] = command['line']
 
 
 def bash_command_to_task(ansible_ast, command, pass_register=False):
@@ -59,15 +75,7 @@ def bash_command_to_task(ansible_ast, command, pass_register=False):
         if pass_register:
             new_task['register'] = new_register_name()
 
-        if command['type'] == 'MAYBE-BASH':
-            new_task['shell'] = command['value']
-        elif command['type'] == 'BASH-COMMAND':
-            new_task['shell'] = command['line']
-        elif command['type'][0:3] == 'SC-':
-            ansible_module_task_append(new_task, command)
-        else:
-            globalLog.warning('Unknown command type ' + command['type'])
-
+        match_ansible_task(new_task, command)
         ansible_ast['tasks'].append(new_task)
 
 

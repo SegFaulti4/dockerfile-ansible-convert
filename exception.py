@@ -12,3 +12,7 @@ class EnrichCommandException(ConvertException):
 
 class GenerateAnsibleASTException(ConvertException):
     pass
+
+
+class MatchAnsibleModuleException(ConvertException):
+    pass
