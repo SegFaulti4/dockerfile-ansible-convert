@@ -30,11 +30,12 @@ command:
       - --allow-downgrades
       - --allow-remove-essential
       - --allow-change-held-packages
-      - - --force-yes
+      - --force-yes
       - --print-uris
       - --purge
       - --reinstall
       - --list-cleanup
+      - --no-list-cleanup
       - -t, --target-release
       - --default-release
       - --trivial-only

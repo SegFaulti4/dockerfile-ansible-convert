@@ -22,10 +22,26 @@ def match_rm(command):
 
 
 def match_apt_get(command):
-    # force_apt_get: yes
+    res = dict()
+    # general flags match
+    res['force-apt-get'] = 'yes'
+
+    if command['options'].pop('--force-yes', False) or (
+        command['options'].pop('--allow-unauthenticated', False) and
+        command['options'].pop('--allow-downgrades', False) and
+        command['options'].pop('--allow-remove-essential', False) and
+        command['options'].pop('--allow-change-held-packages', False)
+    ):
+        res['force'] = 'yes'
+    if command['options'].pop('--allow-unauthenticated', False):
+        res['allow_unauthenticated'] = 'yes'
+    if command['options'].pop('-t', False) or command['options'].pop('--target-release', False):
+        res['default_release'] = 'yes'
+    if command['options'].pop('--no-install-recommends', False):
+        res['install_recommends'] = 'no'
 
     if command['full name'] == 'apt-get install':
-
+        pass
     return None
 
 

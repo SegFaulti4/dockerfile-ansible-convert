@@ -1,1 +1,1 @@
-apt-get update && apt-get install tk-dev || my_command
+apt-get install --allow-unauthenticated pkg
