@@ -1,3 +1,5 @@
+from match_apt_get import match_apt_get
+from main import globalLog
 from exception import MatchAnsibleModuleException
 
 
@@ -19,30 +21,6 @@ def match_rm(command):
         }
     else:
         return default_match(command)
-
-
-def match_apt_get(command):
-    res = dict()
-    # general flags match
-    res['force-apt-get'] = 'yes'
-
-    if command['options'].pop('--force-yes', False) or (
-        command['options'].pop('--allow-unauthenticated', False) and
-        command['options'].pop('--allow-downgrades', False) and
-        command['options'].pop('--allow-remove-essential', False) and
-        command['options'].pop('--allow-change-held-packages', False)
-    ):
-        res['force'] = 'yes'
-    if command['options'].pop('--allow-unauthenticated', False):
-        res['allow_unauthenticated'] = 'yes'
-    if command['options'].pop('-t', False) or command['options'].pop('--target-release', False):
-        res['default_release'] = 'yes'
-    if command['options'].pop('--no-install-recommends', False):
-        res['install_recommends'] = 'no'
-
-    if command['full name'] == 'apt-get install':
-        pass
-    return None
 
 
 def match_ansible_module(command):

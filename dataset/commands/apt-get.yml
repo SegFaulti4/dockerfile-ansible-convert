@@ -19,8 +19,6 @@ command:
       - --assume-no
       - --no-show-upgraded
       - -V, --verbose-versions
-      - -a, --host-architecture
-      - -P, --build-profiles
       - -b, --compile
       - --build
       - --ignore-hold
@@ -36,8 +34,6 @@ command:
       - --reinstall
       - --list-cleanup
       - --no-list-cleanup
-      - -t, --target-release
-      - --default-release
       - --trivial-only
       - --no-remove
       - --auto-remove
@@ -55,8 +51,12 @@ command:
       - -h, --help
       - -v, --version
     paths:
-      - -C, --config
+      - -c, --config-file
       - --with-source
+      - -a, --host-architecture
+      - -P, --build-profiles
+      - -t, --target-release
+      - --default-release
     counts:
       - -q, --quiet
     arrays:
@@ -91,7 +91,7 @@ command:
       name: apt-get source
     - cmd: $0 build-dep [packages...]
       options: *options
-      name: apt-get biuld-dep
+      name: apt-get build-dep
     - cmd: $0 satisfy [dependencies...]
       options: *options
       name: apt-get satisfy
