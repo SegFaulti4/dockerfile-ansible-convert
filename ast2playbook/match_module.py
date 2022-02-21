@@ -16,7 +16,7 @@ def match_rm(command):
     if command['options'].get('-f', False) and command['options'].get('-r', False):
         return {
             'ansible.builtin.file': {
-                'path': [command['paths']],
+                'path': command['paths'],
                 'state': 'absent'
             }
         }

@@ -11,7 +11,7 @@ from log import globalLog
 globalLog.setLevel(logging.INFO)
 
 
-with open('./dataset/in.txt', 'r') as inF:
+with open('./dataset/bash_sandbox.txt', 'r') as inF:
     enrich.init_commands_config()
 
     for bash_line in inF.readlines():
@@ -30,12 +30,3 @@ with open('./dataset/in.txt', 'r') as inF:
 
             print("\nfinal:")
             print(json.dumps(ast, indent=4, sort_keys=True))
-
-
-
-    '''children = [{'type': 'BASH-COMMAND'}, {'type': 'BASH-OPERATOR-AND'}, {'type': 'BASH-COMMAND'},
-                {'type': 'BASH-OPERATOR-OR'}, {'type': 'BASH-COMMAND'},
-                {'type': 'BASH-OPERATOR-AND'}, {'type': 'BASH-COMMAND'},
-                {'type': 'BASH-OPERATOR-AND'}, {'type': 'BASH-COMMAND'}]
-    tree = _bashlex_logical_expression_tree(children)
-    print(tree)'''
