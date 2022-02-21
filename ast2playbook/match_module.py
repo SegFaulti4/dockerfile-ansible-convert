@@ -1,5 +1,6 @@
-from match_apt_get import match_apt_get
-from main import globalLog
+from ast2playbook.match_apt_get import match_apt_get
+
+from log import globalLog
 from exception import MatchAnsibleModuleException
 
 

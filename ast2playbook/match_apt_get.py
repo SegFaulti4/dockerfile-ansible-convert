@@ -1,4 +1,7 @@
-from match_module import globalLog, MatchAnsibleModuleException
+from json import dumps
+
+from log import globalLog
+from exception import MatchAnsibleModuleException
 
 
 def _apt_get_pop_last_flags(command):
@@ -18,7 +21,7 @@ def match_apt_get_upgrade(command, task):
     task['upgrade'] = 'yes'
 
 
-def match_apt_dist_upgrade(command, task):
+def match_apt_get_dist_upgrade(command, task):
     task['upgrade'] = 'dist'
 
 
@@ -33,7 +36,7 @@ def match_apt_get_install(command, task):
         task['state'] = 'present'
 
 
-def match_apt_dist_remove(command, task):
+def match_apt_get_remove(command, task):
     last_flags = _apt_get_pop_last_flags(command)
     task['state'] = 'absent'
 
@@ -41,12 +44,20 @@ def match_apt_dist_remove(command, task):
         task['state'] = 'fixed'
 
 
-def match_apt_build_dep(command, task):
+def match_apt_get_build_dep(command, task):
     task['state'] = 'build-dep'
 
 
 def match_apt_get_check(command, task):
     match_apt_get_update(command, task)
+
+
+def match_apt_get_autoclean(command, task):
+    task['autoclean'] = 'yes'
+
+
+def match_apt_get_autoremove(command, task):
+    task['autoremove'] = 'yes'
 
 
 def match_apt_get(command):
@@ -91,7 +102,10 @@ def match_apt_get(command):
     if command['options'].get('-o', None) is not None:
         o_opt = command['options']['-o']
         command['options']['-o'], res['dpkg_options'] = list(filter(lambda x: x[0:16] != 'Dpkg::Options::=', o_opt)),\
-                                                        list(filter(lambda x: x[0:16] == 'Dpkg::Options::=', o_opt))
+                                                        list(map(
+                                                            lambda x: x[16:],
+                                                            filter(lambda x: x[0:16] == 'Dpkg::Options::=', o_opt)
+                                                        ))
         if len(command['options']['-o']) == 0:
             command['options'].pop('-o')
 
@@ -100,6 +114,8 @@ def match_apt_get(command):
 
     # general flags ignore
     ignore_list = [
+        '-y',
+        '--yes',
         '--no-show-upgraded',
         '-V',
         '--verbose-versions',
@@ -114,8 +130,30 @@ def match_apt_get(command):
         globalLog.debug('Ignoring apt-get option ' + option)
         command['options'].pop(option, False)
 
-    if command['full name'] == 'apt-get install':
+    if command['full name'] == 'apt-get update':
+        match_apt_get_update(command, res)
+    elif command['full name'] == 'apt-get upgrade':
+        match_apt_get_upgrade(command, res)
+    elif command['full name'] == 'apt-get install':
         match_apt_get_install(command, res)
+    elif command['full name'] == 'apt-get dist-upgrade':
+        match_apt_get_dist_upgrade(command, res)
+    elif command['full name'] == 'apt-get remove':
+        match_apt_get_remove(command, res)
+    elif command['full name'] == 'apt-get build-dep':
+        match_apt_get_build_dep(command, res)
+    elif command['full name'] == 'apt-get check':
+        match_apt_get_check(command, res)
+    elif command['full name'] == 'apt-get autoclean':
+        match_apt_get_autoclean(command, res)
+    elif command['full name'] == 'apt-get autoremove':
+        match_apt_get_autoclean(command, res)
+    else:
+        raise MatchAnsibleModuleException('Unsupported command ' + command['full name'])
 
     # check for remaining flags
-    return res
+    if bool(command['options']):
+        raise MatchAnsibleModuleException('Unsupported ' + command['name'] + ' options:\n' +
+                                          dumps(command['options'], sort_keys=True, indent=4))
+
+    return {command['name']: res}

@@ -6,7 +6,7 @@ import yaml
 
 import exception
 from log import globalLog
-from match_module import match_ansible_module, default_match
+from ast2playbook.match_module import match_ansible_module, default_match
 
 
 globalLog.setLevel(logging.DEBUG)
@@ -31,7 +31,7 @@ def new_register_name():
 
 
 def prev_register_name():
-    return _register_name(Global.REGISTER_COUNT - 1)
+    return _register_name(Global.REGISTER_COUNT)
 
 
 def new_task_name():
@@ -54,8 +54,9 @@ def match_ansible_task(new_task, command):
             for key in match:
                 new_task[key] = match[key]
     except exception.MatchAnsibleModuleException as exc:
-        globalLog.warning(exc)
-        globalLog.warning('Failed to match command ' + command['name'])
+        globalLog.info(exc)
+        globalLog.info('Failed to match command ' + command['name'])
+        globalLog.info('Resolving to shell: ' + command['line'])
         new_task['shell'] = command['line']
 
 
