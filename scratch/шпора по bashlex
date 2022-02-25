@@ -1,0 +1,72 @@
+с коммандами вида $smth = (); не справляется
+
+WordNode
+	обычно просто слово, в parts могут лежать: ParameterNode, CommandSubstitutionNode, TildeNode
+
+ListNode
+	собрание Command Node, Pipeline Node, Compound Node и еще какой-то хуйни
+
+CommandNode
+	команда, состоящая из Word Node
+
+RedirectNode
+	перенаправление потоков, хранит в себе input и output
+
+CompoundNode
+	условное ветвление или цикл
+	
+IfNode
+	все if, then, fi и операторы ;
+	
+PipeLineNode
+	пайп c '|' (тогда содержит PipeNode pipe='|'), либо также отрицание в начале команды
+
+AssignmentNode
+	присваивание, иногда с командой внутри в виде CommandSubstituitionNode
+	
+ParameterNode
+	разыменование параметра, value - название параметра
+
+OperatorNode
+	op=';', '||'
+	
+PipeNode
+	pipe='|'
+	
+ReservedwordNode
+	word='if', 'then', 'fi', '!', 'then', 'for' и далее
+	
+RedirectNode
+	type='>'
+	
+ForNode
+	цикл for
+	
+FunctionNode
+	дрочь неведомая
+
+IfNode
+	ветвление с условием
+	
+PipelineNode
+	либо две команды, соединенные трубой, либо команда с отрицанием
+	
+Pipe
+	собсна сама труба
+	
+CommandsubstitutionNode
+ 	обертка для обобщения понятия команды, может в себе содержать например
+ 	CommandNode или PipelineNode
+
+TildeNode
+	хз
+	
+WhileNode
+	parts = [while, ListNode с командами, do, ListNode с командами, done]
+	
+
+
+
+
+
+

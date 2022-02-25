@@ -1,0 +1,11 @@
+- hosts: localhost
+  name: Test
+  tasks:
+    - shell:
+        cmd: "set -ex"
+    - shell:
+        cmd: "set -ex; uygugu; echo 1"
+    - shell:
+        cmd: uweuq
+    - shell:
+        cmd: "set -ex"

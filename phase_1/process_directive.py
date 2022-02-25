@@ -83,7 +83,7 @@ def process_env(directive):
             'type': 'DOCKER-ENV',
             'children': [
                 {'type': 'DOCKER-NAME', 'value': name, 'children': []},
-                {'type': 'DOCKER-LITERAL', 'value': value, 'children': []}
+                {'type': 'MAYBE-BASH-VALUE', 'value': value, 'children': []}
             ]
         }
         for name, value in zip(directive.value[::2], directive.value[1::2])

@@ -12,6 +12,7 @@ from phase_2.parse_bashlex import parse_bashlex_node
 
 globalLog.setLevel(logging.DEBUG)
 
+
 # BASHLEX_IMPLEMENTED_NODES = ['list', 'command', 'operator', 'word', 'parameter']
 # BASHLEX_NODE_PARSING = {node_kind: getattr(parse_bashlex, 'parse_bashlex_' + node_kind)
 #                         for node_kind in BASHLEX_IMPLEMENTED_NODES}
@@ -21,7 +22,7 @@ def load_phase_1(in_stream):
     return json.load(in_stream)
 
 
-def phase_2_parse_bash(bash_line):
+def phase_2_parse_bash_command(bash_line):
     parts = None
     res = None
     try:
@@ -36,24 +37,44 @@ def phase_2_parse_bash(bash_line):
     except Exception as exc:
         globalLog.warning(type(exc))
         globalLog.warning(exc)
-        globalLog.warning(bash_line)
+        globalLog.warning('Unexpected behavior while parsing line: ' + bash_line)
+    finally:
+        return res
+
+
+def phase_2_parse_bash_value(bash_value):
+    res = None
+    try:
+        res = bashlex.parse(bash_value)
+        if len(res) == 1 and res[0].kind == 'command' and \
+                all(part.kind == 'word' and not part.parts for part in res[0].parts):
+            res = {'type': 'STRING-CONSTANT', 'value': bash_value}
+        else:
+            res = {'type': 'BASH-VALUE', 'value': bash_value}
+    except Exception as exc:
+        globalLog.warning(type(exc))
+        globalLog.warning(exc)
+        globalLog.warning('Unexpected behavior while parsing value: ' + bash_value)
+        res = {'type': 'STRING-CONSTANT', 'value': bash_value}
     finally:
         return res
 
 
 def phase_2_ast_visit(obj):
     if obj['type'] == 'MAYBE-BASH':
-        res = phase_2_parse_bash(obj['value'])
+        res = phase_2_parse_bash_command(obj['value'])
         if res is None:
             globalLog.info(obj['type'] + ' node is untouched')
             return obj
         else:
             return res
+    elif obj['type'] == 'MAYBE-BASH-VALUE':
+        return phase_2_parse_bash_value(obj['value'])
     else:
         if len(obj['children']):
             for i in range(len(obj['children'])):
                 obj['children'][i] = phase_2_ast_visit(obj['children'][i])
-    return obj
+        return obj
 
 
 def phase_2_process(obj):
