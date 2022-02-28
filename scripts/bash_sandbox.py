@@ -18,7 +18,7 @@ with open('./dataset/bash_sandbox.txt', 'r') as inF:
         parsed = phase_2_parse_bash_command(bash_line)
         print("\nphase_2:")
         print(json.dumps(parsed, indent=4, sort_keys=True))
-        if parsed is not None:
+        if False and parsed is not None:
             parsed = phase_3_process(parsed)
             print("\nphase_3:")
             print(json.dumps(parsed, indent=4, sort_keys=True))

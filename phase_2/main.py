@@ -24,7 +24,7 @@ def load_phase_1(in_stream):
 
 def phase_2_parse_bash_command(bash_line):
     parts = None
-    res = None
+    res = []
     try:
         parts = bashlex.parse(bash_line)
         res = parse_bashlex_node(parts[0], bash_line)
@@ -61,13 +61,13 @@ def phase_2_parse_bash_value(bash_value):
 
 
 def phase_2_ast_visit(obj):
-    if obj['type'] == 'MAYBE-BASH':
-        res = phase_2_parse_bash_command(obj['value'])
-        if res is None:
+    if len(obj['children']) == 1 and obj['children'][0]['type'] == 'MAYBE-BASH':
+        res = phase_2_parse_bash_command(obj['children'][0]['value'])
+        if not res:
             globalLog.info(obj['type'] + ' node is untouched')
-            return obj
         else:
-            return res
+            obj['children'] = res
+        return obj
     elif obj['type'] == 'MAYBE-BASH-VALUE':
         return phase_2_parse_bash_value(obj['value'])
     else:
@@ -121,7 +121,7 @@ def main():
             globalLog.warning(os_ex)
             globalLog.info("Redirect file output into stdout")
 
-    dump_phase_2(sys.stdin, out_stream)
+    dump_phase_2(open("./dataset/phase_1.json", 'r'), out_stream)
 
 
 if __name__ == '__main__':

@@ -34,16 +34,14 @@ def _bashlex_logical_expression_tree(command_list):
 
 
 def parse_bashlex_list(node, line):
-    res = {'type': 'BASH-COMMAND-LIST', 'children': []}
+    res = []
     for part in node.parts:
         child = parse_bashlex_node(part, line)
-        if child is None:
-            return None
-        if child['type'] != 'BASH-EOC':
-            res['children'].append(child)
+        if not child:
+            return []
+        res.extend(filter(lambda x: x['type'] != 'BASH-EOC', child))
 
-    res['children'] = _bashlex_logical_expression_tree(res['children'])
-
+    res = _bashlex_logical_expression_tree(res)
     return res
 
 
@@ -51,20 +49,20 @@ def parse_bashlex_command(node, line):
     res = {'type': 'BASH-COMMAND', 'children': [], 'line': line[node.pos[0]:node.pos[1]]}
     for part in node.parts:
         child = parse_bashlex_node(part, line)
-        if child is None:
-            return None
-        res['children'].append(child)
+        if not child:
+            return []
+        res['children'].extend(child)
 
-    return res
+    return [res]
 
 
 def parse_bashlex_operator(node, line):
     if node.op == ';':
-        return {'type': 'BASH-EOC'}
+        return [{'type': 'BASH-EOC'}]
     elif node.op == '&&':
-        return {'type': 'BASH-OPERATOR-AND'}
+        return [{'type': 'BASH-OPERATOR-AND'}]
     elif node.op == '||':
-        return {'type': 'BASH-OPERATOR-OR'}
+        return [{'type': 'BASH-OPERATOR-OR'}]
 
 
 def parse_bashlex_word(node, line):
@@ -72,18 +70,18 @@ def parse_bashlex_word(node, line):
         res = {'type': 'BASH-WORD-SUBSTITUTION', 'children': [], 'line': line[node.pos[0]:node.pos[1]]}
         for part in node.parts:
             child = parse_bashlex_node(part, line)
-            if child is None:
-                return None
-            if child['type'] == 'BASH-PARAMETER':
-                child['pos'] = (child['pos'][0] - node.pos[0], child['pos'][1] - node.pos[0])
-                res['children'].append(child)
+            if not child:
+                return []
+            for param in filter(lambda x: x['type'] == 'BASH-PARAMETER', child):
+                param['pos'] = (param['pos'][0] - node.pos[0], param['pos'][1] - node.pos[0])
+                res['children'].append(param)
     else:
         res = {'type': 'BASH-WORD', 'value': line[node.pos[0]:node.pos[1]]}
-    return res
+    return [res]
 
 
 def parse_bashlex_parameter(node, line):
-    return {'type': 'BASH-PARAMETER', 'value': node.value, 'pos': node.pos}
+    return [{'type': 'BASH-PARAMETER', 'value': node.value, 'pos': node.pos}]
 
 
 def parse_bashlex_node(node, line):
@@ -98,4 +96,4 @@ def parse_bashlex_node(node, line):
     elif node.kind == 'parameter':
         return parse_bashlex_parameter(node, line)
     globalLog.info('Bashlex node kind "' + node.kind + '" is not supported')
-    return None
+    return []
