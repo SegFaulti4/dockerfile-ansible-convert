@@ -1,0 +1,129 @@
+1) rm -rf ~redmine/.bundle
+
+CommandNode(pos=(1232, 1255), parts=[
+  WordNode(pos=(1232, 1234), word='rm'),
+  WordNode(pos=(1235, 1238), word='-rf'),
+  WordNode(pos=(1239, 1255), word='~redmine/.bundle', parts=[
+    TildeNode(pos=(1239, 1247), value='~redmine'),
+  ]),
+])
+
+
+2) rm -rf ~redmine/.bundle
+
+CommandNode(pos=(1232, 1255), parts=[
+  WordNode(pos=(1232, 1234), word='rm'),
+  WordNode(pos=(1235, 1238), word='-rf'),
+  WordNode(pos=(1239, 1255), word='~redmine/.bundle', parts=[
+    TildeNode(pos=(1239, 1247), value='~redmine'),
+  ]),
+])
+
+
+3) mkdir ~/.vim ~/.vim/bundle ~/.vim/autoload
+
+CommandNode(pos=(0, 42), parts=[
+  WordNode(pos=(0, 5), word='mkdir'),
+  WordNode(pos=(6, 12), word='~/.vim', parts=[
+    TildeNode(pos=(6, 7), value='~'),
+  ]),
+  WordNode(pos=(13, 26), word='~/.vim/bundle', parts=[
+    TildeNode(pos=(13, 14), value='~'),
+  ]),
+  WordNode(pos=(27, 42), word='~/.vim/autoload', parts=[
+    TildeNode(pos=(27, 28), value='~'),
+  ]),
+])
+
+
+4) mkdir ~/.vim ~/.vim/bundle ~/.vim/autoload
+
+CommandNode(pos=(0, 42), parts=[
+  WordNode(pos=(0, 5), word='mkdir'),
+  WordNode(pos=(6, 12), word='~/.vim', parts=[
+    TildeNode(pos=(6, 7), value='~'),
+  ]),
+  WordNode(pos=(13, 26), word='~/.vim/bundle', parts=[
+    TildeNode(pos=(13, 14), value='~'),
+  ]),
+  WordNode(pos=(27, 42), word='~/.vim/autoload', parts=[
+    TildeNode(pos=(27, 28), value='~'),
+  ]),
+])
+
+
+5) mkdir ~/.vim ~/.vim/bundle ~/.vim/autoload
+
+CommandNode(pos=(0, 42), parts=[
+  WordNode(pos=(0, 5), word='mkdir'),
+  WordNode(pos=(6, 12), word='~/.vim', parts=[
+    TildeNode(pos=(6, 7), value='~'),
+  ]),
+  WordNode(pos=(13, 26), word='~/.vim/bundle', parts=[
+    TildeNode(pos=(13, 14), value='~'),
+  ]),
+  WordNode(pos=(27, 42), word='~/.vim/autoload', parts=[
+    TildeNode(pos=(27, 28), value='~'),
+  ]),
+])
+
+
+6) git clone https://github.com/tpope/vim-pathogen.git ~/.vim/bundle/pathogen
+
+CommandNode(pos=(11, 85), parts=[
+  WordNode(pos=(11, 14), word='git'),
+  WordNode(pos=(15, 20), word='clone'),
+  WordNode(pos=(21, 62), word='https://github.com/tpope/vim-pathogen.git'),
+  WordNode(pos=(63, 85), word='~/.vim/bundle/pathogen', parts=[
+    TildeNode(pos=(63, 64), value='~'),
+  ]),
+])
+
+
+7) ln -s ../bundle/pathogen/autoload/pathogen.vim ~/.vim/autoload/
+
+CommandNode(pos=(90, 153), parts=[
+  WordNode(pos=(90, 92), word='ln'),
+  WordNode(pos=(93, 95), word='-s'),
+  WordNode(pos=(96, 136), word='../bundle/pathogen/autoload/pathogen.vim'),
+  WordNode(pos=(137, 153), word='~/.vim/autoload/', parts=[
+    TildeNode(pos=(137, 138), value='~'),
+  ]),
+])
+
+
+8) git clone https://github.com/jtratner/vim-flavored-markdown.git ~/.vim/bundle/ghmarkdown
+
+CommandNode(pos=(0, 88), parts=[
+  WordNode(pos=(0, 3), word='git'),
+  WordNode(pos=(4, 9), word='clone'),
+  WordNode(pos=(10, 63), word='https://github.com/jtratner/vim-flavored-markdown.git'),
+  WordNode(pos=(64, 88), word='~/.vim/bundle/ghmarkdown', parts=[
+    TildeNode(pos=(64, 65), value='~'),
+  ]),
+])
+
+
+9) git clone https://github.com/nanotech/jellybeans.vim.git ~/.vim/bundle/jellybeans
+
+CommandNode(pos=(0, 81), parts=[
+  WordNode(pos=(0, 3), word='git'),
+  WordNode(pos=(4, 9), word='clone'),
+  WordNode(pos=(10, 56), word='https://github.com/nanotech/jellybeans.vim.git'),
+  WordNode(pos=(57, 81), word='~/.vim/bundle/jellybeans', parts=[
+    TildeNode(pos=(57, 58), value='~'),
+  ]),
+])
+
+
+10) rm -rf ~redmine/.bundle
+
+CommandNode(pos=(1232, 1255), parts=[
+  WordNode(pos=(1232, 1234), word='rm'),
+  WordNode(pos=(1235, 1238), word='-rf'),
+  WordNode(pos=(1239, 1255), word='~redmine/.bundle', parts=[
+    TildeNode(pos=(1239, 1247), value='~redmine'),
+  ]),
+])
+
+

@@ -1,0 +1,1352 @@
+1) set -eux;   runDeps='   apr-dev   apr-util-dev   apr-util-ldap   perl  ';  apk add --no-cache --virtual .build-deps   $runDeps   ca-certificates   coreutils   dpkg-dev dpkg   gcc   gnupg   libc-dev   curl-dev   jansson-dev   libxml2-dev   lua-dev   make   nghttp2-dev   openssl   openssl-dev   pcre-dev   tar   zlib-dev  ;   ddist() {   local f="$1"; shift;   local distFile="$1"; shift;   local success=;   local distUrl=;   for distUrl in $APACHE_DIST_URLS; do    if wget -O "$f" "$distUrl$distFile" && [ -s "$f" ]; then     success=1;     break;    fi;   done;   [ -n "$success" ];  };   ddist 'httpd.tar.bz2' "httpd/httpd-$HTTPD_VERSION.tar.bz2";  echo "$HTTPD_SHA256 *httpd.tar.bz2" | sha256sum -c -;   ddist 'httpd.tar.bz2.asc' "httpd/httpd-$HTTPD_VERSION.tar.bz2.asc";  export GNUPGHOME="$(mktemp -d)";  for key in   A93D62ECC3C8EA12DB220EC934EA76E6791485A8   B9E8213AEFB861AF35A41F2C995E35221AD84DFF  ; do   gpg --batch --keyserver ha.pool.sks-keyservers.net --recv-keys "$key";  done;  gpg --batch --verify httpd.tar.bz2.asc httpd.tar.bz2;  command -v gpgconf && gpgconf --kill all || :;  rm -rf "$GNUPGHOME" httpd.tar.bz2.asc;   mkdir -p src;  tar -xf httpd.tar.bz2 -C src --strip-components=1;  rm httpd.tar.bz2;  cd src;   patches() {   while [ "$#" -gt 0 ]; do    local patchFile="$1"; shift;    local patchSha256="$1"; shift;    ddist "$patchFile" "httpd/patches/apply_to_$HTTPD_VERSION/$patchFile";    echo "$patchSha256 *$patchFile" | sha256sum -c -;    patch -p0 < "$patchFile";    rm -f "$patchFile";   done;  };  patches $HTTPD_PATCHES;   gnuArch="$(dpkg-architecture --query DEB_BUILD_GNU_TYPE)";  ./configure   --build="$gnuArch"   --prefix="$HTTPD_PREFIX"   --enable-mods-shared=reallyall   --enable-mpms-shared=all  ;  make -j "$(nproc)";  make install;   cd ..;  rm -r src man manual;   sed -ri   -e 's!^(\s*CustomLog)\s+\S+!\1 /proc/self/fd/1!g'   -e 's!^(\s*ErrorLog)\s+\S+!\1 /proc/self/fd/2!g'   -e 's!^(\s*TransferLog)\s+\S+!\1 /proc/self/fd/1!g'   "$HTTPD_PREFIX/conf/httpd.conf"   "$HTTPD_PREFIX/conf/extra/httpd-ssl.conf"  ;   runDeps="$runDeps $(   scanelf --needed --nobanner --format '%n#p' --recursive /usr/local    | tr ',' '\n'    | sort -u    | awk 'system("[ -e /usr/local/lib/" $1 " ]") == 0 { next } { print "so:" $1 }'  )";  apk add --virtual .httpd-rundeps $runDeps;  apk del .build-deps;   httpd -v
+
+ListNode(pos=(0, 2343), parts=[
+  CommandNode(pos=(0, 8), parts=[
+    WordNode(pos=(0, 3), word='set'),
+    WordNode(pos=(4, 8), word='-eux'),
+  ]),
+  OperatorNode(op=';', pos=(8, 9)),
+  CommandNode(pos=(12, 72), parts=[
+    AssignmentNode(pos=(12, 72), word='runDeps=   apr-dev   apr-util-dev   apr-util-ldap   perl  '),
+  ]),
+  OperatorNode(op=';', pos=(72, 73)),
+  CommandNode(pos=(75, 319), parts=[
+    WordNode(pos=(75, 78), word='apk'),
+    WordNode(pos=(79, 82), word='add'),
+    WordNode(pos=(83, 93), word='--no-cache'),
+    WordNode(pos=(94, 103), word='--virtual'),
+    WordNode(pos=(104, 115), word='.build-deps'),
+    WordNode(pos=(118, 126), word='$runDeps', parts=[
+      ParameterNode(pos=(118, 126), value='runDeps'),
+    ]),
+    WordNode(pos=(129, 144), word='ca-certificates'),
+    WordNode(pos=(147, 156), word='coreutils'),
+    WordNode(pos=(159, 167), word='dpkg-dev'),
+    WordNode(pos=(168, 172), word='dpkg'),
+    WordNode(pos=(175, 178), word='gcc'),
+    WordNode(pos=(181, 186), word='gnupg'),
+    WordNode(pos=(189, 197), word='libc-dev'),
+    WordNode(pos=(200, 208), word='curl-dev'),
+    WordNode(pos=(211, 222), word='jansson-dev'),
+    WordNode(pos=(225, 236), word='libxml2-dev'),
+    WordNode(pos=(239, 246), word='lua-dev'),
+    WordNode(pos=(249, 253), word='make'),
+    WordNode(pos=(256, 267), word='nghttp2-dev'),
+    WordNode(pos=(270, 277), word='openssl'),
+    WordNode(pos=(280, 291), word='openssl-dev'),
+    WordNode(pos=(294, 302), word='pcre-dev'),
+    WordNode(pos=(305, 308), word='tar'),
+    WordNode(pos=(311, 319), word='zlib-dev'),
+  ]),
+  OperatorNode(op=';', pos=(321, 322)),
+  FunctionNode(pos=(325, 587), parts=[
+    WordNode(pos=(325, 330), word='ddist'),
+    ReservedwordNode(pos=(330, 331), word='('),
+    ReservedwordNode(pos=(331, 332), word=')'),
+    CompoundNode(list=[
+      ReservedwordNode(pos=(333, 334), word='{'),
+      ListNode(pos=(337, 584), parts=[
+          CommandNode(pos=(337, 349), parts=[
+            WordNode(pos=(337, 342), word='local'),
+            WordNode(pos=(343, 349), word='f=$1', parts=[
+              ParameterNode(pos=(346, 348), value='1'),
+            ]),
+          ]),
+          OperatorNode(op=';', pos=(349, 350)),
+          CommandNode(pos=(351, 356), parts=[
+            WordNode(pos=(351, 356), word='shift'),
+          ]),
+          OperatorNode(op=';', pos=(356, 357)),
+          CommandNode(pos=(360, 379), parts=[
+            WordNode(pos=(360, 365), word='local'),
+            WordNode(pos=(366, 379), word='distFile=$1', parts=[
+              ParameterNode(pos=(376, 378), value='1'),
+            ]),
+          ]),
+          OperatorNode(op=';', pos=(379, 380)),
+          CommandNode(pos=(381, 386), parts=[
+            WordNode(pos=(381, 386), word='shift'),
+          ]),
+          OperatorNode(op=';', pos=(386, 387)),
+          CommandNode(pos=(390, 404), parts=[
+            WordNode(pos=(390, 395), word='local'),
+            WordNode(pos=(396, 404), word='success='),
+          ]),
+          OperatorNode(op=';', pos=(404, 405)),
+          CommandNode(pos=(408, 422), parts=[
+            WordNode(pos=(408, 413), word='local'),
+            WordNode(pos=(414, 422), word='distUrl='),
+          ]),
+          OperatorNode(op=';', pos=(422, 423)),
+          CompoundNode(list=[
+            ForNode(pos=(426, 562), parts=[
+              ReservedwordNode(pos=(426, 429), word='for'),
+              WordNode(pos=(430, 437), word='distUrl'),
+              ReservedwordNode(pos=(438, 440), word='in'),
+              WordNode(pos=(441, 458), word='$APACHE_DIST_URLS', parts=[
+                ParameterNode(pos=(441, 458), value='APACHE_DIST_URLS'),
+              ]),
+              ReservedwordNode(pos=(458, 459), word=';'),
+              ReservedwordNode(pos=(460, 462), word='do'),
+              ListNode(pos=(466, 555), parts=[
+                  CompoundNode(list=[
+                    IfNode(pos=(466, 554), parts=[
+                      ReservedwordNode(pos=(466, 468), word='if'),
+                      ListNode(pos=(469, 517), parts=[
+                          CommandNode(pos=(469, 501), parts=[
+                            WordNode(pos=(469, 473), word='wget'),
+                            WordNode(pos=(474, 476), word='-O'),
+                            WordNode(pos=(477, 481), word='$f', parts=[
+                              ParameterNode(pos=(478, 480), value='f'),
+                            ]),
+                            WordNode(pos=(482, 501), word='$distUrl$distFile', parts=[
+                              ParameterNode(pos=(483, 491), value='distUrl'),
+                              ParameterNode(pos=(491, 500), value='distFile'),
+                            ]),
+                          ]),
+                          OperatorNode(op='&&', pos=(502, 504)),
+                          CommandNode(pos=(505, 516), parts=[
+                            WordNode(pos=(505, 506), word='['),
+                            WordNode(pos=(507, 509), word='-s'),
+                            WordNode(pos=(510, 514), word='$f', parts=[
+                              ParameterNode(pos=(511, 513), value='f'),
+                            ]),
+                            WordNode(pos=(515, 516), word=']'),
+                          ]),
+                          OperatorNode(op=';', pos=(516, 517)),
+                        ]),
+                      ReservedwordNode(pos=(518, 522), word='then'),
+                      ListNode(pos=(527, 548), parts=[
+                          CommandNode(pos=(527, 536), parts=[
+                            AssignmentNode(pos=(527, 536), word='success=1'),
+                          ]),
+                          OperatorNode(op=';', pos=(536, 537)),
+                          CommandNode(pos=(542, 547), parts=[
+                            WordNode(pos=(542, 547), word='break'),
+                          ]),
+                          OperatorNode(op=';', pos=(547, 548)),
+                        ]),
+                      ReservedwordNode(pos=(552, 554), word='fi'),
+                    ]),
+                  ], pos=(466, 554)),
+                  OperatorNode(op=';', pos=(554, 555)),
+                ]),
+              ReservedwordNode(pos=(558, 562), word='done'),
+            ]),
+          ], pos=(426, 562)),
+          OperatorNode(op=';', pos=(562, 563)),
+          CommandNode(pos=(566, 583), parts=[
+            WordNode(pos=(566, 567), word='['),
+            WordNode(pos=(568, 570), word='-n'),
+            WordNode(pos=(571, 581), word='$success', parts=[
+              ParameterNode(pos=(572, 580), value='success'),
+            ]),
+            WordNode(pos=(582, 583), word=']'),
+          ]),
+          OperatorNode(op=';', pos=(583, 584)),
+        ]),
+      ReservedwordNode(pos=(586, 587), word='}'),
+    ], pos=(333, 587)),
+  ]),
+  OperatorNode(op=';', pos=(587, 588)),
+  CommandNode(pos=(591, 649), parts=[
+    WordNode(pos=(591, 596), word='ddist'),
+    WordNode(pos=(597, 612), word='httpd.tar.bz2'),
+    WordNode(pos=(613, 649), word='httpd/httpd-$HTTPD_VERSION.tar.bz2', parts=[
+      ParameterNode(pos=(626, 640), value='HTTPD_VERSION'),
+    ]),
+  ]),
+  OperatorNode(op=';', pos=(649, 650)),
+  PipelineNode(pos=(652, 704), parts=[
+    CommandNode(pos=(652, 687), parts=[
+      WordNode(pos=(652, 656), word='echo'),
+      WordNode(pos=(657, 687), word='$HTTPD_SHA256 *httpd.tar.bz2', parts=[
+        ParameterNode(pos=(658, 671), value='HTTPD_SHA256'),
+      ]),
+    ]),
+    PipeNode(pipe='|', pos=(688, 689)),
+    CommandNode(pos=(690, 704), parts=[
+      WordNode(pos=(690, 699), word='sha256sum'),
+      WordNode(pos=(700, 702), word='-c'),
+      WordNode(pos=(703, 704), word='-'),
+    ]),
+  ]),
+  OperatorNode(op=';', pos=(704, 705)),
+  CommandNode(pos=(708, 774), parts=[
+    WordNode(pos=(708, 713), word='ddist'),
+    WordNode(pos=(714, 733), word='httpd.tar.bz2.asc'),
+    WordNode(pos=(734, 774), word='httpd/httpd-$HTTPD_VERSION.tar.bz2.asc', parts=[
+      ParameterNode(pos=(747, 761), value='HTTPD_VERSION'),
+    ]),
+  ]),
+  OperatorNode(op=';', pos=(774, 775)),
+  CommandNode(pos=(777, 808), parts=[
+    WordNode(pos=(777, 783), word='export'),
+    WordNode(pos=(784, 808), word='GNUPGHOME=$(mktemp -d)', parts=[
+      CommandsubstitutionNode(command=
+        CommandNode(pos=(797, 806), parts=[
+          WordNode(pos=(797, 803), word='mktemp'),
+          WordNode(pos=(804, 806), word='-d'),
+        ]), pos=(795, 807)),
+    ]),
+  ]),
+  OperatorNode(op=';', pos=(808, 809)),
+  CompoundNode(list=[
+    ForNode(pos=(811, 992), parts=[
+      ReservedwordNode(pos=(811, 814), word='for'),
+      WordNode(pos=(815, 818), word='key'),
+      ReservedwordNode(pos=(819, 821), word='in'),
+      WordNode(pos=(824, 864), word='A93D62ECC3C8EA12DB220EC934EA76E6791485A8'),
+      WordNode(pos=(867, 907), word='B9E8213AEFB861AF35A41F2C995E35221AD84DFF'),
+      ReservedwordNode(pos=(909, 910), word=';'),
+      ReservedwordNode(pos=(911, 913), word='do'),
+      ListNode(pos=(916, 986), parts=[
+          CommandNode(pos=(916, 985), parts=[
+            WordNode(pos=(916, 919), word='gpg'),
+            WordNode(pos=(920, 927), word='--batch'),
+            WordNode(pos=(928, 939), word='--keyserver'),
+            WordNode(pos=(940, 966), word='ha.pool.sks-keyservers.net'),
+            WordNode(pos=(967, 978), word='--recv-keys'),
+            WordNode(pos=(979, 985), word='$key', parts=[
+              ParameterNode(pos=(980, 984), value='key'),
+            ]),
+          ]),
+          OperatorNode(op=';', pos=(985, 986)),
+        ]),
+      ReservedwordNode(pos=(988, 992), word='done'),
+    ]),
+  ], pos=(811, 992)),
+  OperatorNode(op=';', pos=(992, 993)),
+  CommandNode(pos=(995, 1047), parts=[
+    WordNode(pos=(995, 998), word='gpg'),
+    WordNode(pos=(999, 1006), word='--batch'),
+    WordNode(pos=(1007, 1015), word='--verify'),
+    WordNode(pos=(1016, 1033), word='httpd.tar.bz2.asc'),
+    WordNode(pos=(1034, 1047), word='httpd.tar.bz2'),
+  ]),
+  OperatorNode(op=';', pos=(1047, 1048)),
+  CommandNode(pos=(1050, 1068), parts=[
+    WordNode(pos=(1050, 1057), word='command'),
+    WordNode(pos=(1058, 1060), word='-v'),
+    WordNode(pos=(1061, 1068), word='gpgconf'),
+  ]),
+  OperatorNode(op='&&', pos=(1069, 1071)),
+  CommandNode(pos=(1072, 1090), parts=[
+    WordNode(pos=(1072, 1079), word='gpgconf'),
+    WordNode(pos=(1080, 1086), word='--kill'),
+    WordNode(pos=(1087, 1090), word='all'),
+  ]),
+  OperatorNode(op='||', pos=(1091, 1093)),
+  CommandNode(pos=(1094, 1095), parts=[
+    WordNode(pos=(1094, 1095), word=':'),
+  ]),
+  OperatorNode(op=';', pos=(1095, 1096)),
+  CommandNode(pos=(1098, 1135), parts=[
+    WordNode(pos=(1098, 1100), word='rm'),
+    WordNode(pos=(1101, 1104), word='-rf'),
+    WordNode(pos=(1105, 1117), word='$GNUPGHOME', parts=[
+      ParameterNode(pos=(1106, 1116), value='GNUPGHOME'),
+    ]),
+    WordNode(pos=(1118, 1135), word='httpd.tar.bz2.asc'),
+  ]),
+  OperatorNode(op=';', pos=(1135, 1136)),
+  CommandNode(pos=(1139, 1151), parts=[
+    WordNode(pos=(1139, 1144), word='mkdir'),
+    WordNode(pos=(1145, 1147), word='-p'),
+    WordNode(pos=(1148, 1151), word='src'),
+  ]),
+  OperatorNode(op=';', pos=(1151, 1152)),
+  CommandNode(pos=(1154, 1203), parts=[
+    WordNode(pos=(1154, 1157), word='tar'),
+    WordNode(pos=(1158, 1161), word='-xf'),
+    WordNode(pos=(1162, 1175), word='httpd.tar.bz2'),
+    WordNode(pos=(1176, 1178), word='-C'),
+    WordNode(pos=(1179, 1182), word='src'),
+    WordNode(pos=(1183, 1203), word='--strip-components=1'),
+  ]),
+  OperatorNode(op=';', pos=(1203, 1204)),
+  CommandNode(pos=(1206, 1222), parts=[
+    WordNode(pos=(1206, 1208), word='rm'),
+    WordNode(pos=(1209, 1222), word='httpd.tar.bz2'),
+  ]),
+  OperatorNode(op=';', pos=(1222, 1223)),
+  CommandNode(pos=(1225, 1231), parts=[
+    WordNode(pos=(1225, 1227), word='cd'),
+    WordNode(pos=(1228, 1231), word='src'),
+  ]),
+  OperatorNode(op=';', pos=(1231, 1232)),
+  FunctionNode(pos=(1235, 1529), parts=[
+    WordNode(pos=(1235, 1242), word='patches'),
+    ReservedwordNode(pos=(1242, 1243), word='('),
+    ReservedwordNode(pos=(1243, 1244), word=')'),
+    CompoundNode(list=[
+      ReservedwordNode(pos=(1245, 1246), word='{'),
+      ListNode(pos=(1249, 1526), parts=[
+          CompoundNode(list=[
+            WhileNode(pos=(1249, 1525), parts=[
+              ReservedwordNode(pos=(1249, 1254), word='while'),
+              ListNode(pos=(1255, 1270), parts=[
+                  CommandNode(pos=(1255, 1269), parts=[
+                    WordNode(pos=(1255, 1256), word='['),
+                    WordNode(pos=(1257, 1261), word='$#', parts=[
+                      ParameterNode(pos=(1258, 1260), value='#'),
+                    ]),
+                    WordNode(pos=(1262, 1265), word='-gt'),
+                    WordNode(pos=(1266, 1267), word='0'),
+                    WordNode(pos=(1268, 1269), word=']'),
+                  ]),
+                  OperatorNode(op=';', pos=(1269, 1270)),
+                ]),
+              ReservedwordNode(pos=(1271, 1273), word='do'),
+              ListNode(pos=(1277, 1518), parts=[
+                  CommandNode(pos=(1277, 1297), parts=[
+                    WordNode(pos=(1277, 1282), word='local'),
+                    WordNode(pos=(1283, 1297), word='patchFile=$1', parts=[
+                      ParameterNode(pos=(1294, 1296), value='1'),
+                    ]),
+                  ]),
+                  OperatorNode(op=';', pos=(1297, 1298)),
+                  CommandNode(pos=(1299, 1304), parts=[
+                    WordNode(pos=(1299, 1304), word='shift'),
+                  ]),
+                  OperatorNode(op=';', pos=(1304, 1305)),
+                  CommandNode(pos=(1309, 1331), parts=[
+                    WordNode(pos=(1309, 1314), word='local'),
+                    WordNode(pos=(1315, 1331), word='patchSha256=$1', parts=[
+                      ParameterNode(pos=(1328, 1330), value='1'),
+                    ]),
+                  ]),
+                  OperatorNode(op=';', pos=(1331, 1332)),
+                  CommandNode(pos=(1333, 1338), parts=[
+                    WordNode(pos=(1333, 1338), word='shift'),
+                  ]),
+                  OperatorNode(op=';', pos=(1338, 1339)),
+                  CommandNode(pos=(1343, 1412), parts=[
+                    WordNode(pos=(1343, 1348), word='ddist'),
+                    WordNode(pos=(1349, 1361), word='$patchFile', parts=[
+                      ParameterNode(pos=(1350, 1360), value='patchFile'),
+                    ]),
+                    WordNode(pos=(1362, 1412), word='httpd/patches/apply_to_$HTTPD_VERSION/$patchFile', parts=[
+                      ParameterNode(pos=(1386, 1400), value='HTTPD_VERSION'),
+                      ParameterNode(pos=(1401, 1411), value='patchFile'),
+                    ]),
+                  ]),
+                  OperatorNode(op=';', pos=(1412, 1413)),
+                  PipelineNode(pos=(1417, 1465), parts=[
+                    CommandNode(pos=(1417, 1448), parts=[
+                      WordNode(pos=(1417, 1421), word='echo'),
+                      WordNode(pos=(1422, 1448), word='$patchSha256 *$patchFile', parts=[
+                        ParameterNode(pos=(1423, 1435), value='patchSha256'),
+                        ParameterNode(pos=(1437, 1447), value='patchFile'),
+                      ]),
+                    ]),
+                    PipeNode(pipe='|', pos=(1449, 1450)),
+                    CommandNode(pos=(1451, 1465), parts=[
+                      WordNode(pos=(1451, 1460), word='sha256sum'),
+                      WordNode(pos=(1461, 1463), word='-c'),
+                      WordNode(pos=(1464, 1465), word='-'),
+                    ]),
+                  ]),
+                  OperatorNode(op=';', pos=(1465, 1466)),
+                  CommandNode(pos=(1470, 1494), parts=[
+                    WordNode(pos=(1470, 1475), word='patch'),
+                    WordNode(pos=(1476, 1479), word='-p0'),
+                    RedirectNode(output=
+                      WordNode(pos=(1482, 1494), word='$patchFile', parts=[
+                        ParameterNode(pos=(1483, 1493), value='patchFile'),
+                      ]), pos=(1480, 1494), type='<'),
+                  ]),
+                  OperatorNode(op=';', pos=(1494, 1495)),
+                  CommandNode(pos=(1499, 1517), parts=[
+                    WordNode(pos=(1499, 1501), word='rm'),
+                    WordNode(pos=(1502, 1504), word='-f'),
+                    WordNode(pos=(1505, 1517), word='$patchFile', parts=[
+                      ParameterNode(pos=(1506, 1516), value='patchFile'),
+                    ]),
+                  ]),
+                  OperatorNode(op=';', pos=(1517, 1518)),
+                ]),
+              ReservedwordNode(pos=(1521, 1525), word='done'),
+            ]),
+          ], pos=(1249, 1525)),
+          OperatorNode(op=';', pos=(1525, 1526)),
+        ]),
+      ReservedwordNode(pos=(1528, 1529), word='}'),
+    ], pos=(1245, 1529)),
+  ]),
+  OperatorNode(op=';', pos=(1529, 1530)),
+  CommandNode(pos=(1532, 1554), parts=[
+    WordNode(pos=(1532, 1539), word='patches'),
+    WordNode(pos=(1540, 1554), word='$HTTPD_PATCHES', parts=[
+      ParameterNode(pos=(1540, 1554), value='HTTPD_PATCHES'),
+    ]),
+  ]),
+  OperatorNode(op=';', pos=(1554, 1555)),
+  CommandNode(pos=(1558, 1615), parts=[
+    AssignmentNode(pos=(1558, 1615), word='gnuArch=$(dpkg-architecture --query DEB_BUILD_GNU_TYPE)', parts=[
+      CommandsubstitutionNode(command=
+        CommandNode(pos=(1569, 1613), parts=[
+          WordNode(pos=(1569, 1586), word='dpkg-architecture'),
+          WordNode(pos=(1587, 1594), word='--query'),
+          WordNode(pos=(1595, 1613), word='DEB_BUILD_GNU_TYPE'),
+        ]), pos=(1567, 1614)),
+    ]),
+  ]),
+  OperatorNode(op=';', pos=(1615, 1616)),
+  CommandNode(pos=(1618, 1737), parts=[
+    WordNode(pos=(1618, 1629), word='./configure'),
+    WordNode(pos=(1632, 1650), word='--build=$gnuArch', parts=[
+      ParameterNode(pos=(1641, 1649), value='gnuArch'),
+    ]),
+    WordNode(pos=(1653, 1677), word='--prefix=$HTTPD_PREFIX', parts=[
+      ParameterNode(pos=(1663, 1676), value='HTTPD_PREFIX'),
+    ]),
+    WordNode(pos=(1680, 1710), word='--enable-mods-shared=reallyall'),
+    WordNode(pos=(1713, 1737), word='--enable-mpms-shared=all'),
+  ]),
+  OperatorNode(op=';', pos=(1739, 1740)),
+  CommandNode(pos=(1742, 1760), parts=[
+    WordNode(pos=(1742, 1746), word='make'),
+    WordNode(pos=(1747, 1749), word='-j'),
+    WordNode(pos=(1750, 1760), word='$(nproc)', parts=[
+      CommandsubstitutionNode(command=
+        CommandNode(pos=(1753, 1758), parts=[
+          WordNode(pos=(1753, 1758), word='nproc'),
+        ]), pos=(1751, 1759)),
+    ]),
+  ]),
+  OperatorNode(op=';', pos=(1760, 1761)),
+  CommandNode(pos=(1763, 1775), parts=[
+    WordNode(pos=(1763, 1767), word='make'),
+    WordNode(pos=(1768, 1775), word='install'),
+  ]),
+  OperatorNode(op=';', pos=(1775, 1776)),
+  CommandNode(pos=(1779, 1784), parts=[
+    WordNode(pos=(1779, 1781), word='cd'),
+    WordNode(pos=(1782, 1784), word='..'),
+  ]),
+  OperatorNode(op=';', pos=(1784, 1785)),
+  CommandNode(pos=(1787, 1807), parts=[
+    WordNode(pos=(1787, 1789), word='rm'),
+    WordNode(pos=(1790, 1792), word='-r'),
+    WordNode(pos=(1793, 1796), word='src'),
+    WordNode(pos=(1797, 1800), word='man'),
+    WordNode(pos=(1801, 1807), word='manual'),
+  ]),
+  OperatorNode(op=';', pos=(1807, 1808)),
+  CommandNode(pos=(1811, 2053), parts=[
+    WordNode(pos=(1811, 1814), word='sed'),
+    WordNode(pos=(1815, 1818), word='-ri'),
+    WordNode(pos=(1821, 1823), word='-e'),
+    WordNode(pos=(1824, 1870), word='s!^(\\s*CustomLog)\\s+\\S+!\\1 /proc/self/fd/1!g'),
+    WordNode(pos=(1873, 1875), word='-e'),
+    WordNode(pos=(1876, 1921), word='s!^(\\s*ErrorLog)\\s+\\S+!\\1 /proc/self/fd/2!g'),
+    WordNode(pos=(1924, 1926), word='-e'),
+    WordNode(pos=(1927, 1975), word='s!^(\\s*TransferLog)\\s+\\S+!\\1 /proc/self/fd/1!g'),
+    WordNode(pos=(1978, 2009), word='$HTTPD_PREFIX/conf/httpd.conf', parts=[
+      ParameterNode(pos=(1979, 1992), value='HTTPD_PREFIX'),
+    ]),
+    WordNode(pos=(2012, 2053), word='$HTTPD_PREFIX/conf/extra/httpd-ssl.conf', parts=[
+      ParameterNode(pos=(2013, 2026), value='HTTPD_PREFIX'),
+    ]),
+  ]),
+  OperatorNode(op=';', pos=(2055, 2056)),
+  CommandNode(pos=(2059, 2265), parts=[
+    AssignmentNode(pos=(2059, 2265), word='runDeps=$runDeps $(   scanelf --needed --nobanner --format \'%n#p\' --recursive /usr/local    | tr \',\' \'\\n\'    | sort -u    | awk \'system("[ -e /usr/local/lib/" $1 " ]") == 0 { next } { print "so:" $1 }\'  )', parts=[
+      ParameterNode(pos=(2068, 2076), value='runDeps'),
+      CommandsubstitutionNode(command=
+        PipelineNode(pos=(2082, 2261), parts=[
+          CommandNode(pos=(2082, 2148), parts=[
+            WordNode(pos=(2082, 2089), word='scanelf'),
+            WordNode(pos=(2090, 2098), word='--needed'),
+            WordNode(pos=(2099, 2109), word='--nobanner'),
+            WordNode(pos=(2110, 2118), word='--format'),
+            WordNode(pos=(2119, 2125), word='%n#p'),
+            WordNode(pos=(2126, 2137), word='--recursive'),
+            WordNode(pos=(2138, 2148), word='/usr/local'),
+          ]),
+          PipeNode(pipe='|', pos=(2152, 2153)),
+          CommandNode(pos=(2154, 2165), parts=[
+            WordNode(pos=(2154, 2156), word='tr'),
+            WordNode(pos=(2157, 2160), word=','),
+            WordNode(pos=(2161, 2165), word='\\n'),
+          ]),
+          PipeNode(pipe='|', pos=(2169, 2170)),
+          CommandNode(pos=(2171, 2178), parts=[
+            WordNode(pos=(2171, 2175), word='sort'),
+            WordNode(pos=(2176, 2178), word='-u'),
+          ]),
+          PipeNode(pipe='|', pos=(2182, 2183)),
+          CommandNode(pos=(2184, 2261), parts=[
+            WordNode(pos=(2184, 2187), word='awk'),
+            WordNode(pos=(2188, 2261), word='system("[ -e /usr/local/lib/" $1 " ]") == 0 { next } { print "so:" $1 }'),
+          ]),
+        ]), pos=(2077, 2262)),
+    ]),
+  ]),
+  OperatorNode(op=';', pos=(2265, 2266)),
+  CommandNode(pos=(2268, 2309), parts=[
+    WordNode(pos=(2268, 2271), word='apk'),
+    WordNode(pos=(2272, 2275), word='add'),
+    WordNode(pos=(2276, 2285), word='--virtual'),
+    WordNode(pos=(2286, 2300), word='.httpd-rundeps'),
+    WordNode(pos=(2301, 2309), word='$runDeps', parts=[
+      ParameterNode(pos=(2301, 2309), value='runDeps'),
+    ]),
+  ]),
+  OperatorNode(op=';', pos=(2309, 2310)),
+  CommandNode(pos=(2312, 2331), parts=[
+    WordNode(pos=(2312, 2315), word='apk'),
+    WordNode(pos=(2316, 2319), word='del'),
+    WordNode(pos=(2320, 2331), word='.build-deps'),
+  ]),
+  OperatorNode(op=';', pos=(2331, 2332)),
+  CommandNode(pos=(2335, 2343), parts=[
+    WordNode(pos=(2335, 2340), word='httpd'),
+    WordNode(pos=(2341, 2343), word='-v'),
+  ]),
+])
+
+
+2) set -ex  && make -j "$(nproc)"   busybox  && ./busybox --help  && mkdir -p rootfs/bin  && ln -vL busybox rootfs/bin/   && ln -vL "$(which getconf)" rootfs/bin/getconf   && mkdir -p rootfs/etc  && cp /etc/nsswitch.conf rootfs/etc/  && mkdir -p rootfs/lib  && ln -sT lib rootfs/lib64  && set --   rootfs/bin/busybox   rootfs/bin/getconf   /lib/"$(gcc -print-multiarch)"/libnss*.so.*   /lib/"$(gcc -print-multiarch)"/libpthread*.so.*  && while [ "$#" -gt 0 ]; do   f="$1"; shift;   fn="$(basename "$f")";   if [ -e "rootfs/lib/$fn" ]; then continue; fi;   if [ "${f#rootfs/}" = "$f" ]; then    if [ "${fn#ld-}" = "$fn" ]; then     ln -vL "$f" "rootfs/lib/$fn";    else     cp -v "$f" "rootfs/lib/$fn";    fi;   fi;   set -- "$@" $(ldd "$f" | awk '    $1 ~ /^\// { print $1; next }    $2 == "=>" && $3 ~ /^\// { print $3; next }   ');  done   && chroot rootfs /bin/getconf _NPROCESSORS_ONLN   && chroot rootfs /bin/busybox --install /bin
+
+ListNode(pos=(0, 933), parts=[
+  CommandNode(pos=(0, 7), parts=[
+    WordNode(pos=(0, 3), word='set'),
+    WordNode(pos=(4, 7), word='-ex'),
+  ]),
+  OperatorNode(op='&&', pos=(9, 11)),
+  CommandNode(pos=(12, 40), parts=[
+    WordNode(pos=(12, 16), word='make'),
+    WordNode(pos=(17, 19), word='-j'),
+    WordNode(pos=(20, 30), word='$(nproc)', parts=[
+      CommandsubstitutionNode(command=
+        CommandNode(pos=(23, 28), parts=[
+          WordNode(pos=(23, 28), word='nproc'),
+        ]), pos=(21, 29)),
+    ]),
+    WordNode(pos=(33, 40), word='busybox'),
+  ]),
+  OperatorNode(op='&&', pos=(42, 44)),
+  CommandNode(pos=(45, 61), parts=[
+    WordNode(pos=(45, 54), word='./busybox'),
+    WordNode(pos=(55, 61), word='--help'),
+  ]),
+  OperatorNode(op='&&', pos=(63, 65)),
+  CommandNode(pos=(66, 85), parts=[
+    WordNode(pos=(66, 71), word='mkdir'),
+    WordNode(pos=(72, 74), word='-p'),
+    WordNode(pos=(75, 85), word='rootfs/bin'),
+  ]),
+  OperatorNode(op='&&', pos=(87, 89)),
+  CommandNode(pos=(90, 116), parts=[
+    WordNode(pos=(90, 92), word='ln'),
+    WordNode(pos=(93, 96), word='-vL'),
+    WordNode(pos=(97, 104), word='busybox'),
+    WordNode(pos=(105, 116), word='rootfs/bin/'),
+  ]),
+  OperatorNode(op='&&', pos=(119, 121)),
+  CommandNode(pos=(122, 166), parts=[
+    WordNode(pos=(122, 124), word='ln'),
+    WordNode(pos=(125, 128), word='-vL'),
+    WordNode(pos=(129, 147), word='$(which getconf)', parts=[
+      CommandsubstitutionNode(command=
+        CommandNode(pos=(132, 145), parts=[
+          WordNode(pos=(132, 137), word='which'),
+          WordNode(pos=(138, 145), word='getconf'),
+        ]), pos=(130, 146)),
+    ]),
+    WordNode(pos=(148, 166), word='rootfs/bin/getconf'),
+  ]),
+  OperatorNode(op='&&', pos=(169, 171)),
+  CommandNode(pos=(172, 191), parts=[
+    WordNode(pos=(172, 177), word='mkdir'),
+    WordNode(pos=(178, 180), word='-p'),
+    WordNode(pos=(181, 191), word='rootfs/etc'),
+  ]),
+  OperatorNode(op='&&', pos=(193, 195)),
+  CommandNode(pos=(196, 229), parts=[
+    WordNode(pos=(196, 198), word='cp'),
+    WordNode(pos=(199, 217), word='/etc/nsswitch.conf'),
+    WordNode(pos=(218, 229), word='rootfs/etc/'),
+  ]),
+  OperatorNode(op='&&', pos=(231, 233)),
+  CommandNode(pos=(234, 253), parts=[
+    WordNode(pos=(234, 239), word='mkdir'),
+    WordNode(pos=(240, 242), word='-p'),
+    WordNode(pos=(243, 253), word='rootfs/lib'),
+  ]),
+  OperatorNode(op='&&', pos=(255, 257)),
+  CommandNode(pos=(258, 281), parts=[
+    WordNode(pos=(258, 260), word='ln'),
+    WordNode(pos=(261, 264), word='-sT'),
+    WordNode(pos=(265, 268), word='lib'),
+    WordNode(pos=(269, 281), word='rootfs/lib64'),
+  ]),
+  OperatorNode(op='&&', pos=(283, 285)),
+  CommandNode(pos=(286, 430), parts=[
+    WordNode(pos=(286, 289), word='set'),
+    WordNode(pos=(290, 292), word='--'),
+    WordNode(pos=(295, 313), word='rootfs/bin/busybox'),
+    WordNode(pos=(316, 334), word='rootfs/bin/getconf'),
+    WordNode(pos=(337, 380), word='/lib/$(gcc -print-multiarch)/libnss*.so.*', parts=[
+      CommandsubstitutionNode(command=
+        CommandNode(pos=(345, 365), parts=[
+          WordNode(pos=(345, 348), word='gcc'),
+          WordNode(pos=(349, 365), word='-print-multiarch'),
+        ]), pos=(343, 366)),
+    ]),
+    WordNode(pos=(383, 430), word='/lib/$(gcc -print-multiarch)/libpthread*.so.*', parts=[
+      CommandsubstitutionNode(command=
+        CommandNode(pos=(391, 411), parts=[
+          WordNode(pos=(391, 394), word='gcc'),
+          WordNode(pos=(395, 411), word='-print-multiarch'),
+        ]), pos=(389, 412)),
+    ]),
+  ]),
+  OperatorNode(op='&&', pos=(432, 434)),
+  CompoundNode(list=[
+    WhileNode(pos=(435, 836), parts=[
+      ReservedwordNode(pos=(435, 440), word='while'),
+      ListNode(pos=(441, 456), parts=[
+          CommandNode(pos=(441, 455), parts=[
+            WordNode(pos=(441, 442), word='['),
+            WordNode(pos=(443, 447), word='$#', parts=[
+              ParameterNode(pos=(444, 446), value='#'),
+            ]),
+            WordNode(pos=(448, 451), word='-gt'),
+            WordNode(pos=(452, 453), word='0'),
+            WordNode(pos=(454, 455), word=']'),
+          ]),
+          OperatorNode(op=';', pos=(455, 456)),
+        ]),
+      ReservedwordNode(pos=(457, 459), word='do'),
+      ListNode(pos=(462, 830), parts=[
+          CommandNode(pos=(462, 468), parts=[
+            AssignmentNode(pos=(462, 468), word='f=$1', parts=[
+              ParameterNode(pos=(465, 467), value='1'),
+            ]),
+          ]),
+          OperatorNode(op=';', pos=(468, 469)),
+          CommandNode(pos=(470, 475), parts=[
+            WordNode(pos=(470, 475), word='shift'),
+          ]),
+          OperatorNode(op=';', pos=(475, 476)),
+          CommandNode(pos=(479, 500), parts=[
+            AssignmentNode(pos=(479, 500), word='fn=$(basename "$f")', parts=[
+              CommandsubstitutionNode(command=
+                CommandNode(pos=(485, 498), parts=[
+                  WordNode(pos=(485, 493), word='basename'),
+                  WordNode(pos=(494, 498), word='$f', parts=[
+                    ParameterNode(pos=(495, 497), value='f'),
+                  ]),
+                ]), pos=(483, 499)),
+            ]),
+          ]),
+          OperatorNode(op=';', pos=(500, 501)),
+          CompoundNode(list=[
+            IfNode(pos=(504, 549), parts=[
+              ReservedwordNode(pos=(504, 506), word='if'),
+              ListNode(pos=(507, 531), parts=[
+                  CommandNode(pos=(507, 530), parts=[
+                    WordNode(pos=(507, 508), word='['),
+                    WordNode(pos=(509, 511), word='-e'),
+                    WordNode(pos=(512, 528), word='rootfs/lib/$fn', parts=[
+                      ParameterNode(pos=(524, 527), value='fn'),
+                    ]),
+                    WordNode(pos=(529, 530), word=']'),
+                  ]),
+                  OperatorNode(op=';', pos=(530, 531)),
+                ]),
+              ReservedwordNode(pos=(532, 536), word='then'),
+              ListNode(pos=(537, 546), parts=[
+                  CommandNode(pos=(537, 545), parts=[
+                    WordNode(pos=(537, 545), word='continue'),
+                  ]),
+                  OperatorNode(op=';', pos=(545, 546)),
+                ]),
+              ReservedwordNode(pos=(547, 549), word='fi'),
+            ]),
+          ], pos=(504, 549)),
+          OperatorNode(op=';', pos=(549, 550)),
+          CompoundNode(list=[
+            IfNode(pos=(553, 710), parts=[
+              ReservedwordNode(pos=(553, 555), word='if'),
+              ListNode(pos=(556, 582), parts=[
+                  CommandNode(pos=(556, 581), parts=[
+                    WordNode(pos=(556, 557), word='['),
+                    WordNode(pos=(558, 572), word='${f#rootfs/}', parts=[
+                      ParameterNode(pos=(559, 571), value='f#rootfs/'),
+                    ]),
+                    WordNode(pos=(573, 574), word='='),
+                    WordNode(pos=(575, 579), word='$f', parts=[
+                      ParameterNode(pos=(576, 578), value='f'),
+                    ]),
+                    WordNode(pos=(580, 581), word=']'),
+                  ]),
+                  OperatorNode(op=';', pos=(581, 582)),
+                ]),
+              ReservedwordNode(pos=(583, 587), word='then'),
+              ListNode(pos=(591, 705), parts=[
+                  CompoundNode(list=[
+                    IfNode(pos=(591, 704), parts=[
+                      ReservedwordNode(pos=(591, 593), word='if'),
+                      ListNode(pos=(594, 618), parts=[
+                          CommandNode(pos=(594, 617), parts=[
+                            WordNode(pos=(594, 595), word='['),
+                            WordNode(pos=(596, 607), word='${fn#ld-}', parts=[
+                              ParameterNode(pos=(597, 606), value='fn#ld-'),
+                            ]),
+                            WordNode(pos=(608, 609), word='='),
+                            WordNode(pos=(610, 615), word='$fn', parts=[
+                              ParameterNode(pos=(611, 614), value='fn'),
+                            ]),
+                            WordNode(pos=(616, 617), word=']'),
+                          ]),
+                          OperatorNode(op=';', pos=(617, 618)),
+                        ]),
+                      ReservedwordNode(pos=(619, 623), word='then'),
+                      ListNode(pos=(628, 657), parts=[
+                          CommandNode(pos=(628, 656), parts=[
+                            WordNode(pos=(628, 630), word='ln'),
+                            WordNode(pos=(631, 634), word='-vL'),
+                            WordNode(pos=(635, 639), word='$f', parts=[
+                              ParameterNode(pos=(636, 638), value='f'),
+                            ]),
+                            WordNode(pos=(640, 656), word='rootfs/lib/$fn', parts=[
+                              ParameterNode(pos=(652, 655), value='fn'),
+                            ]),
+                          ]),
+                          OperatorNode(op=';', pos=(656, 657)),
+                        ]),
+                      ReservedwordNode(pos=(661, 665), word='else'),
+                      ListNode(pos=(670, 698), parts=[
+                          CommandNode(pos=(670, 697), parts=[
+                            WordNode(pos=(670, 672), word='cp'),
+                            WordNode(pos=(673, 675), word='-v'),
+                            WordNode(pos=(676, 680), word='$f', parts=[
+                              ParameterNode(pos=(677, 679), value='f'),
+                            ]),
+                            WordNode(pos=(681, 697), word='rootfs/lib/$fn', parts=[
+                              ParameterNode(pos=(693, 696), value='fn'),
+                            ]),
+                          ]),
+                          OperatorNode(op=';', pos=(697, 698)),
+                        ]),
+                      ReservedwordNode(pos=(702, 704), word='fi'),
+                    ]),
+                  ], pos=(591, 704)),
+                  OperatorNode(op=';', pos=(704, 705)),
+                ]),
+              ReservedwordNode(pos=(708, 710), word='fi'),
+            ]),
+          ], pos=(553, 710)),
+          OperatorNode(op=';', pos=(710, 711)),
+          CommandNode(pos=(714, 829), parts=[
+            WordNode(pos=(714, 717), word='set'),
+            WordNode(pos=(718, 720), word='--'),
+            WordNode(pos=(721, 725), word='$@', parts=[
+              ParameterNode(pos=(722, 724), value='@'),
+            ]),
+            WordNode(pos=(726, 829), word='$(ldd "$f" | awk \'    $1 ~ /^\\// { print $1; next }    $2 == "=>" && $3 ~ /^\\// { print $3; next }   \')', parts=[
+              CommandsubstitutionNode(command=
+                PipelineNode(pos=(728, 828), parts=[
+                  CommandNode(pos=(728, 736), parts=[
+                    WordNode(pos=(728, 731), word='ldd'),
+                    WordNode(pos=(732, 736), word='$f', parts=[
+                      ParameterNode(pos=(733, 735), value='f'),
+                    ]),
+                  ]),
+                  PipeNode(pipe='|', pos=(737, 738)),
+                  CommandNode(pos=(739, 828), parts=[
+                    WordNode(pos=(739, 742), word='awk'),
+                    WordNode(pos=(743, 828), word='    $1 ~ /^\\// { print $1; next }    $2 == "=>" && $3 ~ /^\\// { print $3; next }   '),
+                  ]),
+                ]), pos=(726, 829)),
+            ]),
+          ]),
+          OperatorNode(op=';', pos=(829, 830)),
+        ]),
+      ReservedwordNode(pos=(832, 836), word='done'),
+    ]),
+  ], pos=(435, 836)),
+  OperatorNode(op='&&', pos=(839, 841)),
+  CommandNode(pos=(842, 886), parts=[
+    WordNode(pos=(842, 848), word='chroot'),
+    WordNode(pos=(849, 855), word='rootfs'),
+    WordNode(pos=(856, 868), word='/bin/getconf'),
+    WordNode(pos=(869, 886), word='_NPROCESSORS_ONLN'),
+  ]),
+  OperatorNode(op='&&', pos=(889, 891)),
+  CommandNode(pos=(892, 933), parts=[
+    WordNode(pos=(892, 898), word='chroot'),
+    WordNode(pos=(899, 905), word='rootfs'),
+    WordNode(pos=(906, 918), word='/bin/busybox'),
+    WordNode(pos=(919, 928), word='--install'),
+    WordNode(pos=(929, 933), word='/bin'),
+  ]),
+])
+
+
+3) set -eux;   echo 'deb http://deb.debian.org/debian stretch-backports main' > /etc/apt/sources.list.d/stretch-backports.list;  savedAptMark="$(apt-mark showmanual)";  apt-get update;  apt-get install -y --no-install-recommends   bzip2   ca-certificates   dirmngr   dpkg-dev   gcc   gnupg   libbrotli-dev   libcurl4-openssl-dev   libjansson-dev   liblua5.2-dev   libnghttp2-dev   libpcre3-dev   libssl-dev   libxml2-dev   make   wget   zlib1g-dev  ;  rm -r /var/lib/apt/lists/*;   ddist() {   local f="$1"; shift;   local distFile="$1"; shift;   local success=;   local distUrl=;   for distUrl in $APACHE_DIST_URLS; do    if wget -O "$f" "$distUrl$distFile" && [ -s "$f" ]; then     success=1;     break;    fi;   done;   [ -n "$success" ];  };   ddist 'httpd.tar.bz2' "httpd/httpd-$HTTPD_VERSION.tar.bz2";  echo "$HTTPD_SHA256 *httpd.tar.bz2" | sha256sum -c -;   ddist 'httpd.tar.bz2.asc' "httpd/httpd-$HTTPD_VERSION.tar.bz2.asc";  export GNUPGHOME="$(mktemp -d)";  for key in   A93D62ECC3C8EA12DB220EC934EA76E6791485A8   B9E8213AEFB861AF35A41F2C995E35221AD84DFF  ; do   gpg --batch --keyserver ha.pool.sks-keyservers.net --recv-keys "$key";  done;  gpg --batch --verify httpd.tar.bz2.asc httpd.tar.bz2;  command -v gpgconf && gpgconf --kill all || :;  rm -rf "$GNUPGHOME" httpd.tar.bz2.asc;   mkdir -p src;  tar -xf httpd.tar.bz2 -C src --strip-components=1;  rm httpd.tar.bz2;  cd src;   patches() {   while [ "$#" -gt 0 ]; do    local patchFile="$1"; shift;    local patchSha256="$1"; shift;    ddist "$patchFile" "httpd/patches/apply_to_$HTTPD_VERSION/$patchFile";    echo "$patchSha256 *$patchFile" | sha256sum -c -;    patch -p0 < "$patchFile";    rm -f "$patchFile";   done;  };  patches $HTTPD_PATCHES;   gnuArch="$(dpkg-architecture --query DEB_BUILD_GNU_TYPE)";  ./configure   --build="$gnuArch"   --prefix="$HTTPD_PREFIX"   --enable-mods-shared=reallyall   --enable-mpms-shared=all  ;  make -j "$(nproc)";  make install;   cd ..;  rm -r src man manual;   sed -ri   -e 's!^(\s*CustomLog)\s+\S+!\1 /proc/self/fd/1!g'   -e 's!^(\s*ErrorLog)\s+\S+!\1 /proc/self/fd/2!g'   -e 's!^(\s*TransferLog)\s+\S+!\1 /proc/self/fd/1!g'   "$HTTPD_PREFIX/conf/httpd.conf"   "$HTTPD_PREFIX/conf/extra/httpd-ssl.conf"  ;   apt-mark auto '.*' > /dev/null;  [ -z "$savedAptMark" ] || apt-mark manual $savedAptMark;  find /usr/local -type f -executable -exec ldd '{}' ';'   | awk '/=>/ { print $(NF-1) }'   | sort -u   | xargs -r dpkg-query --search   | cut -d: -f1   | sort -u   | xargs -r apt-mark manual  ;  apt-get purge -y --auto-remove -o APT::AutoRemove::RecommendsImportant=false;   httpd -v
+
+ListNode(pos=(0, 2586), parts=[
+  CommandNode(pos=(0, 8), parts=[
+    WordNode(pos=(0, 3), word='set'),
+    WordNode(pos=(4, 8), word='-eux'),
+  ]),
+  OperatorNode(op=';', pos=(8, 9)),
+  CommandNode(pos=(12, 123), parts=[
+    WordNode(pos=(12, 16), word='echo'),
+    WordNode(pos=(17, 74), word='deb http://deb.debian.org/debian stretch-backports main'),
+    RedirectNode(output=
+      WordNode(pos=(77, 123), word='/etc/apt/sources.list.d/stretch-backports.list'), pos=(75, 123), type='>'),
+  ]),
+  OperatorNode(op=';', pos=(123, 124)),
+  CommandNode(pos=(126, 163), parts=[
+    AssignmentNode(pos=(126, 163), word='savedAptMark=$(apt-mark showmanual)', parts=[
+      CommandsubstitutionNode(command=
+        CommandNode(pos=(142, 161), parts=[
+          WordNode(pos=(142, 150), word='apt-mark'),
+          WordNode(pos=(151, 161), word='showmanual'),
+        ]), pos=(140, 162)),
+    ]),
+  ]),
+  OperatorNode(op=';', pos=(163, 164)),
+  CommandNode(pos=(166, 180), parts=[
+    WordNode(pos=(166, 173), word='apt-get'),
+    WordNode(pos=(174, 180), word='update'),
+  ]),
+  OperatorNode(op=';', pos=(180, 181)),
+  CommandNode(pos=(183, 444), parts=[
+    WordNode(pos=(183, 190), word='apt-get'),
+    WordNode(pos=(191, 198), word='install'),
+    WordNode(pos=(199, 201), word='-y'),
+    WordNode(pos=(202, 225), word='--no-install-recommends'),
+    WordNode(pos=(228, 233), word='bzip2'),
+    WordNode(pos=(236, 251), word='ca-certificates'),
+    WordNode(pos=(254, 261), word='dirmngr'),
+    WordNode(pos=(264, 272), word='dpkg-dev'),
+    WordNode(pos=(275, 278), word='gcc'),
+    WordNode(pos=(281, 286), word='gnupg'),
+    WordNode(pos=(289, 302), word='libbrotli-dev'),
+    WordNode(pos=(305, 325), word='libcurl4-openssl-dev'),
+    WordNode(pos=(328, 342), word='libjansson-dev'),
+    WordNode(pos=(345, 358), word='liblua5.2-dev'),
+    WordNode(pos=(361, 375), word='libnghttp2-dev'),
+    WordNode(pos=(378, 390), word='libpcre3-dev'),
+    WordNode(pos=(393, 403), word='libssl-dev'),
+    WordNode(pos=(406, 417), word='libxml2-dev'),
+    WordNode(pos=(420, 424), word='make'),
+    WordNode(pos=(427, 431), word='wget'),
+    WordNode(pos=(434, 444), word='zlib1g-dev'),
+  ]),
+  OperatorNode(op=';', pos=(446, 447)),
+  CommandNode(pos=(449, 475), parts=[
+    WordNode(pos=(449, 451), word='rm'),
+    WordNode(pos=(452, 454), word='-r'),
+    WordNode(pos=(455, 475), word='/var/lib/apt/lists/*'),
+  ]),
+  OperatorNode(op=';', pos=(475, 476)),
+  FunctionNode(pos=(479, 741), parts=[
+    WordNode(pos=(479, 484), word='ddist'),
+    ReservedwordNode(pos=(484, 485), word='('),
+    ReservedwordNode(pos=(485, 486), word=')'),
+    CompoundNode(list=[
+      ReservedwordNode(pos=(487, 488), word='{'),
+      ListNode(pos=(491, 738), parts=[
+          CommandNode(pos=(491, 503), parts=[
+            WordNode(pos=(491, 496), word='local'),
+            WordNode(pos=(497, 503), word='f=$1', parts=[
+              ParameterNode(pos=(500, 502), value='1'),
+            ]),
+          ]),
+          OperatorNode(op=';', pos=(503, 504)),
+          CommandNode(pos=(505, 510), parts=[
+            WordNode(pos=(505, 510), word='shift'),
+          ]),
+          OperatorNode(op=';', pos=(510, 511)),
+          CommandNode(pos=(514, 533), parts=[
+            WordNode(pos=(514, 519), word='local'),
+            WordNode(pos=(520, 533), word='distFile=$1', parts=[
+              ParameterNode(pos=(530, 532), value='1'),
+            ]),
+          ]),
+          OperatorNode(op=';', pos=(533, 534)),
+          CommandNode(pos=(535, 540), parts=[
+            WordNode(pos=(535, 540), word='shift'),
+          ]),
+          OperatorNode(op=';', pos=(540, 541)),
+          CommandNode(pos=(544, 558), parts=[
+            WordNode(pos=(544, 549), word='local'),
+            WordNode(pos=(550, 558), word='success='),
+          ]),
+          OperatorNode(op=';', pos=(558, 559)),
+          CommandNode(pos=(562, 576), parts=[
+            WordNode(pos=(562, 567), word='local'),
+            WordNode(pos=(568, 576), word='distUrl='),
+          ]),
+          OperatorNode(op=';', pos=(576, 577)),
+          CompoundNode(list=[
+            ForNode(pos=(580, 716), parts=[
+              ReservedwordNode(pos=(580, 583), word='for'),
+              WordNode(pos=(584, 591), word='distUrl'),
+              ReservedwordNode(pos=(592, 594), word='in'),
+              WordNode(pos=(595, 612), word='$APACHE_DIST_URLS', parts=[
+                ParameterNode(pos=(595, 612), value='APACHE_DIST_URLS'),
+              ]),
+              ReservedwordNode(pos=(612, 613), word=';'),
+              ReservedwordNode(pos=(614, 616), word='do'),
+              ListNode(pos=(620, 709), parts=[
+                  CompoundNode(list=[
+                    IfNode(pos=(620, 708), parts=[
+                      ReservedwordNode(pos=(620, 622), word='if'),
+                      ListNode(pos=(623, 671), parts=[
+                          CommandNode(pos=(623, 655), parts=[
+                            WordNode(pos=(623, 627), word='wget'),
+                            WordNode(pos=(628, 630), word='-O'),
+                            WordNode(pos=(631, 635), word='$f', parts=[
+                              ParameterNode(pos=(632, 634), value='f'),
+                            ]),
+                            WordNode(pos=(636, 655), word='$distUrl$distFile', parts=[
+                              ParameterNode(pos=(637, 645), value='distUrl'),
+                              ParameterNode(pos=(645, 654), value='distFile'),
+                            ]),
+                          ]),
+                          OperatorNode(op='&&', pos=(656, 658)),
+                          CommandNode(pos=(659, 670), parts=[
+                            WordNode(pos=(659, 660), word='['),
+                            WordNode(pos=(661, 663), word='-s'),
+                            WordNode(pos=(664, 668), word='$f', parts=[
+                              ParameterNode(pos=(665, 667), value='f'),
+                            ]),
+                            WordNode(pos=(669, 670), word=']'),
+                          ]),
+                          OperatorNode(op=';', pos=(670, 671)),
+                        ]),
+                      ReservedwordNode(pos=(672, 676), word='then'),
+                      ListNode(pos=(681, 702), parts=[
+                          CommandNode(pos=(681, 690), parts=[
+                            AssignmentNode(pos=(681, 690), word='success=1'),
+                          ]),
+                          OperatorNode(op=';', pos=(690, 691)),
+                          CommandNode(pos=(696, 701), parts=[
+                            WordNode(pos=(696, 701), word='break'),
+                          ]),
+                          OperatorNode(op=';', pos=(701, 702)),
+                        ]),
+                      ReservedwordNode(pos=(706, 708), word='fi'),
+                    ]),
+                  ], pos=(620, 708)),
+                  OperatorNode(op=';', pos=(708, 709)),
+                ]),
+              ReservedwordNode(pos=(712, 716), word='done'),
+            ]),
+          ], pos=(580, 716)),
+          OperatorNode(op=';', pos=(716, 717)),
+          CommandNode(pos=(720, 737), parts=[
+            WordNode(pos=(720, 721), word='['),
+            WordNode(pos=(722, 724), word='-n'),
+            WordNode(pos=(725, 735), word='$success', parts=[
+              ParameterNode(pos=(726, 734), value='success'),
+            ]),
+            WordNode(pos=(736, 737), word=']'),
+          ]),
+          OperatorNode(op=';', pos=(737, 738)),
+        ]),
+      ReservedwordNode(pos=(740, 741), word='}'),
+    ], pos=(487, 741)),
+  ]),
+  OperatorNode(op=';', pos=(741, 742)),
+  CommandNode(pos=(745, 803), parts=[
+    WordNode(pos=(745, 750), word='ddist'),
+    WordNode(pos=(751, 766), word='httpd.tar.bz2'),
+    WordNode(pos=(767, 803), word='httpd/httpd-$HTTPD_VERSION.tar.bz2', parts=[
+      ParameterNode(pos=(780, 794), value='HTTPD_VERSION'),
+    ]),
+  ]),
+  OperatorNode(op=';', pos=(803, 804)),
+  PipelineNode(pos=(806, 858), parts=[
+    CommandNode(pos=(806, 841), parts=[
+      WordNode(pos=(806, 810), word='echo'),
+      WordNode(pos=(811, 841), word='$HTTPD_SHA256 *httpd.tar.bz2', parts=[
+        ParameterNode(pos=(812, 825), value='HTTPD_SHA256'),
+      ]),
+    ]),
+    PipeNode(pipe='|', pos=(842, 843)),
+    CommandNode(pos=(844, 858), parts=[
+      WordNode(pos=(844, 853), word='sha256sum'),
+      WordNode(pos=(854, 856), word='-c'),
+      WordNode(pos=(857, 858), word='-'),
+    ]),
+  ]),
+  OperatorNode(op=';', pos=(858, 859)),
+  CommandNode(pos=(862, 928), parts=[
+    WordNode(pos=(862, 867), word='ddist'),
+    WordNode(pos=(868, 887), word='httpd.tar.bz2.asc'),
+    WordNode(pos=(888, 928), word='httpd/httpd-$HTTPD_VERSION.tar.bz2.asc', parts=[
+      ParameterNode(pos=(901, 915), value='HTTPD_VERSION'),
+    ]),
+  ]),
+  OperatorNode(op=';', pos=(928, 929)),
+  CommandNode(pos=(931, 962), parts=[
+    WordNode(pos=(931, 937), word='export'),
+    WordNode(pos=(938, 962), word='GNUPGHOME=$(mktemp -d)', parts=[
+      CommandsubstitutionNode(command=
+        CommandNode(pos=(951, 960), parts=[
+          WordNode(pos=(951, 957), word='mktemp'),
+          WordNode(pos=(958, 960), word='-d'),
+        ]), pos=(949, 961)),
+    ]),
+  ]),
+  OperatorNode(op=';', pos=(962, 963)),
+  CompoundNode(list=[
+    ForNode(pos=(965, 1146), parts=[
+      ReservedwordNode(pos=(965, 968), word='for'),
+      WordNode(pos=(969, 972), word='key'),
+      ReservedwordNode(pos=(973, 975), word='in'),
+      WordNode(pos=(978, 1018), word='A93D62ECC3C8EA12DB220EC934EA76E6791485A8'),
+      WordNode(pos=(1021, 1061), word='B9E8213AEFB861AF35A41F2C995E35221AD84DFF'),
+      ReservedwordNode(pos=(1063, 1064), word=';'),
+      ReservedwordNode(pos=(1065, 1067), word='do'),
+      ListNode(pos=(1070, 1140), parts=[
+          CommandNode(pos=(1070, 1139), parts=[
+            WordNode(pos=(1070, 1073), word='gpg'),
+            WordNode(pos=(1074, 1081), word='--batch'),
+            WordNode(pos=(1082, 1093), word='--keyserver'),
+            WordNode(pos=(1094, 1120), word='ha.pool.sks-keyservers.net'),
+            WordNode(pos=(1121, 1132), word='--recv-keys'),
+            WordNode(pos=(1133, 1139), word='$key', parts=[
+              ParameterNode(pos=(1134, 1138), value='key'),
+            ]),
+          ]),
+          OperatorNode(op=';', pos=(1139, 1140)),
+        ]),
+      ReservedwordNode(pos=(1142, 1146), word='done'),
+    ]),
+  ], pos=(965, 1146)),
+  OperatorNode(op=';', pos=(1146, 1147)),
+  CommandNode(pos=(1149, 1201), parts=[
+    WordNode(pos=(1149, 1152), word='gpg'),
+    WordNode(pos=(1153, 1160), word='--batch'),
+    WordNode(pos=(1161, 1169), word='--verify'),
+    WordNode(pos=(1170, 1187), word='httpd.tar.bz2.asc'),
+    WordNode(pos=(1188, 1201), word='httpd.tar.bz2'),
+  ]),
+  OperatorNode(op=';', pos=(1201, 1202)),
+  CommandNode(pos=(1204, 1222), parts=[
+    WordNode(pos=(1204, 1211), word='command'),
+    WordNode(pos=(1212, 1214), word='-v'),
+    WordNode(pos=(1215, 1222), word='gpgconf'),
+  ]),
+  OperatorNode(op='&&', pos=(1223, 1225)),
+  CommandNode(pos=(1226, 1244), parts=[
+    WordNode(pos=(1226, 1233), word='gpgconf'),
+    WordNode(pos=(1234, 1240), word='--kill'),
+    WordNode(pos=(1241, 1244), word='all'),
+  ]),
+  OperatorNode(op='||', pos=(1245, 1247)),
+  CommandNode(pos=(1248, 1249), parts=[
+    WordNode(pos=(1248, 1249), word=':'),
+  ]),
+  OperatorNode(op=';', pos=(1249, 1250)),
+  CommandNode(pos=(1252, 1289), parts=[
+    WordNode(pos=(1252, 1254), word='rm'),
+    WordNode(pos=(1255, 1258), word='-rf'),
+    WordNode(pos=(1259, 1271), word='$GNUPGHOME', parts=[
+      ParameterNode(pos=(1260, 1270), value='GNUPGHOME'),
+    ]),
+    WordNode(pos=(1272, 1289), word='httpd.tar.bz2.asc'),
+  ]),
+  OperatorNode(op=';', pos=(1289, 1290)),
+  CommandNode(pos=(1293, 1305), parts=[
+    WordNode(pos=(1293, 1298), word='mkdir'),
+    WordNode(pos=(1299, 1301), word='-p'),
+    WordNode(pos=(1302, 1305), word='src'),
+  ]),
+  OperatorNode(op=';', pos=(1305, 1306)),
+  CommandNode(pos=(1308, 1357), parts=[
+    WordNode(pos=(1308, 1311), word='tar'),
+    WordNode(pos=(1312, 1315), word='-xf'),
+    WordNode(pos=(1316, 1329), word='httpd.tar.bz2'),
+    WordNode(pos=(1330, 1332), word='-C'),
+    WordNode(pos=(1333, 1336), word='src'),
+    WordNode(pos=(1337, 1357), word='--strip-components=1'),
+  ]),
+  OperatorNode(op=';', pos=(1357, 1358)),
+  CommandNode(pos=(1360, 1376), parts=[
+    WordNode(pos=(1360, 1362), word='rm'),
+    WordNode(pos=(1363, 1376), word='httpd.tar.bz2'),
+  ]),
+  OperatorNode(op=';', pos=(1376, 1377)),
+  CommandNode(pos=(1379, 1385), parts=[
+    WordNode(pos=(1379, 1381), word='cd'),
+    WordNode(pos=(1382, 1385), word='src'),
+  ]),
+  OperatorNode(op=';', pos=(1385, 1386)),
+  FunctionNode(pos=(1389, 1683), parts=[
+    WordNode(pos=(1389, 1396), word='patches'),
+    ReservedwordNode(pos=(1396, 1397), word='('),
+    ReservedwordNode(pos=(1397, 1398), word=')'),
+    CompoundNode(list=[
+      ReservedwordNode(pos=(1399, 1400), word='{'),
+      ListNode(pos=(1403, 1680), parts=[
+          CompoundNode(list=[
+            WhileNode(pos=(1403, 1679), parts=[
+              ReservedwordNode(pos=(1403, 1408), word='while'),
+              ListNode(pos=(1409, 1424), parts=[
+                  CommandNode(pos=(1409, 1423), parts=[
+                    WordNode(pos=(1409, 1410), word='['),
+                    WordNode(pos=(1411, 1415), word='$#', parts=[
+                      ParameterNode(pos=(1412, 1414), value='#'),
+                    ]),
+                    WordNode(pos=(1416, 1419), word='-gt'),
+                    WordNode(pos=(1420, 1421), word='0'),
+                    WordNode(pos=(1422, 1423), word=']'),
+                  ]),
+                  OperatorNode(op=';', pos=(1423, 1424)),
+                ]),
+              ReservedwordNode(pos=(1425, 1427), word='do'),
+              ListNode(pos=(1431, 1672), parts=[
+                  CommandNode(pos=(1431, 1451), parts=[
+                    WordNode(pos=(1431, 1436), word='local'),
+                    WordNode(pos=(1437, 1451), word='patchFile=$1', parts=[
+                      ParameterNode(pos=(1448, 1450), value='1'),
+                    ]),
+                  ]),
+                  OperatorNode(op=';', pos=(1451, 1452)),
+                  CommandNode(pos=(1453, 1458), parts=[
+                    WordNode(pos=(1453, 1458), word='shift'),
+                  ]),
+                  OperatorNode(op=';', pos=(1458, 1459)),
+                  CommandNode(pos=(1463, 1485), parts=[
+                    WordNode(pos=(1463, 1468), word='local'),
+                    WordNode(pos=(1469, 1485), word='patchSha256=$1', parts=[
+                      ParameterNode(pos=(1482, 1484), value='1'),
+                    ]),
+                  ]),
+                  OperatorNode(op=';', pos=(1485, 1486)),
+                  CommandNode(pos=(1487, 1492), parts=[
+                    WordNode(pos=(1487, 1492), word='shift'),
+                  ]),
+                  OperatorNode(op=';', pos=(1492, 1493)),
+                  CommandNode(pos=(1497, 1566), parts=[
+                    WordNode(pos=(1497, 1502), word='ddist'),
+                    WordNode(pos=(1503, 1515), word='$patchFile', parts=[
+                      ParameterNode(pos=(1504, 1514), value='patchFile'),
+                    ]),
+                    WordNode(pos=(1516, 1566), word='httpd/patches/apply_to_$HTTPD_VERSION/$patchFile', parts=[
+                      ParameterNode(pos=(1540, 1554), value='HTTPD_VERSION'),
+                      ParameterNode(pos=(1555, 1565), value='patchFile'),
+                    ]),
+                  ]),
+                  OperatorNode(op=';', pos=(1566, 1567)),
+                  PipelineNode(pos=(1571, 1619), parts=[
+                    CommandNode(pos=(1571, 1602), parts=[
+                      WordNode(pos=(1571, 1575), word='echo'),
+                      WordNode(pos=(1576, 1602), word='$patchSha256 *$patchFile', parts=[
+                        ParameterNode(pos=(1577, 1589), value='patchSha256'),
+                        ParameterNode(pos=(1591, 1601), value='patchFile'),
+                      ]),
+                    ]),
+                    PipeNode(pipe='|', pos=(1603, 1604)),
+                    CommandNode(pos=(1605, 1619), parts=[
+                      WordNode(pos=(1605, 1614), word='sha256sum'),
+                      WordNode(pos=(1615, 1617), word='-c'),
+                      WordNode(pos=(1618, 1619), word='-'),
+                    ]),
+                  ]),
+                  OperatorNode(op=';', pos=(1619, 1620)),
+                  CommandNode(pos=(1624, 1648), parts=[
+                    WordNode(pos=(1624, 1629), word='patch'),
+                    WordNode(pos=(1630, 1633), word='-p0'),
+                    RedirectNode(output=
+                      WordNode(pos=(1636, 1648), word='$patchFile', parts=[
+                        ParameterNode(pos=(1637, 1647), value='patchFile'),
+                      ]), pos=(1634, 1648), type='<'),
+                  ]),
+                  OperatorNode(op=';', pos=(1648, 1649)),
+                  CommandNode(pos=(1653, 1671), parts=[
+                    WordNode(pos=(1653, 1655), word='rm'),
+                    WordNode(pos=(1656, 1658), word='-f'),
+                    WordNode(pos=(1659, 1671), word='$patchFile', parts=[
+                      ParameterNode(pos=(1660, 1670), value='patchFile'),
+                    ]),
+                  ]),
+                  OperatorNode(op=';', pos=(1671, 1672)),
+                ]),
+              ReservedwordNode(pos=(1675, 1679), word='done'),
+            ]),
+          ], pos=(1403, 1679)),
+          OperatorNode(op=';', pos=(1679, 1680)),
+        ]),
+      ReservedwordNode(pos=(1682, 1683), word='}'),
+    ], pos=(1399, 1683)),
+  ]),
+  OperatorNode(op=';', pos=(1683, 1684)),
+  CommandNode(pos=(1686, 1708), parts=[
+    WordNode(pos=(1686, 1693), word='patches'),
+    WordNode(pos=(1694, 1708), word='$HTTPD_PATCHES', parts=[
+      ParameterNode(pos=(1694, 1708), value='HTTPD_PATCHES'),
+    ]),
+  ]),
+  OperatorNode(op=';', pos=(1708, 1709)),
+  CommandNode(pos=(1712, 1769), parts=[
+    AssignmentNode(pos=(1712, 1769), word='gnuArch=$(dpkg-architecture --query DEB_BUILD_GNU_TYPE)', parts=[
+      CommandsubstitutionNode(command=
+        CommandNode(pos=(1723, 1767), parts=[
+          WordNode(pos=(1723, 1740), word='dpkg-architecture'),
+          WordNode(pos=(1741, 1748), word='--query'),
+          WordNode(pos=(1749, 1767), word='DEB_BUILD_GNU_TYPE'),
+        ]), pos=(1721, 1768)),
+    ]),
+  ]),
+  OperatorNode(op=';', pos=(1769, 1770)),
+  CommandNode(pos=(1772, 1891), parts=[
+    WordNode(pos=(1772, 1783), word='./configure'),
+    WordNode(pos=(1786, 1804), word='--build=$gnuArch', parts=[
+      ParameterNode(pos=(1795, 1803), value='gnuArch'),
+    ]),
+    WordNode(pos=(1807, 1831), word='--prefix=$HTTPD_PREFIX', parts=[
+      ParameterNode(pos=(1817, 1830), value='HTTPD_PREFIX'),
+    ]),
+    WordNode(pos=(1834, 1864), word='--enable-mods-shared=reallyall'),
+    WordNode(pos=(1867, 1891), word='--enable-mpms-shared=all'),
+  ]),
+  OperatorNode(op=';', pos=(1893, 1894)),
+  CommandNode(pos=(1896, 1914), parts=[
+    WordNode(pos=(1896, 1900), word='make'),
+    WordNode(pos=(1901, 1903), word='-j'),
+    WordNode(pos=(1904, 1914), word='$(nproc)', parts=[
+      CommandsubstitutionNode(command=
+        CommandNode(pos=(1907, 1912), parts=[
+          WordNode(pos=(1907, 1912), word='nproc'),
+        ]), pos=(1905, 1913)),
+    ]),
+  ]),
+  OperatorNode(op=';', pos=(1914, 1915)),
+  CommandNode(pos=(1917, 1929), parts=[
+    WordNode(pos=(1917, 1921), word='make'),
+    WordNode(pos=(1922, 1929), word='install'),
+  ]),
+  OperatorNode(op=';', pos=(1929, 1930)),
+  CommandNode(pos=(1933, 1938), parts=[
+    WordNode(pos=(1933, 1935), word='cd'),
+    WordNode(pos=(1936, 1938), word='..'),
+  ]),
+  OperatorNode(op=';', pos=(1938, 1939)),
+  CommandNode(pos=(1941, 1961), parts=[
+    WordNode(pos=(1941, 1943), word='rm'),
+    WordNode(pos=(1944, 1946), word='-r'),
+    WordNode(pos=(1947, 1950), word='src'),
+    WordNode(pos=(1951, 1954), word='man'),
+    WordNode(pos=(1955, 1961), word='manual'),
+  ]),
+  OperatorNode(op=';', pos=(1961, 1962)),
+  CommandNode(pos=(1965, 2207), parts=[
+    WordNode(pos=(1965, 1968), word='sed'),
+    WordNode(pos=(1969, 1972), word='-ri'),
+    WordNode(pos=(1975, 1977), word='-e'),
+    WordNode(pos=(1978, 2024), word='s!^(\\s*CustomLog)\\s+\\S+!\\1 /proc/self/fd/1!g'),
+    WordNode(pos=(2027, 2029), word='-e'),
+    WordNode(pos=(2030, 2075), word='s!^(\\s*ErrorLog)\\s+\\S+!\\1 /proc/self/fd/2!g'),
+    WordNode(pos=(2078, 2080), word='-e'),
+    WordNode(pos=(2081, 2129), word='s!^(\\s*TransferLog)\\s+\\S+!\\1 /proc/self/fd/1!g'),
+    WordNode(pos=(2132, 2163), word='$HTTPD_PREFIX/conf/httpd.conf', parts=[
+      ParameterNode(pos=(2133, 2146), value='HTTPD_PREFIX'),
+    ]),
+    WordNode(pos=(2166, 2207), word='$HTTPD_PREFIX/conf/extra/httpd-ssl.conf', parts=[
+      ParameterNode(pos=(2167, 2180), value='HTTPD_PREFIX'),
+    ]),
+  ]),
+  OperatorNode(op=';', pos=(2209, 2210)),
+  CommandNode(pos=(2213, 2243), parts=[
+    WordNode(pos=(2213, 2221), word='apt-mark'),
+    WordNode(pos=(2222, 2226), word='auto'),
+    WordNode(pos=(2227, 2231), word='.*'),
+    RedirectNode(output=
+      WordNode(pos=(2234, 2243), word='/dev/null'), pos=(2232, 2243), type='>'),
+  ]),
+  OperatorNode(op=';', pos=(2243, 2244)),
+  CommandNode(pos=(2246, 2268), parts=[
+    WordNode(pos=(2246, 2247), word='['),
+    WordNode(pos=(2248, 2250), word='-z'),
+    WordNode(pos=(2251, 2266), word='$savedAptMark', parts=[
+      ParameterNode(pos=(2252, 2265), value='savedAptMark'),
+    ]),
+    WordNode(pos=(2267, 2268), word=']'),
+  ]),
+  OperatorNode(op='||', pos=(2269, 2271)),
+  CommandNode(pos=(2272, 2301), parts=[
+    WordNode(pos=(2272, 2280), word='apt-mark'),
+    WordNode(pos=(2281, 2287), word='manual'),
+    WordNode(pos=(2288, 2301), word='$savedAptMark', parts=[
+      ParameterNode(pos=(2288, 2301), value='savedAptMark'),
+    ]),
+  ]),
+  OperatorNode(op=';', pos=(2301, 2302)),
+  PipelineNode(pos=(2304, 2493), parts=[
+    CommandNode(pos=(2304, 2358), parts=[
+      WordNode(pos=(2304, 2308), word='find'),
+      WordNode(pos=(2309, 2319), word='/usr/local'),
+      WordNode(pos=(2320, 2325), word='-type'),
+      WordNode(pos=(2326, 2327), word='f'),
+      WordNode(pos=(2328, 2339), word='-executable'),
+      WordNode(pos=(2340, 2345), word='-exec'),
+      WordNode(pos=(2346, 2349), word='ldd'),
+      WordNode(pos=(2350, 2354), word='{}'),
+      WordNode(pos=(2355, 2358), word=';'),
+    ]),
+    PipeNode(pipe='|', pos=(2361, 2362)),
+    CommandNode(pos=(2363, 2391), parts=[
+      WordNode(pos=(2363, 2366), word='awk'),
+      WordNode(pos=(2367, 2391), word='/=>/ { print $(NF-1) }'),
+    ]),
+    PipeNode(pipe='|', pos=(2394, 2395)),
+    CommandNode(pos=(2396, 2403), parts=[
+      WordNode(pos=(2396, 2400), word='sort'),
+      WordNode(pos=(2401, 2403), word='-u'),
+    ]),
+    PipeNode(pipe='|', pos=(2406, 2407)),
+    CommandNode(pos=(2408, 2436), parts=[
+      WordNode(pos=(2408, 2413), word='xargs'),
+      WordNode(pos=(2414, 2416), word='-r'),
+      WordNode(pos=(2417, 2427), word='dpkg-query'),
+      WordNode(pos=(2428, 2436), word='--search'),
+    ]),
+    PipeNode(pipe='|', pos=(2439, 2440)),
+    CommandNode(pos=(2441, 2452), parts=[
+      WordNode(pos=(2441, 2444), word='cut'),
+      WordNode(pos=(2445, 2448), word='-d:'),
+      WordNode(pos=(2449, 2452), word='-f1'),
+    ]),
+    PipeNode(pipe='|', pos=(2455, 2456)),
+    CommandNode(pos=(2457, 2464), parts=[
+      WordNode(pos=(2457, 2461), word='sort'),
+      WordNode(pos=(2462, 2464), word='-u'),
+    ]),
+    PipeNode(pipe='|', pos=(2467, 2468)),
+    CommandNode(pos=(2469, 2493), parts=[
+      WordNode(pos=(2469, 2474), word='xargs'),
+      WordNode(pos=(2475, 2477), word='-r'),
+      WordNode(pos=(2478, 2486), word='apt-mark'),
+      WordNode(pos=(2487, 2493), word='manual'),
+    ]),
+  ]),
+  OperatorNode(op=';', pos=(2495, 2496)),
+  CommandNode(pos=(2498, 2574), parts=[
+    WordNode(pos=(2498, 2505), word='apt-get'),
+    WordNode(pos=(2506, 2511), word='purge'),
+    WordNode(pos=(2512, 2514), word='-y'),
+    WordNode(pos=(2515, 2528), word='--auto-remove'),
+    WordNode(pos=(2529, 2531), word='-o'),
+    WordNode(pos=(2532, 2574), word='APT::AutoRemove::RecommendsImportant=false'),
+  ]),
+  OperatorNode(op=';', pos=(2574, 2575)),
+  CommandNode(pos=(2578, 2586), parts=[
+    WordNode(pos=(2578, 2583), word='httpd'),
+    WordNode(pos=(2584, 2586), word='-v'),
+  ]),
+])
+
+

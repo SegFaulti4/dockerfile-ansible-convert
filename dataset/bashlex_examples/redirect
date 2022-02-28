@@ -1,0 +1,4669 @@
+1) erl -noinput -eval '   { ok, AdminBin } = zip:foldl(fun(FileInArchive, GetInfo, GetBin, Acc) ->    case Acc of     "" ->      case lists:suffix("/rabbitmqadmin", FileInArchive) of       true -> GetBin();       false -> Acc      end;     _ -> Acc    end   end, "", init:get_plain_arguments()),   io:format("~s", [ AdminBin ]),   init:stop().  ' -- /plugins/rabbitmq_management-*.ez > /usr/local/bin/rabbitmqadmin
+
+CommandNode(pos=(11, 422), parts=[
+  WordNode(pos=(11, 14), word='erl'),
+  WordNode(pos=(15, 23), word='-noinput'),
+  WordNode(pos=(24, 29), word='-eval'),
+  WordNode(pos=(30, 354), word='   { ok, AdminBin } = zip:foldl(fun(FileInArchive, GetInfo, GetBin, Acc) ->    case Acc of     "" ->      case lists:suffix("/rabbitmqadmin", FileInArchive) of       true -> GetBin();       false -> Acc      end;     _ -> Acc    end   end, "", init:get_plain_arguments()),   io:format("~s", [ AdminBin ]),   init:stop().  '),
+  WordNode(pos=(355, 357), word='--'),
+  WordNode(pos=(358, 391), word='/plugins/rabbitmq_management-*.ez'),
+  RedirectNode(output=
+    WordNode(pos=(394, 422), word='/usr/local/bin/rabbitmqadmin'), pos=(392, 422), type='>'),
+])
+
+
+2) command -v gpgconf > /dev/null
+
+CommandNode(pos=(661, 691), parts=[
+  WordNode(pos=(661, 668), word='command'),
+  WordNode(pos=(669, 671), word='-v'),
+  WordNode(pos=(672, 679), word='gpgconf'),
+  RedirectNode(output=
+    WordNode(pos=(682, 691), word='/dev/null'), pos=(680, 691), type='>'),
+])
+
+
+3) gpg --batch --export $GPG_KEYS > /etc/apt/trusted.gpg.d/percona.gpg
+
+CommandNode(pos=(150, 217), parts=[
+  WordNode(pos=(150, 153), word='gpg'),
+  WordNode(pos=(154, 161), word='--batch'),
+  WordNode(pos=(162, 170), word='--export'),
+  WordNode(pos=(171, 180), word='$GPG_KEYS', parts=[
+    ParameterNode(pos=(171, 180), value='GPG_KEYS'),
+  ]),
+  RedirectNode(output=
+    WordNode(pos=(183, 217), word='/etc/apt/trusted.gpg.d/percona.gpg'), pos=(181, 217), type='>'),
+])
+
+
+4) command -v gpgconf > /dev/null
+
+CommandNode(pos=(220, 250), parts=[
+  WordNode(pos=(220, 227), word='command'),
+  WordNode(pos=(228, 230), word='-v'),
+  WordNode(pos=(231, 238), word='gpgconf'),
+  RedirectNode(output=
+    WordNode(pos=(241, 250), word='/dev/null'), pos=(239, 250), type='>'),
+])
+
+
+5) echo 'deb https://repo.percona.com/apt stretch main' > /etc/apt/sources.list.d/percona.list
+
+CommandNode(pos=(0, 91), parts=[
+  WordNode(pos=(0, 4), word='echo'),
+  WordNode(pos=(5, 52), word='deb https://repo.percona.com/apt stretch main'),
+  RedirectNode(output=
+    WordNode(pos=(55, 91), word='/etc/apt/sources.list.d/percona.list'), pos=(53, 91), type='>'),
+])
+
+
+6) echo '[mysqld]\nskip-host-cache\nskip-name-resolve' > /etc/mysql/conf.d/docker.cnf
+
+CommandNode(pos=(791, 873), parts=[
+  WordNode(pos=(791, 795), word='echo'),
+  WordNode(pos=(796, 842), word='[mysqld]\\nskip-host-cache\\nskip-name-resolve'),
+  RedirectNode(output=
+    WordNode(pos=(845, 873), word='/etc/mysql/conf.d/docker.cnf'), pos=(843, 873), type='>'),
+])
+
+
+7) command -v gpgconf > /dev/null
+
+CommandNode(pos=(430, 460), parts=[
+  WordNode(pos=(430, 437), word='command'),
+  WordNode(pos=(438, 440), word='-v'),
+  WordNode(pos=(441, 448), word='gpgconf'),
+  RedirectNode(output=
+    WordNode(pos=(451, 460), word='/dev/null'), pos=(449, 460), type='>'),
+])
+
+
+8) apt-mark auto '.*' > /dev/null
+
+CommandNode(pos=(1392, 1422), parts=[
+  WordNode(pos=(1392, 1400), word='apt-mark'),
+  WordNode(pos=(1401, 1405), word='auto'),
+  WordNode(pos=(1406, 1410), word='.*'),
+  RedirectNode(output=
+    WordNode(pos=(1413, 1422), word='/dev/null'), pos=(1411, 1422), type='>'),
+])
+
+
+9) echo 'config.logger = Logger.new(STDOUT)' > config/additional_environment.rb
+
+CommandNode(pos=(353, 429), parts=[
+  WordNode(pos=(353, 357), word='echo'),
+  WordNode(pos=(358, 394), word='config.logger = Logger.new(STDOUT)'),
+  RedirectNode(output=
+    WordNode(pos=(397, 429), word='config/additional_environment.rb'), pos=(395, 429), type='>'),
+])
+
+
+10) echo "$RAILS_ENV:" > ./config/database.yml
+
+CommandNode(pos=(951, 993), parts=[
+  WordNode(pos=(951, 955), word='echo'),
+  WordNode(pos=(956, 969), word='$RAILS_ENV:', parts=[
+    ParameterNode(pos=(957, 967), value='RAILS_ENV'),
+  ]),
+  RedirectNode(output=
+    WordNode(pos=(972, 993), word='./config/database.yml'), pos=(970, 993), type='>'),
+])
+
+
+11) echo "  adapter: $adapter" >> ./config/database.yml
+
+CommandNode(pos=(997, 1048), parts=[
+  WordNode(pos=(997, 1001), word='echo'),
+  WordNode(pos=(1002, 1023), word='  adapter: $adapter', parts=[
+    ParameterNode(pos=(1014, 1022), value='adapter'),
+  ]),
+  RedirectNode(output=
+    WordNode(pos=(1027, 1048), word='./config/database.yml'), pos=(1024, 1048), type='>>'),
+])
+
+
+12) apt-mark auto '.*' > /dev/null
+
+CommandNode(pos=(1259, 1289), parts=[
+  WordNode(pos=(1259, 1267), word='apt-mark'),
+  WordNode(pos=(1268, 1272), word='auto'),
+  WordNode(pos=(1273, 1277), word='.*'),
+  RedirectNode(output=
+    WordNode(pos=(1280, 1289), word='/dev/null'), pos=(1278, 1289), type='>'),
+])
+
+
+13) command -v gpg > /dev/null
+
+CommandNode(pos=(15, 41), parts=[
+  WordNode(pos=(15, 22), word='command'),
+  WordNode(pos=(23, 25), word='-v'),
+  WordNode(pos=(26, 29), word='gpg'),
+  RedirectNode(output=
+    WordNode(pos=(32, 41), word='/dev/null'), pos=(30, 41), type='>'),
+])
+
+
+14) apt-mark auto '.*' > /dev/null
+
+CommandNode(pos=(370, 400), parts=[
+  WordNode(pos=(370, 378), word='apt-mark'),
+  WordNode(pos=(379, 383), word='auto'),
+  WordNode(pos=(384, 388), word='.*'),
+  RedirectNode(output=
+    WordNode(pos=(391, 400), word='/dev/null'), pos=(389, 400), type='>'),
+])
+
+
+15) apt-mark auto '.*' > /dev/null
+
+CommandNode(pos=(373, 403), parts=[
+  WordNode(pos=(373, 381), word='apt-mark'),
+  WordNode(pos=(382, 386), word='auto'),
+  WordNode(pos=(387, 391), word='.*'),
+  RedirectNode(output=
+    WordNode(pos=(394, 403), word='/dev/null'), pos=(392, 403), type='>'),
+])
+
+
+16) apt-mark auto '.*' > /dev/null
+
+CommandNode(pos=(373, 403), parts=[
+  WordNode(pos=(373, 381), word='apt-mark'),
+  WordNode(pos=(382, 386), word='auto'),
+  WordNode(pos=(387, 391), word='.*'),
+  RedirectNode(output=
+    WordNode(pos=(394, 403), word='/dev/null'), pos=(392, 403), type='>'),
+])
+
+
+17) apt-mark auto '.*' > /dev/null
+
+CommandNode(pos=(1555, 1585), parts=[
+  WordNode(pos=(1555, 1563), word='apt-mark'),
+  WordNode(pos=(1564, 1568), word='auto'),
+  WordNode(pos=(1569, 1573), word='.*'),
+  RedirectNode(output=
+    WordNode(pos=(1576, 1585), word='/dev/null'), pos=(1574, 1585), type='>'),
+])
+
+
+18) apt-mark manual $savedAptMark > /dev/null
+
+CommandNode(pos=(1614, 1655), parts=[
+  WordNode(pos=(1614, 1622), word='apt-mark'),
+  WordNode(pos=(1623, 1629), word='manual'),
+  WordNode(pos=(1630, 1643), word='$savedAptMark', parts=[
+    ParameterNode(pos=(1630, 1643), value='savedAptMark'),
+  ]),
+  RedirectNode(output=
+    WordNode(pos=(1646, 1655), word='/dev/null'), pos=(1644, 1655), type='>'),
+])
+
+
+19) grep 'INFO: Loaded APR based Apache Tomcat Native library' >&2
+
+CommandNode(pos=(209, 271), parts=[
+  WordNode(pos=(209, 213), word='grep'),
+  WordNode(pos=(214, 267), word='INFO: Loaded APR based Apache Tomcat Native library'),
+  RedirectNode(output=2, pos=(268, 271), type='>&'),
+])
+
+
+20) echo >&2 "$nativeLines"
+
+CommandNode(pos=(280, 303), parts=[
+  WordNode(pos=(280, 284), word='echo'),
+  RedirectNode(output=2, pos=(285, 288), type='>&'),
+  WordNode(pos=(289, 303), word='$nativeLines', parts=[
+    ParameterNode(pos=(290, 302), value='nativeLines'),
+  ]),
+])
+
+
+21) command -v gpg > /dev/null
+
+CommandNode(pos=(15, 41), parts=[
+  WordNode(pos=(15, 22), word='command'),
+  WordNode(pos=(23, 25), word='-v'),
+  WordNode(pos=(26, 29), word='gpg'),
+  RedirectNode(output=
+    WordNode(pos=(32, 41), word='/dev/null'), pos=(30, 41), type='>'),
+])
+
+
+22) echo '/usr/local/lib64' > /etc/ld.so.conf.d/local-lib64.conf
+
+CommandNode(pos=(10, 70), parts=[
+  WordNode(pos=(10, 14), word='echo'),
+  WordNode(pos=(15, 33), word='/usr/local/lib64'),
+  RedirectNode(output=
+    WordNode(pos=(36, 70), word='/etc/ld.so.conf.d/local-lib64.conf'), pos=(34, 70), type='>'),
+])
+
+
+23) apt-mark auto '.*' > /dev/null
+
+CommandNode(pos=(1555, 1585), parts=[
+  WordNode(pos=(1555, 1563), word='apt-mark'),
+  WordNode(pos=(1564, 1568), word='auto'),
+  WordNode(pos=(1569, 1573), word='.*'),
+  RedirectNode(output=
+    WordNode(pos=(1576, 1585), word='/dev/null'), pos=(1574, 1585), type='>'),
+])
+
+
+24) apt-mark manual $savedAptMark > /dev/null
+
+CommandNode(pos=(1614, 1655), parts=[
+  WordNode(pos=(1614, 1622), word='apt-mark'),
+  WordNode(pos=(1623, 1629), word='manual'),
+  WordNode(pos=(1630, 1643), word='$savedAptMark', parts=[
+    ParameterNode(pos=(1630, 1643), value='savedAptMark'),
+  ]),
+  RedirectNode(output=
+    WordNode(pos=(1646, 1655), word='/dev/null'), pos=(1644, 1655), type='>'),
+])
+
+
+25) grep 'INFO: Loaded APR based Apache Tomcat Native library' >&2
+
+CommandNode(pos=(209, 271), parts=[
+  WordNode(pos=(209, 213), word='grep'),
+  WordNode(pos=(214, 267), word='INFO: Loaded APR based Apache Tomcat Native library'),
+  RedirectNode(output=2, pos=(268, 271), type='>&'),
+])
+
+
+26) echo >&2 "$nativeLines"
+
+CommandNode(pos=(280, 303), parts=[
+  WordNode(pos=(280, 284), word='echo'),
+  RedirectNode(output=2, pos=(285, 288), type='>&'),
+  WordNode(pos=(289, 303), word='$nativeLines', parts=[
+    ParameterNode(pos=(290, 302), value='nativeLines'),
+  ]),
+])
+
+
+27) apt-mark auto '.*' > /dev/null
+
+CommandNode(pos=(1555, 1585), parts=[
+  WordNode(pos=(1555, 1563), word='apt-mark'),
+  WordNode(pos=(1564, 1568), word='auto'),
+  WordNode(pos=(1569, 1573), word='.*'),
+  RedirectNode(output=
+    WordNode(pos=(1576, 1585), word='/dev/null'), pos=(1574, 1585), type='>'),
+])
+
+
+28) apt-mark manual $savedAptMark > /dev/null
+
+CommandNode(pos=(1614, 1655), parts=[
+  WordNode(pos=(1614, 1622), word='apt-mark'),
+  WordNode(pos=(1623, 1629), word='manual'),
+  WordNode(pos=(1630, 1643), word='$savedAptMark', parts=[
+    ParameterNode(pos=(1630, 1643), value='savedAptMark'),
+  ]),
+  RedirectNode(output=
+    WordNode(pos=(1646, 1655), word='/dev/null'), pos=(1644, 1655), type='>'),
+])
+
+
+29) grep 'INFO: Loaded APR based Apache Tomcat Native library' >&2
+
+CommandNode(pos=(209, 271), parts=[
+  WordNode(pos=(209, 213), word='grep'),
+  WordNode(pos=(214, 267), word='INFO: Loaded APR based Apache Tomcat Native library'),
+  RedirectNode(output=2, pos=(268, 271), type='>&'),
+])
+
+
+30) echo >&2 "$nativeLines"
+
+CommandNode(pos=(280, 303), parts=[
+  WordNode(pos=(280, 284), word='echo'),
+  RedirectNode(output=2, pos=(285, 288), type='>&'),
+  WordNode(pos=(289, 303), word='$nativeLines', parts=[
+    ParameterNode(pos=(290, 302), value='nativeLines'),
+  ]),
+])
+
+
+31) command -v gpg > /dev/null
+
+CommandNode(pos=(15, 41), parts=[
+  WordNode(pos=(15, 22), word='command'),
+  WordNode(pos=(23, 25), word='-v'),
+  WordNode(pos=(26, 29), word='gpg'),
+  RedirectNode(output=
+    WordNode(pos=(32, 41), word='/dev/null'), pos=(30, 41), type='>'),
+])
+
+
+32) apt-mark auto '.*' > /dev/null
+
+CommandNode(pos=(934, 964), parts=[
+  WordNode(pos=(934, 942), word='apt-mark'),
+  WordNode(pos=(943, 947), word='auto'),
+  WordNode(pos=(948, 952), word='.*'),
+  RedirectNode(output=
+    WordNode(pos=(955, 964), word='/dev/null'), pos=(953, 964), type='>'),
+])
+
+
+33) echo 'dockremap:165536:65536' >> /etc/subuid
+
+CommandNode(pos=(75, 119), parts=[
+  WordNode(pos=(75, 79), word='echo'),
+  WordNode(pos=(80, 104), word='dockremap:165536:65536'),
+  RedirectNode(output=
+    WordNode(pos=(108, 119), word='/etc/subuid'), pos=(105, 119), type='>>'),
+])
+
+
+34) echo 'dockremap:165536:65536' >> /etc/subgid
+
+CommandNode(pos=(124, 168), parts=[
+  WordNode(pos=(124, 128), word='echo'),
+  WordNode(pos=(129, 153), word='dockremap:165536:65536'),
+  RedirectNode(output=
+    WordNode(pos=(157, 168), word='/etc/subgid'), pos=(154, 168), type='>>'),
+])
+
+
+35) command -v ps > /dev/null
+
+CommandNode(pos=(113, 138), parts=[
+  WordNode(pos=(113, 120), word='command'),
+  WordNode(pos=(121, 123), word='-v'),
+  WordNode(pos=(124, 126), word='ps'),
+  RedirectNode(output=
+    WordNode(pos=(129, 138), word='/dev/null'), pos=(127, 138), type='>'),
+])
+
+
+36) command -v gpg > /dev/null
+
+CommandNode(pos=(87, 113), parts=[
+  WordNode(pos=(87, 94), word='command'),
+  WordNode(pos=(95, 97), word='-v'),
+  WordNode(pos=(98, 101), word='gpg'),
+  RedirectNode(output=
+    WordNode(pos=(104, 113), word='/dev/null'), pos=(102, 113), type='>'),
+])
+
+
+37) gpg --batch --export $GPG_KEYS > /etc/apt/trusted.gpg.d/mongodb.gpg
+
+CommandNode(pos=(150, 217), parts=[
+  WordNode(pos=(150, 153), word='gpg'),
+  WordNode(pos=(154, 161), word='--batch'),
+  WordNode(pos=(162, 170), word='--export'),
+  WordNode(pos=(171, 180), word='$GPG_KEYS', parts=[
+    ParameterNode(pos=(171, 180), value='GPG_KEYS'),
+  ]),
+  RedirectNode(output=
+    WordNode(pos=(183, 217), word='/etc/apt/trusted.gpg.d/mongodb.gpg'), pos=(181, 217), type='>'),
+])
+
+
+38) echo 'hosts: files dns' > /etc/nsswitch.conf
+
+CommandNode(pos=(31, 75), parts=[
+  WordNode(pos=(31, 35), word='echo'),
+  WordNode(pos=(36, 54), word='hosts: files dns'),
+  RedirectNode(output=
+    WordNode(pos=(57, 75), word='/etc/nsswitch.conf'), pos=(55, 75), type='>'),
+])
+
+
+39) command -v gpg > /dev/null
+
+CommandNode(pos=(114, 140), parts=[
+  WordNode(pos=(114, 121), word='command'),
+  WordNode(pos=(122, 124), word='-v'),
+  WordNode(pos=(125, 128), word='gpg'),
+  RedirectNode(output=
+    WordNode(pos=(131, 140), word='/dev/null'), pos=(129, 140), type='>'),
+])
+
+
+40) gpg --batch --export $GPG_KEYS > /etc/apt/trusted.gpg.d/cassandra.gpg
+
+CommandNode(pos=(150, 219), parts=[
+  WordNode(pos=(150, 153), word='gpg'),
+  WordNode(pos=(154, 161), word='--batch'),
+  WordNode(pos=(162, 170), word='--export'),
+  WordNode(pos=(171, 180), word='$GPG_KEYS', parts=[
+    ParameterNode(pos=(171, 180), value='GPG_KEYS'),
+  ]),
+  RedirectNode(output=
+    WordNode(pos=(183, 219), word='/etc/apt/trusted.gpg.d/cassandra.gpg'), pos=(181, 219), type='>'),
+])
+
+
+41) awk '$1 == "#define" && $2 == "DEFAULT_PGSOCKET_DIR" && $3 == "\"/tmp\"" { $3 = "\"/var/run/postgresql\""; print; next } { print }' src/include/pg_config_manual.h > src/include/pg_config_manual.h.new
+
+CommandNode(pos=(700, 899), parts=[
+  WordNode(pos=(700, 703), word='awk'),
+  WordNode(pos=(704, 831), word='$1 == "#define" && $2 == "DEFAULT_PGSOCKET_DIR" && $3 == "\\"/tmp\\"" { $3 = "\\"/var/run/postgresql\\""; print; next } { print }'),
+  WordNode(pos=(832, 862), word='src/include/pg_config_manual.h'),
+  RedirectNode(output=
+    WordNode(pos=(865, 899), word='src/include/pg_config_manual.h.new'), pos=(863, 899), type='>'),
+])
+
+
+42) apt-mark auto '.*' > /dev/null
+
+CommandNode(pos=(888, 918), parts=[
+  WordNode(pos=(888, 896), word='apt-mark'),
+  WordNode(pos=(897, 901), word='auto'),
+  WordNode(pos=(902, 906), word='.*'),
+  RedirectNode(output=
+    WordNode(pos=(909, 918), word='/dev/null'), pos=(907, 918), type='>'),
+])
+
+
+43) apt-mark auto '.*' > /dev/null
+
+CommandNode(pos=(180, 210), parts=[
+  WordNode(pos=(180, 188), word='apt-mark'),
+  WordNode(pos=(189, 193), word='auto'),
+  WordNode(pos=(194, 198), word='.*'),
+  RedirectNode(output=
+    WordNode(pos=(201, 210), word='/dev/null'), pos=(199, 210), type='>'),
+])
+
+
+44) awk '$1 == "#define" && $2 == "DEFAULT_PGSOCKET_DIR" && $3 == "\"/tmp\"" { $3 = "\"/var/run/postgresql\""; print; next } { print }' src/include/pg_config_manual.h > src/include/pg_config_manual.h.new
+
+CommandNode(pos=(710, 909), parts=[
+  WordNode(pos=(710, 713), word='awk'),
+  WordNode(pos=(714, 841), word='$1 == "#define" && $2 == "DEFAULT_PGSOCKET_DIR" && $3 == "\\"/tmp\\"" { $3 = "\\"/var/run/postgresql\\""; print; next } { print }'),
+  WordNode(pos=(842, 872), word='src/include/pg_config_manual.h'),
+  RedirectNode(output=
+    WordNode(pos=(875, 909), word='src/include/pg_config_manual.h.new'), pos=(873, 909), type='>'),
+])
+
+
+45) echo 'hosts: files dns' > /etc/nsswitch.conf
+
+CommandNode(pos=(31, 75), parts=[
+  WordNode(pos=(31, 35), word='echo'),
+  WordNode(pos=(36, 54), word='hosts: files dns'),
+  RedirectNode(output=
+    WordNode(pos=(57, 75), word='/etc/nsswitch.conf'), pos=(55, 75), type='>'),
+])
+
+
+46) command -v gpgconf > /dev/null
+
+CommandNode(pos=(574, 604), parts=[
+  WordNode(pos=(574, 581), word='command'),
+  WordNode(pos=(582, 584), word='-v'),
+  WordNode(pos=(585, 592), word='gpgconf'),
+  RedirectNode(output=
+    WordNode(pos=(595, 604), word='/dev/null'), pos=(593, 604), type='>'),
+])
+
+
+47) tee php-fpm.conf > /dev/null
+
+CommandNode(pos=(104, 132), parts=[
+  WordNode(pos=(104, 107), word='tee'),
+  WordNode(pos=(108, 120), word='php-fpm.conf'),
+  RedirectNode(output=
+    WordNode(pos=(123, 132), word='/dev/null'), pos=(121, 132), type='>'),
+])
+
+
+48) apt-mark auto '.*' > /dev/null
+
+CommandNode(pos=(180, 210), parts=[
+  WordNode(pos=(180, 188), word='apt-mark'),
+  WordNode(pos=(189, 193), word='auto'),
+  WordNode(pos=(194, 198), word='.*'),
+  RedirectNode(output=
+    WordNode(pos=(201, 210), word='/dev/null'), pos=(199, 210), type='>'),
+])
+
+
+49) gpg --batch --export "$key" > /etc/apt/trusted.gpg.d/mysql.gpg
+
+CommandNode(pos=(165, 227), parts=[
+  WordNode(pos=(165, 168), word='gpg'),
+  WordNode(pos=(169, 176), word='--batch'),
+  WordNode(pos=(177, 185), word='--export'),
+  WordNode(pos=(186, 192), word='$key', parts=[
+    ParameterNode(pos=(187, 191), value='key'),
+  ]),
+  RedirectNode(output=
+    WordNode(pos=(195, 227), word='/etc/apt/trusted.gpg.d/mysql.gpg'), pos=(193, 227), type='>'),
+])
+
+
+50) apt-key list > /dev/null
+
+CommandNode(pos=(273, 297), parts=[
+  WordNode(pos=(273, 280), word='apt-key'),
+  WordNode(pos=(281, 285), word='list'),
+  RedirectNode(output=
+    WordNode(pos=(288, 297), word='/dev/null'), pos=(286, 297), type='>'),
+])
+
+
+51) echo "deb http://repo.mysql.com/apt/debian/ stretch mysql-${MYSQL_MAJOR}" > /etc/apt/sources.list.d/mysql.list
+
+CommandNode(pos=(0, 110), parts=[
+  WordNode(pos=(0, 4), word='echo'),
+  WordNode(pos=(5, 73), word='deb http://repo.mysql.com/apt/debian/ stretch mysql-${MYSQL_MAJOR}', parts=[
+    ParameterNode(pos=(58, 72), value='MYSQL_MAJOR'),
+  ]),
+  RedirectNode(output=
+    WordNode(pos=(76, 110), word='/etc/apt/sources.list.d/mysql.list'), pos=(74, 110), type='>'),
+])
+
+
+52) echo '[mysqld]\nskip-host-cache\nskip-name-resolve' > /etc/mysql/conf.d/docker.cnf
+
+CommandNode(pos=(744, 826), parts=[
+  WordNode(pos=(744, 748), word='echo'),
+  WordNode(pos=(749, 795), word='[mysqld]\\nskip-host-cache\\nskip-name-resolve'),
+  RedirectNode(output=
+    WordNode(pos=(798, 826), word='/etc/mysql/conf.d/docker.cnf'), pos=(796, 826), type='>'),
+])
+
+
+53) command -v gpgconf > /dev/null
+
+CommandNode(pos=(574, 604), parts=[
+  WordNode(pos=(574, 581), word='command'),
+  WordNode(pos=(582, 584), word='-v'),
+  WordNode(pos=(585, 592), word='gpgconf'),
+  RedirectNode(output=
+    WordNode(pos=(595, 604), word='/dev/null'), pos=(593, 604), type='>'),
+])
+
+
+54) tee php-fpm.conf > /dev/null
+
+CommandNode(pos=(104, 132), parts=[
+  WordNode(pos=(104, 107), word='tee'),
+  WordNode(pos=(108, 120), word='php-fpm.conf'),
+  RedirectNode(output=
+    WordNode(pos=(123, 132), word='/dev/null'), pos=(121, 132), type='>'),
+])
+
+
+55) apt-mark auto '.*' > /dev/null
+
+CommandNode(pos=(370, 400), parts=[
+  WordNode(pos=(370, 378), word='apt-mark'),
+  WordNode(pos=(379, 383), word='auto'),
+  WordNode(pos=(384, 388), word='.*'),
+  RedirectNode(output=
+    WordNode(pos=(391, 400), word='/dev/null'), pos=(389, 400), type='>'),
+])
+
+
+56) command -v gpg > /dev/null
+
+CommandNode(pos=(57, 83), parts=[
+  WordNode(pos=(57, 64), word='command'),
+  WordNode(pos=(65, 67), word='-v'),
+  WordNode(pos=(68, 71), word='gpg'),
+  RedirectNode(output=
+    WordNode(pos=(74, 83), word='/dev/null'), pos=(72, 83), type='>'),
+])
+
+
+57) command -v gpgconf > /dev/null
+
+CommandNode(pos=(797, 827), parts=[
+  WordNode(pos=(797, 804), word='command'),
+  WordNode(pos=(805, 807), word='-v'),
+  WordNode(pos=(808, 815), word='gpgconf'),
+  RedirectNode(output=
+    WordNode(pos=(818, 827), word='/dev/null'), pos=(816, 827), type='>'),
+])
+
+
+58) apt-mark auto '.*' > /dev/null
+
+CommandNode(pos=(995, 1025), parts=[
+  WordNode(pos=(995, 1003), word='apt-mark'),
+  WordNode(pos=(1004, 1008), word='auto'),
+  WordNode(pos=(1009, 1013), word='.*'),
+  RedirectNode(output=
+    WordNode(pos=(1016, 1025), word='/dev/null'), pos=(1014, 1025), type='>'),
+])
+
+
+59) command -v gpgconf > /dev/null
+
+CommandNode(pos=(494, 524), parts=[
+  WordNode(pos=(494, 501), word='command'),
+  WordNode(pos=(502, 504), word='-v'),
+  WordNode(pos=(505, 512), word='gpgconf'),
+  RedirectNode(output=
+    WordNode(pos=(515, 524), word='/dev/null'), pos=(513, 524), type='>'),
+])
+
+
+60) echo 'dockremap:165536:65536' >> /etc/subuid
+
+CommandNode(pos=(75, 119), parts=[
+  WordNode(pos=(75, 79), word='echo'),
+  WordNode(pos=(80, 104), word='dockremap:165536:65536'),
+  RedirectNode(output=
+    WordNode(pos=(108, 119), word='/etc/subuid'), pos=(105, 119), type='>>'),
+])
+
+
+61) echo 'dockremap:165536:65536' >> /etc/subgid
+
+CommandNode(pos=(124, 168), parts=[
+  WordNode(pos=(124, 128), word='echo'),
+  WordNode(pos=(129, 153), word='dockremap:165536:65536'),
+  RedirectNode(output=
+    WordNode(pos=(157, 168), word='/etc/subgid'), pos=(154, 168), type='>>'),
+])
+
+
+62) apt-mark auto '.*' > /dev/null
+
+CommandNode(pos=(835, 865), parts=[
+  WordNode(pos=(835, 843), word='apt-mark'),
+  WordNode(pos=(844, 848), word='auto'),
+  WordNode(pos=(849, 853), word='.*'),
+  RedirectNode(output=
+    WordNode(pos=(856, 865), word='/dev/null'), pos=(854, 865), type='>'),
+])
+
+
+63) command -v gpg > /dev/null
+
+CommandNode(pos=(40, 66), parts=[
+  WordNode(pos=(40, 47), word='command'),
+  WordNode(pos=(48, 50), word='-v'),
+  WordNode(pos=(51, 54), word='gpg'),
+  RedirectNode(output=
+    WordNode(pos=(57, 66), word='/dev/null'), pos=(55, 66), type='>'),
+])
+
+
+64) command -v gpgconf > /dev/null
+
+CommandNode(pos=(734, 764), parts=[
+  WordNode(pos=(734, 741), word='command'),
+  WordNode(pos=(742, 744), word='-v'),
+  WordNode(pos=(745, 752), word='gpgconf'),
+  RedirectNode(output=
+    WordNode(pos=(755, 764), word='/dev/null'), pos=(753, 764), type='>'),
+])
+
+
+65) command -v gpgconf > /dev/null
+
+CommandNode(pos=(494, 524), parts=[
+  WordNode(pos=(494, 501), word='command'),
+  WordNode(pos=(502, 504), word='-v'),
+  WordNode(pos=(505, 512), word='gpgconf'),
+  RedirectNode(output=
+    WordNode(pos=(515, 524), word='/dev/null'), pos=(513, 524), type='>'),
+])
+
+
+66) command -v gpgconf > /dev/null
+
+CommandNode(pos=(574, 604), parts=[
+  WordNode(pos=(574, 581), word='command'),
+  WordNode(pos=(582, 584), word='-v'),
+  WordNode(pos=(585, 592), word='gpgconf'),
+  RedirectNode(output=
+    WordNode(pos=(595, 604), word='/dev/null'), pos=(593, 604), type='>'),
+])
+
+
+67) command -v gpg > /dev/null
+
+CommandNode(pos=(15, 41), parts=[
+  WordNode(pos=(15, 22), word='command'),
+  WordNode(pos=(23, 25), word='-v'),
+  WordNode(pos=(26, 29), word='gpg'),
+  RedirectNode(output=
+    WordNode(pos=(32, 41), word='/dev/null'), pos=(30, 41), type='>'),
+])
+
+
+68) command -v gpg > /dev/null
+
+CommandNode(pos=(40, 66), parts=[
+  WordNode(pos=(40, 47), word='command'),
+  WordNode(pos=(48, 50), word='-v'),
+  WordNode(pos=(51, 54), word='gpg'),
+  RedirectNode(output=
+    WordNode(pos=(57, 66), word='/dev/null'), pos=(55, 66), type='>'),
+])
+
+
+69) command -v gpgconf > /dev/null
+
+CommandNode(pos=(734, 764), parts=[
+  WordNode(pos=(734, 741), word='command'),
+  WordNode(pos=(742, 744), word='-v'),
+  WordNode(pos=(745, 752), word='gpgconf'),
+  RedirectNode(output=
+    WordNode(pos=(755, 764), word='/dev/null'), pos=(753, 764), type='>'),
+])
+
+
+70) command -v gpg > /dev/null
+
+CommandNode(pos=(15, 41), parts=[
+  WordNode(pos=(15, 22), word='command'),
+  WordNode(pos=(23, 25), word='-v'),
+  WordNode(pos=(26, 29), word='gpg'),
+  RedirectNode(output=
+    WordNode(pos=(32, 41), word='/dev/null'), pos=(30, 41), type='>'),
+])
+
+
+71) echo '/usr/local/lib64' > /etc/ld.so.conf.d/local-lib64.conf
+
+CommandNode(pos=(10, 70), parts=[
+  WordNode(pos=(10, 14), word='echo'),
+  WordNode(pos=(15, 33), word='/usr/local/lib64'),
+  RedirectNode(output=
+    WordNode(pos=(36, 70), word='/etc/ld.so.conf.d/local-lib64.conf'), pos=(34, 70), type='>'),
+])
+
+
+72) command -v gpgconf > /dev/null
+
+CommandNode(pos=(494, 524), parts=[
+  WordNode(pos=(494, 501), word='command'),
+  WordNode(pos=(502, 504), word='-v'),
+  WordNode(pos=(505, 512), word='gpgconf'),
+  RedirectNode(output=
+    WordNode(pos=(515, 524), word='/dev/null'), pos=(513, 524), type='>'),
+])
+
+
+73) command -v gpg > /dev/null
+
+CommandNode(pos=(40, 66), parts=[
+  WordNode(pos=(40, 47), word='command'),
+  WordNode(pos=(48, 50), word='-v'),
+  WordNode(pos=(51, 54), word='gpg'),
+  RedirectNode(output=
+    WordNode(pos=(57, 66), word='/dev/null'), pos=(55, 66), type='>'),
+])
+
+
+74) command -v gpgconf > /dev/null
+
+CommandNode(pos=(734, 764), parts=[
+  WordNode(pos=(734, 741), word='command'),
+  WordNode(pos=(742, 744), word='-v'),
+  WordNode(pos=(745, 752), word='gpgconf'),
+  RedirectNode(output=
+    WordNode(pos=(755, 764), word='/dev/null'), pos=(753, 764), type='>'),
+])
+
+
+75) apt-mark auto '.*' > /dev/null
+
+CommandNode(pos=(1555, 1585), parts=[
+  WordNode(pos=(1555, 1563), word='apt-mark'),
+  WordNode(pos=(1564, 1568), word='auto'),
+  WordNode(pos=(1569, 1573), word='.*'),
+  RedirectNode(output=
+    WordNode(pos=(1576, 1585), word='/dev/null'), pos=(1574, 1585), type='>'),
+])
+
+
+76) apt-mark manual $savedAptMark > /dev/null
+
+CommandNode(pos=(1614, 1655), parts=[
+  WordNode(pos=(1614, 1622), word='apt-mark'),
+  WordNode(pos=(1623, 1629), word='manual'),
+  WordNode(pos=(1630, 1643), word='$savedAptMark', parts=[
+    ParameterNode(pos=(1630, 1643), value='savedAptMark'),
+  ]),
+  RedirectNode(output=
+    WordNode(pos=(1646, 1655), word='/dev/null'), pos=(1644, 1655), type='>'),
+])
+
+
+77) grep 'INFO: Loaded APR based Apache Tomcat Native library' >&2
+
+CommandNode(pos=(209, 271), parts=[
+  WordNode(pos=(209, 213), word='grep'),
+  WordNode(pos=(214, 267), word='INFO: Loaded APR based Apache Tomcat Native library'),
+  RedirectNode(output=2, pos=(268, 271), type='>&'),
+])
+
+
+78) echo >&2 "$nativeLines"
+
+CommandNode(pos=(280, 303), parts=[
+  WordNode(pos=(280, 284), word='echo'),
+  RedirectNode(output=2, pos=(285, 288), type='>&'),
+  WordNode(pos=(289, 303), word='$nativeLines', parts=[
+    ParameterNode(pos=(290, 302), value='nativeLines'),
+  ]),
+])
+
+
+79) apt-mark auto '.*' > /dev/null
+
+CommandNode(pos=(381, 411), parts=[
+  WordNode(pos=(381, 389), word='apt-mark'),
+  WordNode(pos=(390, 394), word='auto'),
+  WordNode(pos=(395, 399), word='.*'),
+  RedirectNode(output=
+    WordNode(pos=(402, 411), word='/dev/null'), pos=(400, 411), type='>'),
+])
+
+
+80) apt-mark auto '.*' > /dev/null
+
+CommandNode(pos=(1555, 1585), parts=[
+  WordNode(pos=(1555, 1563), word='apt-mark'),
+  WordNode(pos=(1564, 1568), word='auto'),
+  WordNode(pos=(1569, 1573), word='.*'),
+  RedirectNode(output=
+    WordNode(pos=(1576, 1585), word='/dev/null'), pos=(1574, 1585), type='>'),
+])
+
+
+81) apt-mark manual $savedAptMark > /dev/null
+
+CommandNode(pos=(1614, 1655), parts=[
+  WordNode(pos=(1614, 1622), word='apt-mark'),
+  WordNode(pos=(1623, 1629), word='manual'),
+  WordNode(pos=(1630, 1643), word='$savedAptMark', parts=[
+    ParameterNode(pos=(1630, 1643), value='savedAptMark'),
+  ]),
+  RedirectNode(output=
+    WordNode(pos=(1646, 1655), word='/dev/null'), pos=(1644, 1655), type='>'),
+])
+
+
+82) grep 'INFO: Loaded APR based Apache Tomcat Native library' >&2
+
+CommandNode(pos=(209, 271), parts=[
+  WordNode(pos=(209, 213), word='grep'),
+  WordNode(pos=(214, 267), word='INFO: Loaded APR based Apache Tomcat Native library'),
+  RedirectNode(output=2, pos=(268, 271), type='>&'),
+])
+
+
+83) echo >&2 "$nativeLines"
+
+CommandNode(pos=(280, 303), parts=[
+  WordNode(pos=(280, 284), word='echo'),
+  RedirectNode(output=2, pos=(285, 288), type='>&'),
+  WordNode(pos=(289, 303), word='$nativeLines', parts=[
+    ParameterNode(pos=(290, 302), value='nativeLines'),
+  ]),
+])
+
+
+84) command -v gpgconf > /dev/null
+
+CommandNode(pos=(574, 604), parts=[
+  WordNode(pos=(574, 581), word='command'),
+  WordNode(pos=(582, 584), word='-v'),
+  WordNode(pos=(585, 592), word='gpgconf'),
+  RedirectNode(output=
+    WordNode(pos=(595, 604), word='/dev/null'), pos=(593, 604), type='>'),
+])
+
+
+85) command -v gpg > /dev/null
+
+CommandNode(pos=(40, 66), parts=[
+  WordNode(pos=(40, 47), word='command'),
+  WordNode(pos=(48, 50), word='-v'),
+  WordNode(pos=(51, 54), word='gpg'),
+  RedirectNode(output=
+    WordNode(pos=(57, 66), word='/dev/null'), pos=(55, 66), type='>'),
+])
+
+
+86) command -v gpgconf > /dev/null
+
+CommandNode(pos=(734, 764), parts=[
+  WordNode(pos=(734, 741), word='command'),
+  WordNode(pos=(742, 744), word='-v'),
+  WordNode(pos=(745, 752), word='gpgconf'),
+  RedirectNode(output=
+    WordNode(pos=(755, 764), word='/dev/null'), pos=(753, 764), type='>'),
+])
+
+
+87) command -v gpgconf > /dev/null
+
+CommandNode(pos=(430, 460), parts=[
+  WordNode(pos=(430, 437), word='command'),
+  WordNode(pos=(438, 440), word='-v'),
+  WordNode(pos=(441, 448), word='gpgconf'),
+  RedirectNode(output=
+    WordNode(pos=(451, 460), word='/dev/null'), pos=(449, 460), type='>'),
+])
+
+
+88) command -v gpgconf > /dev/null
+
+CommandNode(pos=(494, 524), parts=[
+  WordNode(pos=(494, 501), word='command'),
+  WordNode(pos=(502, 504), word='-v'),
+  WordNode(pos=(505, 512), word='gpgconf'),
+  RedirectNode(output=
+    WordNode(pos=(515, 524), word='/dev/null'), pos=(513, 524), type='>'),
+])
+
+
+89) apt-mark auto '.*' > /dev/null
+
+CommandNode(pos=(1555, 1585), parts=[
+  WordNode(pos=(1555, 1563), word='apt-mark'),
+  WordNode(pos=(1564, 1568), word='auto'),
+  WordNode(pos=(1569, 1573), word='.*'),
+  RedirectNode(output=
+    WordNode(pos=(1576, 1585), word='/dev/null'), pos=(1574, 1585), type='>'),
+])
+
+
+90) apt-mark manual $savedAptMark > /dev/null
+
+CommandNode(pos=(1614, 1655), parts=[
+  WordNode(pos=(1614, 1622), word='apt-mark'),
+  WordNode(pos=(1623, 1629), word='manual'),
+  WordNode(pos=(1630, 1643), word='$savedAptMark', parts=[
+    ParameterNode(pos=(1630, 1643), value='savedAptMark'),
+  ]),
+  RedirectNode(output=
+    WordNode(pos=(1646, 1655), word='/dev/null'), pos=(1644, 1655), type='>'),
+])
+
+
+91) grep 'INFO: Loaded APR based Apache Tomcat Native library' >&2
+
+CommandNode(pos=(209, 271), parts=[
+  WordNode(pos=(209, 213), word='grep'),
+  WordNode(pos=(214, 267), word='INFO: Loaded APR based Apache Tomcat Native library'),
+  RedirectNode(output=2, pos=(268, 271), type='>&'),
+])
+
+
+92) echo >&2 "$nativeLines"
+
+CommandNode(pos=(280, 303), parts=[
+  WordNode(pos=(280, 284), word='echo'),
+  RedirectNode(output=2, pos=(285, 288), type='>&'),
+  WordNode(pos=(289, 303), word='$nativeLines', parts=[
+    ParameterNode(pos=(290, 302), value='nativeLines'),
+  ]),
+])
+
+
+93) command -v gpgconf > /dev/null
+
+CommandNode(pos=(661, 691), parts=[
+  WordNode(pos=(661, 668), word='command'),
+  WordNode(pos=(669, 671), word='-v'),
+  WordNode(pos=(672, 679), word='gpgconf'),
+  RedirectNode(output=
+    WordNode(pos=(682, 691), word='/dev/null'), pos=(680, 691), type='>'),
+])
+
+
+94) gpg --batch --export $GPG_KEYS > /etc/apt/trusted.gpg.d/percona.gpg
+
+CommandNode(pos=(150, 217), parts=[
+  WordNode(pos=(150, 153), word='gpg'),
+  WordNode(pos=(154, 161), word='--batch'),
+  WordNode(pos=(162, 170), word='--export'),
+  WordNode(pos=(171, 180), word='$GPG_KEYS', parts=[
+    ParameterNode(pos=(171, 180), value='GPG_KEYS'),
+  ]),
+  RedirectNode(output=
+    WordNode(pos=(183, 217), word='/etc/apt/trusted.gpg.d/percona.gpg'), pos=(181, 217), type='>'),
+])
+
+
+95) command -v gpgconf > /dev/null
+
+CommandNode(pos=(220, 250), parts=[
+  WordNode(pos=(220, 227), word='command'),
+  WordNode(pos=(228, 230), word='-v'),
+  WordNode(pos=(231, 238), word='gpgconf'),
+  RedirectNode(output=
+    WordNode(pos=(241, 250), word='/dev/null'), pos=(239, 250), type='>'),
+])
+
+
+96) echo 'deb https://repo.percona.com/apt stretch main' > /etc/apt/sources.list.d/percona.list
+
+CommandNode(pos=(0, 91), parts=[
+  WordNode(pos=(0, 4), word='echo'),
+  WordNode(pos=(5, 52), word='deb https://repo.percona.com/apt stretch main'),
+  RedirectNode(output=
+    WordNode(pos=(55, 91), word='/etc/apt/sources.list.d/percona.list'), pos=(53, 91), type='>'),
+])
+
+
+97) echo '[mysqld]\nskip-host-cache\nskip-name-resolve' > /etc/mysql/conf.d/docker.cnf
+
+CommandNode(pos=(791, 873), parts=[
+  WordNode(pos=(791, 795), word='echo'),
+  WordNode(pos=(796, 842), word='[mysqld]\\nskip-host-cache\\nskip-name-resolve'),
+  RedirectNode(output=
+    WordNode(pos=(845, 873), word='/etc/mysql/conf.d/docker.cnf'), pos=(843, 873), type='>'),
+])
+
+
+98) command -v gpg > /dev/null
+
+CommandNode(pos=(40, 66), parts=[
+  WordNode(pos=(40, 47), word='command'),
+  WordNode(pos=(48, 50), word='-v'),
+  WordNode(pos=(51, 54), word='gpg'),
+  RedirectNode(output=
+    WordNode(pos=(57, 66), word='/dev/null'), pos=(55, 66), type='>'),
+])
+
+
+99) command -v gpgconf > /dev/null
+
+CommandNode(pos=(734, 764), parts=[
+  WordNode(pos=(734, 741), word='command'),
+  WordNode(pos=(742, 744), word='-v'),
+  WordNode(pos=(745, 752), word='gpgconf'),
+  RedirectNode(output=
+    WordNode(pos=(755, 764), word='/dev/null'), pos=(753, 764), type='>'),
+])
+
+
+100) command -v gpg > /dev/null
+
+CommandNode(pos=(40, 66), parts=[
+  WordNode(pos=(40, 47), word='command'),
+  WordNode(pos=(48, 50), word='-v'),
+  WordNode(pos=(51, 54), word='gpg'),
+  RedirectNode(output=
+    WordNode(pos=(57, 66), word='/dev/null'), pos=(55, 66), type='>'),
+])
+
+
+101) command -v gpgconf > /dev/null
+
+CommandNode(pos=(734, 764), parts=[
+  WordNode(pos=(734, 741), word='command'),
+  WordNode(pos=(742, 744), word='-v'),
+  WordNode(pos=(745, 752), word='gpgconf'),
+  RedirectNode(output=
+    WordNode(pos=(755, 764), word='/dev/null'), pos=(753, 764), type='>'),
+])
+
+
+102) awk '$1 == "SHA1:" && $2 ~ /^[0-9a-f]+$/ && $3 == "'"$tarball"'" { print $2, "*buildroot.tar.bz2" }' buildroot.tar.bz2.txt > buildroot.tar.bz2.sha1
+
+CommandNode(pos=(299, 446), parts=[
+  WordNode(pos=(299, 302), word='awk'),
+  WordNode(pos=(303, 399), word='$1 == "SHA1:" && $2 ~ /^[0-9a-f]+$/ && $3 == "\'"$tarball"\'" { print $2, "*buildroot.tar.bz2" }'),
+  WordNode(pos=(400, 421), word='buildroot.tar.bz2.txt'),
+  RedirectNode(output=
+    WordNode(pos=(424, 446), word='buildroot.tar.bz2.sha1'), pos=(422, 446), type='>'),
+])
+
+
+103) echo "$confV" >> .config
+
+CommandNode(pos=(507, 531), parts=[
+  WordNode(pos=(507, 511), word='echo'),
+  WordNode(pos=(512, 520), word='$confV', parts=[
+    ParameterNode(pos=(513, 519), value='confV'),
+  ]),
+  RedirectNode(output=
+    WordNode(pos=(524, 531), word='.config'), pos=(521, 531), type='>>'),
+])
+
+
+104) command -v gpg > /dev/null
+
+CommandNode(pos=(15, 41), parts=[
+  WordNode(pos=(15, 22), word='command'),
+  WordNode(pos=(23, 25), word='-v'),
+  WordNode(pos=(26, 29), word='gpg'),
+  RedirectNode(output=
+    WordNode(pos=(32, 41), word='/dev/null'), pos=(30, 41), type='>'),
+])
+
+
+105) command -v gpgconf > /dev/null
+
+CommandNode(pos=(613, 643), parts=[
+  WordNode(pos=(613, 620), word='command'),
+  WordNode(pos=(621, 623), word='-v'),
+  WordNode(pos=(624, 631), word='gpgconf'),
+  RedirectNode(output=
+    WordNode(pos=(634, 643), word='/dev/null'), pos=(632, 643), type='>'),
+])
+
+
+106) gpg --batch --export "$key" > /etc/apt/trusted.gpg.d/postgres.gpg
+
+CommandNode(pos=(165, 230), parts=[
+  WordNode(pos=(165, 168), word='gpg'),
+  WordNode(pos=(169, 176), word='--batch'),
+  WordNode(pos=(177, 185), word='--export'),
+  WordNode(pos=(186, 192), word='$key', parts=[
+    ParameterNode(pos=(187, 191), value='key'),
+  ]),
+  RedirectNode(output=
+    WordNode(pos=(195, 230), word='/etc/apt/trusted.gpg.d/postgres.gpg'), pos=(193, 230), type='>'),
+])
+
+
+107) command -v gpgconf > /dev/null
+
+CommandNode(pos=(233, 263), parts=[
+  WordNode(pos=(233, 240), word='command'),
+  WordNode(pos=(241, 243), word='-v'),
+  WordNode(pos=(244, 251), word='gpgconf'),
+  RedirectNode(output=
+    WordNode(pos=(254, 263), word='/dev/null'), pos=(252, 263), type='>'),
+])
+
+
+108) patch -p0 < "$patchFile"
+
+CommandNode(pos=(1470, 1494), parts=[
+  WordNode(pos=(1470, 1475), word='patch'),
+  WordNode(pos=(1476, 1479), word='-p0'),
+  RedirectNode(output=
+    WordNode(pos=(1482, 1494), word='$patchFile', parts=[
+      ParameterNode(pos=(1483, 1493), value='patchFile'),
+    ]), pos=(1480, 1494), type='<'),
+])
+
+
+109) echo '/usr/local/lib' > /etc/ld.so.conf.d/000-openssl-libc.conf
+
+CommandNode(pos=(1449, 1512), parts=[
+  WordNode(pos=(1449, 1453), word='echo'),
+  WordNode(pos=(1454, 1470), word='/usr/local/lib'),
+  RedirectNode(output=
+    WordNode(pos=(1473, 1512), word='/etc/ld.so.conf.d/000-openssl-libc.conf'), pos=(1471, 1512), type='>'),
+])
+
+
+110) apt-mark auto '.*' > /dev/null
+
+CommandNode(pos=(3281, 3311), parts=[
+  WordNode(pos=(3281, 3289), word='apt-mark'),
+  WordNode(pos=(3290, 3294), word='auto'),
+  WordNode(pos=(3295, 3299), word='.*'),
+  RedirectNode(output=
+    WordNode(pos=(3302, 3311), word='/dev/null'), pos=(3300, 3311), type='>'),
+])
+
+
+111) apt-mark auto '.*' > /dev/null
+
+CommandNode(pos=(1272, 1302), parts=[
+  WordNode(pos=(1272, 1280), word='apt-mark'),
+  WordNode(pos=(1281, 1285), word='auto'),
+  WordNode(pos=(1286, 1290), word='.*'),
+  RedirectNode(output=
+    WordNode(pos=(1293, 1302), word='/dev/null'), pos=(1291, 1302), type='>'),
+])
+
+
+112) command -v gpgconf > /dev/null
+
+CommandNode(pos=(574, 604), parts=[
+  WordNode(pos=(574, 581), word='command'),
+  WordNode(pos=(582, 584), word='-v'),
+  WordNode(pos=(585, 592), word='gpgconf'),
+  RedirectNode(output=
+    WordNode(pos=(595, 604), word='/dev/null'), pos=(593, 604), type='>'),
+])
+
+
+113) tee php-fpm.conf > /dev/null
+
+CommandNode(pos=(104, 132), parts=[
+  WordNode(pos=(104, 107), word='tee'),
+  WordNode(pos=(108, 120), word='php-fpm.conf'),
+  RedirectNode(output=
+    WordNode(pos=(123, 132), word='/dev/null'), pos=(121, 132), type='>'),
+])
+
+
+114) command -v gpgconf > /dev/null
+
+CommandNode(pos=(661, 691), parts=[
+  WordNode(pos=(661, 668), word='command'),
+  WordNode(pos=(669, 671), word='-v'),
+  WordNode(pos=(672, 679), word='gpgconf'),
+  RedirectNode(output=
+    WordNode(pos=(682, 691), word='/dev/null'), pos=(680, 691), type='>'),
+])
+
+
+115) gpg --batch --export $GPG_KEYS > /etc/apt/trusted.gpg.d/mariadb.gpg
+
+CommandNode(pos=(150, 217), parts=[
+  WordNode(pos=(150, 153), word='gpg'),
+  WordNode(pos=(154, 161), word='--batch'),
+  WordNode(pos=(162, 170), word='--export'),
+  WordNode(pos=(171, 180), word='$GPG_KEYS', parts=[
+    ParameterNode(pos=(171, 180), value='GPG_KEYS'),
+  ]),
+  RedirectNode(output=
+    WordNode(pos=(183, 217), word='/etc/apt/trusted.gpg.d/mariadb.gpg'), pos=(181, 217), type='>'),
+])
+
+
+116) command -v gpgconf > /dev/null
+
+CommandNode(pos=(220, 250), parts=[
+  WordNode(pos=(220, 227), word='command'),
+  WordNode(pos=(228, 230), word='-v'),
+  WordNode(pos=(231, 238), word='gpgconf'),
+  RedirectNode(output=
+    WordNode(pos=(241, 250), word='/dev/null'), pos=(239, 250), type='>'),
+])
+
+
+117) echo "deb http://ftp.osuosl.org/pub/mariadb/repo/$MARIADB_MAJOR/ubuntu bionic main" > /etc/apt/sources.list.d/mariadb.list
+
+CommandNode(pos=(8, 130), parts=[
+  WordNode(pos=(8, 12), word='echo'),
+  WordNode(pos=(13, 91), word='deb http://ftp.osuosl.org/pub/mariadb/repo/$MARIADB_MAJOR/ubuntu bionic main', parts=[
+    ParameterNode(pos=(57, 71), value='MARIADB_MAJOR'),
+  ]),
+  RedirectNode(output=
+    WordNode(pos=(94, 130), word='/etc/apt/sources.list.d/mariadb.list'), pos=(92, 130), type='>'),
+])
+
+
+118) echo '[mysqld]\nskip-host-cache\nskip-name-resolve' > /etc/mysql/conf.d/docker.cnf
+
+CommandNode(pos=(700, 782), parts=[
+  WordNode(pos=(700, 704), word='echo'),
+  WordNode(pos=(705, 751), word='[mysqld]\\nskip-host-cache\\nskip-name-resolve'),
+  RedirectNode(output=
+    WordNode(pos=(754, 782), word='/etc/mysql/conf.d/docker.cnf'), pos=(752, 782), type='>'),
+])
+
+
+119) command -v gpgconf > /dev/null
+
+CommandNode(pos=(430, 460), parts=[
+  WordNode(pos=(430, 437), word='command'),
+  WordNode(pos=(438, 440), word='-v'),
+  WordNode(pos=(441, 448), word='gpgconf'),
+  RedirectNode(output=
+    WordNode(pos=(451, 460), word='/dev/null'), pos=(449, 460), type='>'),
+])
+
+
+120) echo "$confV" >> .config
+
+CommandNode(pos=(606, 630), parts=[
+  WordNode(pos=(606, 610), word='echo'),
+  WordNode(pos=(611, 619), word='$confV', parts=[
+    ParameterNode(pos=(612, 618), value='confV'),
+  ]),
+  RedirectNode(output=
+    WordNode(pos=(623, 630), word='.config'), pos=(620, 630), type='>>'),
+])
+
+
+121) echo 'hosts: files dns' > /etc/nsswitch.conf
+
+CommandNode(pos=(31, 75), parts=[
+  WordNode(pos=(31, 35), word='echo'),
+  WordNode(pos=(36, 54), word='hosts: files dns'),
+  RedirectNode(output=
+    WordNode(pos=(57, 75), word='/etc/nsswitch.conf'), pos=(55, 75), type='>'),
+])
+
+
+122) command -v gpgconf > /dev/null
+
+CommandNode(pos=(574, 604), parts=[
+  WordNode(pos=(574, 581), word='command'),
+  WordNode(pos=(582, 584), word='-v'),
+  WordNode(pos=(585, 592), word='gpgconf'),
+  RedirectNode(output=
+    WordNode(pos=(595, 604), word='/dev/null'), pos=(593, 604), type='>'),
+])
+
+
+123) awk '$1 == "#define" && $2 == "DEFAULT_PGSOCKET_DIR" && $3 == "\"/tmp\"" { $3 = "\"/var/run/postgresql\""; print; next } { print }' src/include/pg_config_manual.h > src/include/pg_config_manual.h.new
+
+CommandNode(pos=(700, 899), parts=[
+  WordNode(pos=(700, 703), word='awk'),
+  WordNode(pos=(704, 831), word='$1 == "#define" && $2 == "DEFAULT_PGSOCKET_DIR" && $3 == "\\"/tmp\\"" { $3 = "\\"/var/run/postgresql\\""; print; next } { print }'),
+  WordNode(pos=(832, 862), word='src/include/pg_config_manual.h'),
+  RedirectNode(output=
+    WordNode(pos=(865, 899), word='src/include/pg_config_manual.h.new'), pos=(863, 899), type='>'),
+])
+
+
+124) command -v gpgconf > /dev/null
+
+CommandNode(pos=(494, 524), parts=[
+  WordNode(pos=(494, 501), word='command'),
+  WordNode(pos=(502, 504), word='-v'),
+  WordNode(pos=(505, 512), word='gpgconf'),
+  RedirectNode(output=
+    WordNode(pos=(515, 524), word='/dev/null'), pos=(513, 524), type='>'),
+])
+
+
+125) command -v gpg > /dev/null
+
+CommandNode(pos=(40, 66), parts=[
+  WordNode(pos=(40, 47), word='command'),
+  WordNode(pos=(48, 50), word='-v'),
+  WordNode(pos=(51, 54), word='gpg'),
+  RedirectNode(output=
+    WordNode(pos=(57, 66), word='/dev/null'), pos=(55, 66), type='>'),
+])
+
+
+126) command -v gpgconf > /dev/null
+
+CommandNode(pos=(734, 764), parts=[
+  WordNode(pos=(734, 741), word='command'),
+  WordNode(pos=(742, 744), word='-v'),
+  WordNode(pos=(745, 752), word='gpgconf'),
+  RedirectNode(output=
+    WordNode(pos=(755, 764), word='/dev/null'), pos=(753, 764), type='>'),
+])
+
+
+127) echo "$confV" >> .config
+
+CommandNode(pos=(489, 513), parts=[
+  WordNode(pos=(489, 493), word='echo'),
+  WordNode(pos=(494, 502), word='$confV', parts=[
+    ParameterNode(pos=(495, 501), value='confV'),
+  ]),
+  RedirectNode(output=
+    WordNode(pos=(506, 513), word='.config'), pos=(503, 513), type='>>'),
+])
+
+
+128) apt-mark auto '.*' > /dev/null
+
+CommandNode(pos=(934, 964), parts=[
+  WordNode(pos=(934, 942), word='apt-mark'),
+  WordNode(pos=(943, 947), word='auto'),
+  WordNode(pos=(948, 952), word='.*'),
+  RedirectNode(output=
+    WordNode(pos=(955, 964), word='/dev/null'), pos=(953, 964), type='>'),
+])
+
+
+129) command -v gpg > /dev/null
+
+CommandNode(pos=(15, 41), parts=[
+  WordNode(pos=(15, 22), word='command'),
+  WordNode(pos=(23, 25), word='-v'),
+  WordNode(pos=(26, 29), word='gpg'),
+  RedirectNode(output=
+    WordNode(pos=(32, 41), word='/dev/null'), pos=(30, 41), type='>'),
+])
+
+
+130) apt-mark auto '.*' > /dev/null
+
+CommandNode(pos=(888, 918), parts=[
+  WordNode(pos=(888, 896), word='apt-mark'),
+  WordNode(pos=(897, 901), word='auto'),
+  WordNode(pos=(902, 906), word='.*'),
+  RedirectNode(output=
+    WordNode(pos=(909, 918), word='/dev/null'), pos=(907, 918), type='>'),
+])
+
+
+131) apt-mark auto '.*' > /dev/null
+
+CommandNode(pos=(1392, 1422), parts=[
+  WordNode(pos=(1392, 1400), word='apt-mark'),
+  WordNode(pos=(1401, 1405), word='auto'),
+  WordNode(pos=(1406, 1410), word='.*'),
+  RedirectNode(output=
+    WordNode(pos=(1413, 1422), word='/dev/null'), pos=(1411, 1422), type='>'),
+])
+
+
+132) echo 'config.logger = Logger.new(STDOUT)' > config/additional_environment.rb
+
+CommandNode(pos=(353, 429), parts=[
+  WordNode(pos=(353, 357), word='echo'),
+  WordNode(pos=(358, 394), word='config.logger = Logger.new(STDOUT)'),
+  RedirectNode(output=
+    WordNode(pos=(397, 429), word='config/additional_environment.rb'), pos=(395, 429), type='>'),
+])
+
+
+133) echo "$RAILS_ENV:" > ./config/database.yml
+
+CommandNode(pos=(951, 993), parts=[
+  WordNode(pos=(951, 955), word='echo'),
+  WordNode(pos=(956, 969), word='$RAILS_ENV:', parts=[
+    ParameterNode(pos=(957, 967), value='RAILS_ENV'),
+  ]),
+  RedirectNode(output=
+    WordNode(pos=(972, 993), word='./config/database.yml'), pos=(970, 993), type='>'),
+])
+
+
+134) echo "  adapter: $adapter" >> ./config/database.yml
+
+CommandNode(pos=(997, 1048), parts=[
+  WordNode(pos=(997, 1001), word='echo'),
+  WordNode(pos=(1002, 1023), word='  adapter: $adapter', parts=[
+    ParameterNode(pos=(1014, 1022), value='adapter'),
+  ]),
+  RedirectNode(output=
+    WordNode(pos=(1027, 1048), word='./config/database.yml'), pos=(1024, 1048), type='>>'),
+])
+
+
+135) apt-mark auto '.*' > /dev/null
+
+CommandNode(pos=(1259, 1289), parts=[
+  WordNode(pos=(1259, 1267), word='apt-mark'),
+  WordNode(pos=(1268, 1272), word='auto'),
+  WordNode(pos=(1273, 1277), word='.*'),
+  RedirectNode(output=
+    WordNode(pos=(1280, 1289), word='/dev/null'), pos=(1278, 1289), type='>'),
+])
+
+
+136) command -v gpg > /dev/null
+
+CommandNode(pos=(15, 41), parts=[
+  WordNode(pos=(15, 22), word='command'),
+  WordNode(pos=(23, 25), word='-v'),
+  WordNode(pos=(26, 29), word='gpg'),
+  RedirectNode(output=
+    WordNode(pos=(32, 41), word='/dev/null'), pos=(30, 41), type='>'),
+])
+
+
+137) command -v gpgconf > /dev/null
+
+CommandNode(pos=(574, 604), parts=[
+  WordNode(pos=(574, 581), word='command'),
+  WordNode(pos=(582, 584), word='-v'),
+  WordNode(pos=(585, 592), word='gpgconf'),
+  RedirectNode(output=
+    WordNode(pos=(595, 604), word='/dev/null'), pos=(593, 604), type='>'),
+])
+
+
+138) command -v gpgconf > /dev/null
+
+CommandNode(pos=(661, 691), parts=[
+  WordNode(pos=(661, 668), word='command'),
+  WordNode(pos=(669, 671), word='-v'),
+  WordNode(pos=(672, 679), word='gpgconf'),
+  RedirectNode(output=
+    WordNode(pos=(682, 691), word='/dev/null'), pos=(680, 691), type='>'),
+])
+
+
+139) gpg --batch --export $GPG_KEYS > /etc/apt/trusted.gpg.d/mariadb.gpg
+
+CommandNode(pos=(150, 217), parts=[
+  WordNode(pos=(150, 153), word='gpg'),
+  WordNode(pos=(154, 161), word='--batch'),
+  WordNode(pos=(162, 170), word='--export'),
+  WordNode(pos=(171, 180), word='$GPG_KEYS', parts=[
+    ParameterNode(pos=(171, 180), value='GPG_KEYS'),
+  ]),
+  RedirectNode(output=
+    WordNode(pos=(183, 217), word='/etc/apt/trusted.gpg.d/mariadb.gpg'), pos=(181, 217), type='>'),
+])
+
+
+140) command -v gpgconf > /dev/null
+
+CommandNode(pos=(220, 250), parts=[
+  WordNode(pos=(220, 227), word='command'),
+  WordNode(pos=(228, 230), word='-v'),
+  WordNode(pos=(231, 238), word='gpgconf'),
+  RedirectNode(output=
+    WordNode(pos=(241, 250), word='/dev/null'), pos=(239, 250), type='>'),
+])
+
+
+141) echo "deb http://ftp.osuosl.org/pub/mariadb/repo/$MARIADB_MAJOR/ubuntu bionic main" > /etc/apt/sources.list.d/mariadb.list
+
+CommandNode(pos=(8, 130), parts=[
+  WordNode(pos=(8, 12), word='echo'),
+  WordNode(pos=(13, 91), word='deb http://ftp.osuosl.org/pub/mariadb/repo/$MARIADB_MAJOR/ubuntu bionic main', parts=[
+    ParameterNode(pos=(57, 71), value='MARIADB_MAJOR'),
+  ]),
+  RedirectNode(output=
+    WordNode(pos=(94, 130), word='/etc/apt/sources.list.d/mariadb.list'), pos=(92, 130), type='>'),
+])
+
+
+142) echo '[mysqld]\nskip-host-cache\nskip-name-resolve' > /etc/mysql/conf.d/docker.cnf
+
+CommandNode(pos=(705, 787), parts=[
+  WordNode(pos=(705, 709), word='echo'),
+  WordNode(pos=(710, 756), word='[mysqld]\\nskip-host-cache\\nskip-name-resolve'),
+  RedirectNode(output=
+    WordNode(pos=(759, 787), word='/etc/mysql/conf.d/docker.cnf'), pos=(757, 787), type='>'),
+])
+
+
+143) command -v gpgconf > /dev/null
+
+CommandNode(pos=(574, 604), parts=[
+  WordNode(pos=(574, 581), word='command'),
+  WordNode(pos=(582, 584), word='-v'),
+  WordNode(pos=(585, 592), word='gpgconf'),
+  RedirectNode(output=
+    WordNode(pos=(595, 604), word='/dev/null'), pos=(593, 604), type='>'),
+])
+
+
+144) command -v gpgconf > /dev/null
+
+CommandNode(pos=(494, 524), parts=[
+  WordNode(pos=(494, 501), word='command'),
+  WordNode(pos=(502, 504), word='-v'),
+  WordNode(pos=(505, 512), word='gpgconf'),
+  RedirectNode(output=
+    WordNode(pos=(515, 524), word='/dev/null'), pos=(513, 524), type='>'),
+])
+
+
+145) command -v gpgconf > /dev/null
+
+CommandNode(pos=(574, 604), parts=[
+  WordNode(pos=(574, 581), word='command'),
+  WordNode(pos=(582, 584), word='-v'),
+  WordNode(pos=(585, 592), word='gpgconf'),
+  RedirectNode(output=
+    WordNode(pos=(595, 604), word='/dev/null'), pos=(593, 604), type='>'),
+])
+
+
+146) command -v gpg > /dev/null
+
+CommandNode(pos=(40, 66), parts=[
+  WordNode(pos=(40, 47), word='command'),
+  WordNode(pos=(48, 50), word='-v'),
+  WordNode(pos=(51, 54), word='gpg'),
+  RedirectNode(output=
+    WordNode(pos=(57, 66), word='/dev/null'), pos=(55, 66), type='>'),
+])
+
+
+147) command -v gpgconf > /dev/null
+
+CommandNode(pos=(734, 764), parts=[
+  WordNode(pos=(734, 741), word='command'),
+  WordNode(pos=(742, 744), word='-v'),
+  WordNode(pos=(745, 752), word='gpgconf'),
+  RedirectNode(output=
+    WordNode(pos=(755, 764), word='/dev/null'), pos=(753, 764), type='>'),
+])
+
+
+148) tee php-fpm.conf > /dev/null
+
+CommandNode(pos=(104, 132), parts=[
+  WordNode(pos=(104, 107), word='tee'),
+  WordNode(pos=(108, 120), word='php-fpm.conf'),
+  RedirectNode(output=
+    WordNode(pos=(123, 132), word='/dev/null'), pos=(121, 132), type='>'),
+])
+
+
+149) command -v gpgconf > /dev/null
+
+CommandNode(pos=(494, 524), parts=[
+  WordNode(pos=(494, 501), word='command'),
+  WordNode(pos=(502, 504), word='-v'),
+  WordNode(pos=(505, 512), word='gpgconf'),
+  RedirectNode(output=
+    WordNode(pos=(515, 524), word='/dev/null'), pos=(513, 524), type='>'),
+])
+
+
+150) echo 'hosts: files dns' > /etc/nsswitch.conf
+
+CommandNode(pos=(31, 75), parts=[
+  WordNode(pos=(31, 35), word='echo'),
+  WordNode(pos=(36, 54), word='hosts: files dns'),
+  RedirectNode(output=
+    WordNode(pos=(57, 75), word='/etc/nsswitch.conf'), pos=(55, 75), type='>'),
+])
+
+
+151) apt-mark auto '.*' > /dev/null
+
+CommandNode(pos=(383, 413), parts=[
+  WordNode(pos=(383, 391), word='apt-mark'),
+  WordNode(pos=(392, 396), word='auto'),
+  WordNode(pos=(397, 401), word='.*'),
+  RedirectNode(output=
+    WordNode(pos=(404, 413), word='/dev/null'), pos=(402, 413), type='>'),
+])
+
+
+152) echo 'hosts: files dns' > /etc/nsswitch.conf
+
+CommandNode(pos=(31, 75), parts=[
+  WordNode(pos=(31, 35), word='echo'),
+  WordNode(pos=(36, 54), word='hosts: files dns'),
+  RedirectNode(output=
+    WordNode(pos=(57, 75), word='/etc/nsswitch.conf'), pos=(55, 75), type='>'),
+])
+
+
+153) command -v gpgconf > /dev/null
+
+CommandNode(pos=(661, 691), parts=[
+  WordNode(pos=(661, 668), word='command'),
+  WordNode(pos=(669, 671), word='-v'),
+  WordNode(pos=(672, 679), word='gpgconf'),
+  RedirectNode(output=
+    WordNode(pos=(682, 691), word='/dev/null'), pos=(680, 691), type='>'),
+])
+
+
+154) gpg --batch --export $GPG_KEYS > /etc/apt/trusted.gpg.d/mariadb.gpg
+
+CommandNode(pos=(150, 217), parts=[
+  WordNode(pos=(150, 153), word='gpg'),
+  WordNode(pos=(154, 161), word='--batch'),
+  WordNode(pos=(162, 170), word='--export'),
+  WordNode(pos=(171, 180), word='$GPG_KEYS', parts=[
+    ParameterNode(pos=(171, 180), value='GPG_KEYS'),
+  ]),
+  RedirectNode(output=
+    WordNode(pos=(183, 217), word='/etc/apt/trusted.gpg.d/mariadb.gpg'), pos=(181, 217), type='>'),
+])
+
+
+155) command -v gpgconf > /dev/null
+
+CommandNode(pos=(220, 250), parts=[
+  WordNode(pos=(220, 227), word='command'),
+  WordNode(pos=(228, 230), word='-v'),
+  WordNode(pos=(231, 238), word='gpgconf'),
+  RedirectNode(output=
+    WordNode(pos=(241, 250), word='/dev/null'), pos=(239, 250), type='>'),
+])
+
+
+156) echo "deb http://ftp.osuosl.org/pub/mariadb/repo/$MARIADB_MAJOR/ubuntu %%SUITE%% main" > /etc/apt/sources.list.d/mariadb.list
+
+CommandNode(pos=(8, 133), parts=[
+  WordNode(pos=(8, 12), word='echo'),
+  WordNode(pos=(13, 94), word='deb http://ftp.osuosl.org/pub/mariadb/repo/$MARIADB_MAJOR/ubuntu %%SUITE%% main', parts=[
+    ParameterNode(pos=(57, 71), value='MARIADB_MAJOR'),
+  ]),
+  RedirectNode(output=
+    WordNode(pos=(97, 133), word='/etc/apt/sources.list.d/mariadb.list'), pos=(95, 133), type='>'),
+])
+
+
+157) echo '[mysqld]\nskip-host-cache\nskip-name-resolve' > /etc/mysql/conf.d/docker.cnf
+
+CommandNode(pos=(704, 786), parts=[
+  WordNode(pos=(704, 708), word='echo'),
+  WordNode(pos=(709, 755), word='[mysqld]\\nskip-host-cache\\nskip-name-resolve'),
+  RedirectNode(output=
+    WordNode(pos=(758, 786), word='/etc/mysql/conf.d/docker.cnf'), pos=(756, 786), type='>'),
+])
+
+
+158) echo 'hosts: files dns' > /etc/nsswitch.conf
+
+CommandNode(pos=(31, 75), parts=[
+  WordNode(pos=(31, 35), word='echo'),
+  WordNode(pos=(36, 54), word='hosts: files dns'),
+  RedirectNode(output=
+    WordNode(pos=(57, 75), word='/etc/nsswitch.conf'), pos=(55, 75), type='>'),
+])
+
+
+159) awk '$1 == "#define" && $2 == "DEFAULT_PGSOCKET_DIR" && $3 == "\"/tmp\"" { $3 = "\"/var/run/postgresql\""; print; next } { print }' src/include/pg_config_manual.h > src/include/pg_config_manual.h.new
+
+CommandNode(pos=(710, 909), parts=[
+  WordNode(pos=(710, 713), word='awk'),
+  WordNode(pos=(714, 841), word='$1 == "#define" && $2 == "DEFAULT_PGSOCKET_DIR" && $3 == "\\"/tmp\\"" { $3 = "\\"/var/run/postgresql\\""; print; next } { print }'),
+  WordNode(pos=(842, 872), word='src/include/pg_config_manual.h'),
+  RedirectNode(output=
+    WordNode(pos=(875, 909), word='src/include/pg_config_manual.h.new'), pos=(873, 909), type='>'),
+])
+
+
+160) command -v ps > /dev/null
+
+CommandNode(pos=(113, 138), parts=[
+  WordNode(pos=(113, 120), word='command'),
+  WordNode(pos=(121, 123), word='-v'),
+  WordNode(pos=(124, 126), word='ps'),
+  RedirectNode(output=
+    WordNode(pos=(129, 138), word='/dev/null'), pos=(127, 138), type='>'),
+])
+
+
+161) command -v gpg > /dev/null
+
+CommandNode(pos=(87, 113), parts=[
+  WordNode(pos=(87, 94), word='command'),
+  WordNode(pos=(95, 97), word='-v'),
+  WordNode(pos=(98, 101), word='gpg'),
+  RedirectNode(output=
+    WordNode(pos=(104, 113), word='/dev/null'), pos=(102, 113), type='>'),
+])
+
+
+162) gpg --batch --export $GPG_KEYS > /etc/apt/trusted.gpg.d/mongodb.gpg
+
+CommandNode(pos=(150, 217), parts=[
+  WordNode(pos=(150, 153), word='gpg'),
+  WordNode(pos=(154, 161), word='--batch'),
+  WordNode(pos=(162, 170), word='--export'),
+  WordNode(pos=(171, 180), word='$GPG_KEYS', parts=[
+    ParameterNode(pos=(171, 180), value='GPG_KEYS'),
+  ]),
+  RedirectNode(output=
+    WordNode(pos=(183, 217), word='/etc/apt/trusted.gpg.d/mongodb.gpg'), pos=(181, 217), type='>'),
+])
+
+
+163) command -v gpgconf > /dev/null
+
+CommandNode(pos=(430, 460), parts=[
+  WordNode(pos=(430, 437), word='command'),
+  WordNode(pos=(438, 440), word='-v'),
+  WordNode(pos=(441, 448), word='gpgconf'),
+  RedirectNode(output=
+    WordNode(pos=(451, 460), word='/dev/null'), pos=(449, 460), type='>'),
+])
+
+
+164) echo '/usr/local/lib' > /etc/ld.so.conf.d/000-openssl-libc.conf
+
+CommandNode(pos=(1449, 1512), parts=[
+  WordNode(pos=(1449, 1453), word='echo'),
+  WordNode(pos=(1454, 1470), word='/usr/local/lib'),
+  RedirectNode(output=
+    WordNode(pos=(1473, 1512), word='/etc/ld.so.conf.d/000-openssl-libc.conf'), pos=(1471, 1512), type='>'),
+])
+
+
+165) apt-mark auto '.*' > /dev/null
+
+CommandNode(pos=(3281, 3311), parts=[
+  WordNode(pos=(3281, 3289), word='apt-mark'),
+  WordNode(pos=(3290, 3294), word='auto'),
+  WordNode(pos=(3295, 3299), word='.*'),
+  RedirectNode(output=
+    WordNode(pos=(3302, 3311), word='/dev/null'), pos=(3300, 3311), type='>'),
+])
+
+
+166) apt-mark auto '.*' > /dev/null
+
+CommandNode(pos=(1272, 1302), parts=[
+  WordNode(pos=(1272, 1280), word='apt-mark'),
+  WordNode(pos=(1281, 1285), word='auto'),
+  WordNode(pos=(1286, 1290), word='.*'),
+  RedirectNode(output=
+    WordNode(pos=(1293, 1302), word='/dev/null'), pos=(1291, 1302), type='>'),
+])
+
+
+167) apt-mark auto '.*' > /dev/null
+
+CommandNode(pos=(934, 964), parts=[
+  WordNode(pos=(934, 942), word='apt-mark'),
+  WordNode(pos=(943, 947), word='auto'),
+  WordNode(pos=(948, 952), word='.*'),
+  RedirectNode(output=
+    WordNode(pos=(955, 964), word='/dev/null'), pos=(953, 964), type='>'),
+])
+
+
+168) command -v gpgconf > /dev/null
+
+CommandNode(pos=(494, 524), parts=[
+  WordNode(pos=(494, 501), word='command'),
+  WordNode(pos=(502, 504), word='-v'),
+  WordNode(pos=(505, 512), word='gpgconf'),
+  RedirectNode(output=
+    WordNode(pos=(515, 524), word='/dev/null'), pos=(513, 524), type='>'),
+])
+
+
+169) command -v gpg > /dev/null
+
+CommandNode(pos=(114, 140), parts=[
+  WordNode(pos=(114, 121), word='command'),
+  WordNode(pos=(122, 124), word='-v'),
+  WordNode(pos=(125, 128), word='gpg'),
+  RedirectNode(output=
+    WordNode(pos=(131, 140), word='/dev/null'), pos=(129, 140), type='>'),
+])
+
+
+170) gpg --batch --export $GPG_KEYS > /etc/apt/trusted.gpg.d/cassandra.gpg
+
+CommandNode(pos=(150, 219), parts=[
+  WordNode(pos=(150, 153), word='gpg'),
+  WordNode(pos=(154, 161), word='--batch'),
+  WordNode(pos=(162, 170), word='--export'),
+  WordNode(pos=(171, 180), word='$GPG_KEYS', parts=[
+    ParameterNode(pos=(171, 180), value='GPG_KEYS'),
+  ]),
+  RedirectNode(output=
+    WordNode(pos=(183, 219), word='/etc/apt/trusted.gpg.d/cassandra.gpg'), pos=(181, 219), type='>'),
+])
+
+
+171) apt-mark auto '.*' > /dev/null
+
+CommandNode(pos=(373, 403), parts=[
+  WordNode(pos=(373, 381), word='apt-mark'),
+  WordNode(pos=(382, 386), word='auto'),
+  WordNode(pos=(387, 391), word='.*'),
+  RedirectNode(output=
+    WordNode(pos=(394, 403), word='/dev/null'), pos=(392, 403), type='>'),
+])
+
+
+172) command -v gpg > /dev/null
+
+CommandNode(pos=(15, 41), parts=[
+  WordNode(pos=(15, 22), word='command'),
+  WordNode(pos=(23, 25), word='-v'),
+  WordNode(pos=(26, 29), word='gpg'),
+  RedirectNode(output=
+    WordNode(pos=(32, 41), word='/dev/null'), pos=(30, 41), type='>'),
+])
+
+
+173) echo '/usr/local/lib64' > /etc/ld.so.conf.d/local-lib64.conf
+
+CommandNode(pos=(10, 70), parts=[
+  WordNode(pos=(10, 14), word='echo'),
+  WordNode(pos=(15, 33), word='/usr/local/lib64'),
+  RedirectNode(output=
+    WordNode(pos=(36, 70), word='/etc/ld.so.conf.d/local-lib64.conf'), pos=(34, 70), type='>'),
+])
+
+
+174) apt-mark auto '.*' > /dev/null
+
+CommandNode(pos=(370, 400), parts=[
+  WordNode(pos=(370, 378), word='apt-mark'),
+  WordNode(pos=(379, 383), word='auto'),
+  WordNode(pos=(384, 388), word='.*'),
+  RedirectNode(output=
+    WordNode(pos=(391, 400), word='/dev/null'), pos=(389, 400), type='>'),
+])
+
+
+175) echo 'deb http://deb.debian.org/debian stretch-backports main' > /etc/apt/sources.list.d/stretch-backports.list
+
+CommandNode(pos=(12, 123), parts=[
+  WordNode(pos=(12, 16), word='echo'),
+  WordNode(pos=(17, 74), word='deb http://deb.debian.org/debian stretch-backports main'),
+  RedirectNode(output=
+    WordNode(pos=(77, 123), word='/etc/apt/sources.list.d/stretch-backports.list'), pos=(75, 123), type='>'),
+])
+
+
+176) patch -p0 < "$patchFile"
+
+CommandNode(pos=(1624, 1648), parts=[
+  WordNode(pos=(1624, 1629), word='patch'),
+  WordNode(pos=(1630, 1633), word='-p0'),
+  RedirectNode(output=
+    WordNode(pos=(1636, 1648), word='$patchFile', parts=[
+      ParameterNode(pos=(1637, 1647), value='patchFile'),
+    ]), pos=(1634, 1648), type='<'),
+])
+
+
+177) apt-mark auto '.*' > /dev/null
+
+CommandNode(pos=(2213, 2243), parts=[
+  WordNode(pos=(2213, 2221), word='apt-mark'),
+  WordNode(pos=(2222, 2226), word='auto'),
+  WordNode(pos=(2227, 2231), word='.*'),
+  RedirectNode(output=
+    WordNode(pos=(2234, 2243), word='/dev/null'), pos=(2232, 2243), type='>'),
+])
+
+
+178) command -v gpg > /dev/null
+
+CommandNode(pos=(15, 41), parts=[
+  WordNode(pos=(15, 22), word='command'),
+  WordNode(pos=(23, 25), word='-v'),
+  WordNode(pos=(26, 29), word='gpg'),
+  RedirectNode(output=
+    WordNode(pos=(32, 41), word='/dev/null'), pos=(30, 41), type='>'),
+])
+
+
+179) command -v gpgconf > /dev/null
+
+CommandNode(pos=(613, 643), parts=[
+  WordNode(pos=(613, 620), word='command'),
+  WordNode(pos=(621, 623), word='-v'),
+  WordNode(pos=(624, 631), word='gpgconf'),
+  RedirectNode(output=
+    WordNode(pos=(634, 643), word='/dev/null'), pos=(632, 643), type='>'),
+])
+
+
+180) gpg --batch --export "$key" > /etc/apt/trusted.gpg.d/postgres.gpg
+
+CommandNode(pos=(165, 230), parts=[
+  WordNode(pos=(165, 168), word='gpg'),
+  WordNode(pos=(169, 176), word='--batch'),
+  WordNode(pos=(177, 185), word='--export'),
+  WordNode(pos=(186, 192), word='$key', parts=[
+    ParameterNode(pos=(187, 191), value='key'),
+  ]),
+  RedirectNode(output=
+    WordNode(pos=(195, 230), word='/etc/apt/trusted.gpg.d/postgres.gpg'), pos=(193, 230), type='>'),
+])
+
+
+181) command -v gpgconf > /dev/null
+
+CommandNode(pos=(233, 263), parts=[
+  WordNode(pos=(233, 240), word='command'),
+  WordNode(pos=(241, 243), word='-v'),
+  WordNode(pos=(244, 251), word='gpgconf'),
+  RedirectNode(output=
+    WordNode(pos=(254, 263), word='/dev/null'), pos=(252, 263), type='>'),
+])
+
+
+182) apt-mark auto '.*' > /dev/null
+
+CommandNode(pos=(934, 964), parts=[
+  WordNode(pos=(934, 942), word='apt-mark'),
+  WordNode(pos=(943, 947), word='auto'),
+  WordNode(pos=(948, 952), word='.*'),
+  RedirectNode(output=
+    WordNode(pos=(955, 964), word='/dev/null'), pos=(953, 964), type='>'),
+])
+
+
+183) command -v gpg > /dev/null
+
+CommandNode(pos=(15, 41), parts=[
+  WordNode(pos=(15, 22), word='command'),
+  WordNode(pos=(23, 25), word='-v'),
+  WordNode(pos=(26, 29), word='gpg'),
+  RedirectNode(output=
+    WordNode(pos=(32, 41), word='/dev/null'), pos=(30, 41), type='>'),
+])
+
+
+184) command -v gpgconf > /dev/null
+
+CommandNode(pos=(661, 691), parts=[
+  WordNode(pos=(661, 668), word='command'),
+  WordNode(pos=(669, 671), word='-v'),
+  WordNode(pos=(672, 679), word='gpgconf'),
+  RedirectNode(output=
+    WordNode(pos=(682, 691), word='/dev/null'), pos=(680, 691), type='>'),
+])
+
+
+185) gpg --batch --export $GPG_KEYS > /etc/apt/trusted.gpg.d/mariadb.gpg
+
+CommandNode(pos=(150, 217), parts=[
+  WordNode(pos=(150, 153), word='gpg'),
+  WordNode(pos=(154, 161), word='--batch'),
+  WordNode(pos=(162, 170), word='--export'),
+  WordNode(pos=(171, 180), word='$GPG_KEYS', parts=[
+    ParameterNode(pos=(171, 180), value='GPG_KEYS'),
+  ]),
+  RedirectNode(output=
+    WordNode(pos=(183, 217), word='/etc/apt/trusted.gpg.d/mariadb.gpg'), pos=(181, 217), type='>'),
+])
+
+
+186) command -v gpgconf > /dev/null
+
+CommandNode(pos=(220, 250), parts=[
+  WordNode(pos=(220, 227), word='command'),
+  WordNode(pos=(228, 230), word='-v'),
+  WordNode(pos=(231, 238), word='gpgconf'),
+  RedirectNode(output=
+    WordNode(pos=(241, 250), word='/dev/null'), pos=(239, 250), type='>'),
+])
+
+
+187) echo "deb http://ftp.osuosl.org/pub/mariadb/repo/$MARIADB_MAJOR/ubuntu bionic main" > /etc/apt/sources.list.d/mariadb.list
+
+CommandNode(pos=(8, 130), parts=[
+  WordNode(pos=(8, 12), word='echo'),
+  WordNode(pos=(13, 91), word='deb http://ftp.osuosl.org/pub/mariadb/repo/$MARIADB_MAJOR/ubuntu bionic main', parts=[
+    ParameterNode(pos=(57, 71), value='MARIADB_MAJOR'),
+  ]),
+  RedirectNode(output=
+    WordNode(pos=(94, 130), word='/etc/apt/sources.list.d/mariadb.list'), pos=(92, 130), type='>'),
+])
+
+
+188) echo '[mysqld]\nskip-host-cache\nskip-name-resolve' > /etc/mysql/conf.d/docker.cnf
+
+CommandNode(pos=(700, 782), parts=[
+  WordNode(pos=(700, 704), word='echo'),
+  WordNode(pos=(705, 751), word='[mysqld]\\nskip-host-cache\\nskip-name-resolve'),
+  RedirectNode(output=
+    WordNode(pos=(754, 782), word='/etc/mysql/conf.d/docker.cnf'), pos=(752, 782), type='>'),
+])
+
+
+189) erl -noinput -eval '   { ok, AdminBin } = zip:foldl(fun(FileInArchive, GetInfo, GetBin, Acc) ->    case Acc of     "" ->      case lists:suffix("/rabbitmqadmin", FileInArchive) of       true -> GetBin();       false -> Acc      end;     _ -> Acc    end   end, "", init:get_plain_arguments()),   io:format("~s", [ AdminBin ]),   init:stop().  ' -- /plugins/rabbitmq_management-*.ez > /usr/local/bin/rabbitmqadmin
+
+CommandNode(pos=(11, 422), parts=[
+  WordNode(pos=(11, 14), word='erl'),
+  WordNode(pos=(15, 23), word='-noinput'),
+  WordNode(pos=(24, 29), word='-eval'),
+  WordNode(pos=(30, 354), word='   { ok, AdminBin } = zip:foldl(fun(FileInArchive, GetInfo, GetBin, Acc) ->    case Acc of     "" ->      case lists:suffix("/rabbitmqadmin", FileInArchive) of       true -> GetBin();       false -> Acc      end;     _ -> Acc    end   end, "", init:get_plain_arguments()),   io:format("~s", [ AdminBin ]),   init:stop().  '),
+  WordNode(pos=(355, 357), word='--'),
+  WordNode(pos=(358, 391), word='/plugins/rabbitmq_management-*.ez'),
+  RedirectNode(output=
+    WordNode(pos=(394, 422), word='/usr/local/bin/rabbitmqadmin'), pos=(392, 422), type='>'),
+])
+
+
+190) command -v gpg > /dev/null
+
+CommandNode(pos=(40, 66), parts=[
+  WordNode(pos=(40, 47), word='command'),
+  WordNode(pos=(48, 50), word='-v'),
+  WordNode(pos=(51, 54), word='gpg'),
+  RedirectNode(output=
+    WordNode(pos=(57, 66), word='/dev/null'), pos=(55, 66), type='>'),
+])
+
+
+191) command -v gpgconf > /dev/null
+
+CommandNode(pos=(734, 764), parts=[
+  WordNode(pos=(734, 741), word='command'),
+  WordNode(pos=(742, 744), word='-v'),
+  WordNode(pos=(745, 752), word='gpgconf'),
+  RedirectNode(output=
+    WordNode(pos=(755, 764), word='/dev/null'), pos=(753, 764), type='>'),
+])
+
+
+192) apt-mark auto '.*' > /dev/null
+
+CommandNode(pos=(1555, 1585), parts=[
+  WordNode(pos=(1555, 1563), word='apt-mark'),
+  WordNode(pos=(1564, 1568), word='auto'),
+  WordNode(pos=(1569, 1573), word='.*'),
+  RedirectNode(output=
+    WordNode(pos=(1576, 1585), word='/dev/null'), pos=(1574, 1585), type='>'),
+])
+
+
+193) apt-mark manual $savedAptMark > /dev/null
+
+CommandNode(pos=(1614, 1655), parts=[
+  WordNode(pos=(1614, 1622), word='apt-mark'),
+  WordNode(pos=(1623, 1629), word='manual'),
+  WordNode(pos=(1630, 1643), word='$savedAptMark', parts=[
+    ParameterNode(pos=(1630, 1643), value='savedAptMark'),
+  ]),
+  RedirectNode(output=
+    WordNode(pos=(1646, 1655), word='/dev/null'), pos=(1644, 1655), type='>'),
+])
+
+
+194) grep 'INFO: Loaded APR based Apache Tomcat Native library' >&2
+
+CommandNode(pos=(209, 271), parts=[
+  WordNode(pos=(209, 213), word='grep'),
+  WordNode(pos=(214, 267), word='INFO: Loaded APR based Apache Tomcat Native library'),
+  RedirectNode(output=2, pos=(268, 271), type='>&'),
+])
+
+
+195) echo >&2 "$nativeLines"
+
+CommandNode(pos=(280, 303), parts=[
+  WordNode(pos=(280, 284), word='echo'),
+  RedirectNode(output=2, pos=(285, 288), type='>&'),
+  WordNode(pos=(289, 303), word='$nativeLines', parts=[
+    ParameterNode(pos=(290, 302), value='nativeLines'),
+  ]),
+])
+
+
+196) apt-mark auto '.*' > /dev/null
+
+CommandNode(pos=(1555, 1585), parts=[
+  WordNode(pos=(1555, 1563), word='apt-mark'),
+  WordNode(pos=(1564, 1568), word='auto'),
+  WordNode(pos=(1569, 1573), word='.*'),
+  RedirectNode(output=
+    WordNode(pos=(1576, 1585), word='/dev/null'), pos=(1574, 1585), type='>'),
+])
+
+
+197) apt-mark manual $savedAptMark > /dev/null
+
+CommandNode(pos=(1614, 1655), parts=[
+  WordNode(pos=(1614, 1622), word='apt-mark'),
+  WordNode(pos=(1623, 1629), word='manual'),
+  WordNode(pos=(1630, 1643), word='$savedAptMark', parts=[
+    ParameterNode(pos=(1630, 1643), value='savedAptMark'),
+  ]),
+  RedirectNode(output=
+    WordNode(pos=(1646, 1655), word='/dev/null'), pos=(1644, 1655), type='>'),
+])
+
+
+198) grep 'INFO: Loaded APR based Apache Tomcat Native library' >&2
+
+CommandNode(pos=(209, 271), parts=[
+  WordNode(pos=(209, 213), word='grep'),
+  WordNode(pos=(214, 267), word='INFO: Loaded APR based Apache Tomcat Native library'),
+  RedirectNode(output=2, pos=(268, 271), type='>&'),
+])
+
+
+199) echo >&2 "$nativeLines"
+
+CommandNode(pos=(280, 303), parts=[
+  WordNode(pos=(280, 284), word='echo'),
+  RedirectNode(output=2, pos=(285, 288), type='>&'),
+  WordNode(pos=(289, 303), word='$nativeLines', parts=[
+    ParameterNode(pos=(290, 302), value='nativeLines'),
+  ]),
+])
+
+
+200) command -v gpg > /dev/null
+
+CommandNode(pos=(15, 41), parts=[
+  WordNode(pos=(15, 22), word='command'),
+  WordNode(pos=(23, 25), word='-v'),
+  WordNode(pos=(26, 29), word='gpg'),
+  RedirectNode(output=
+    WordNode(pos=(32, 41), word='/dev/null'), pos=(30, 41), type='>'),
+])
+
+
+201) command -v gpgconf > /dev/null
+
+CommandNode(pos=(574, 604), parts=[
+  WordNode(pos=(574, 581), word='command'),
+  WordNode(pos=(582, 584), word='-v'),
+  WordNode(pos=(585, 592), word='gpgconf'),
+  RedirectNode(output=
+    WordNode(pos=(595, 604), word='/dev/null'), pos=(593, 604), type='>'),
+])
+
+
+202) command -v gpgconf > /dev/null
+
+CommandNode(pos=(661, 691), parts=[
+  WordNode(pos=(661, 668), word='command'),
+  WordNode(pos=(669, 671), word='-v'),
+  WordNode(pos=(672, 679), word='gpgconf'),
+  RedirectNode(output=
+    WordNode(pos=(682, 691), word='/dev/null'), pos=(680, 691), type='>'),
+])
+
+
+203) gpg --batch --export $GPG_KEYS > /etc/apt/trusted.gpg.d/percona.gpg
+
+CommandNode(pos=(150, 217), parts=[
+  WordNode(pos=(150, 153), word='gpg'),
+  WordNode(pos=(154, 161), word='--batch'),
+  WordNode(pos=(162, 170), word='--export'),
+  WordNode(pos=(171, 180), word='$GPG_KEYS', parts=[
+    ParameterNode(pos=(171, 180), value='GPG_KEYS'),
+  ]),
+  RedirectNode(output=
+    WordNode(pos=(183, 217), word='/etc/apt/trusted.gpg.d/percona.gpg'), pos=(181, 217), type='>'),
+])
+
+
+204) command -v gpgconf > /dev/null
+
+CommandNode(pos=(220, 250), parts=[
+  WordNode(pos=(220, 227), word='command'),
+  WordNode(pos=(228, 230), word='-v'),
+  WordNode(pos=(231, 238), word='gpgconf'),
+  RedirectNode(output=
+    WordNode(pos=(241, 250), word='/dev/null'), pos=(239, 250), type='>'),
+])
+
+
+205) echo 'deb https://repo.percona.com/apt stretch main' > /etc/apt/sources.list.d/percona.list
+
+CommandNode(pos=(0, 91), parts=[
+  WordNode(pos=(0, 4), word='echo'),
+  WordNode(pos=(5, 52), word='deb https://repo.percona.com/apt stretch main'),
+  RedirectNode(output=
+    WordNode(pos=(55, 91), word='/etc/apt/sources.list.d/percona.list'), pos=(53, 91), type='>'),
+])
+
+
+206) echo '[mysqld]\nskip-host-cache\nskip-name-resolve' > /etc/mysql/conf.d/docker.cnf
+
+CommandNode(pos=(791, 873), parts=[
+  WordNode(pos=(791, 795), word='echo'),
+  WordNode(pos=(796, 842), word='[mysqld]\\nskip-host-cache\\nskip-name-resolve'),
+  RedirectNode(output=
+    WordNode(pos=(845, 873), word='/etc/mysql/conf.d/docker.cnf'), pos=(843, 873), type='>'),
+])
+
+
+207) echo 'hosts: files dns' > /etc/nsswitch.conf
+
+CommandNode(pos=(31, 75), parts=[
+  WordNode(pos=(31, 35), word='echo'),
+  WordNode(pos=(36, 54), word='hosts: files dns'),
+  RedirectNode(output=
+    WordNode(pos=(57, 75), word='/etc/nsswitch.conf'), pos=(55, 75), type='>'),
+])
+
+
+208) apt-mark auto '.*' > /dev/null
+
+CommandNode(pos=(180, 210), parts=[
+  WordNode(pos=(180, 188), word='apt-mark'),
+  WordNode(pos=(189, 193), word='auto'),
+  WordNode(pos=(194, 198), word='.*'),
+  RedirectNode(output=
+    WordNode(pos=(201, 210), word='/dev/null'), pos=(199, 210), type='>'),
+])
+
+
+209) apt-mark auto '.*' > /dev/null
+
+CommandNode(pos=(381, 411), parts=[
+  WordNode(pos=(381, 389), word='apt-mark'),
+  WordNode(pos=(390, 394), word='auto'),
+  WordNode(pos=(395, 399), word='.*'),
+  RedirectNode(output=
+    WordNode(pos=(402, 411), word='/dev/null'), pos=(400, 411), type='>'),
+])
+
+
+210) command -v gpgconf > /dev/null
+
+CommandNode(pos=(574, 604), parts=[
+  WordNode(pos=(574, 581), word='command'),
+  WordNode(pos=(582, 584), word='-v'),
+  WordNode(pos=(585, 592), word='gpgconf'),
+  RedirectNode(output=
+    WordNode(pos=(595, 604), word='/dev/null'), pos=(593, 604), type='>'),
+])
+
+
+211) erl -noinput -eval '   { ok, AdminBin } = zip:foldl(fun(FileInArchive, GetInfo, GetBin, Acc) ->    case Acc of     "" ->      case lists:suffix("/rabbitmqadmin", FileInArchive) of       true -> GetBin();       false -> Acc      end;     _ -> Acc    end   end, "", init:get_plain_arguments()),   io:format("~s", [ AdminBin ]),   init:stop().  ' -- /plugins/rabbitmq_management-*.ez > /usr/local/bin/rabbitmqadmin
+
+CommandNode(pos=(11, 422), parts=[
+  WordNode(pos=(11, 14), word='erl'),
+  WordNode(pos=(15, 23), word='-noinput'),
+  WordNode(pos=(24, 29), word='-eval'),
+  WordNode(pos=(30, 354), word='   { ok, AdminBin } = zip:foldl(fun(FileInArchive, GetInfo, GetBin, Acc) ->    case Acc of     "" ->      case lists:suffix("/rabbitmqadmin", FileInArchive) of       true -> GetBin();       false -> Acc      end;     _ -> Acc    end   end, "", init:get_plain_arguments()),   io:format("~s", [ AdminBin ]),   init:stop().  '),
+  WordNode(pos=(355, 357), word='--'),
+  WordNode(pos=(358, 391), word='/plugins/rabbitmq_management-*.ez'),
+  RedirectNode(output=
+    WordNode(pos=(394, 422), word='/usr/local/bin/rabbitmqadmin'), pos=(392, 422), type='>'),
+])
+
+
+212) command -v gpgconf > /dev/null
+
+CommandNode(pos=(430, 460), parts=[
+  WordNode(pos=(430, 437), word='command'),
+  WordNode(pos=(438, 440), word='-v'),
+  WordNode(pos=(441, 448), word='gpgconf'),
+  RedirectNode(output=
+    WordNode(pos=(451, 460), word='/dev/null'), pos=(449, 460), type='>'),
+])
+
+
+213) command -v gpg > /dev/null
+
+CommandNode(pos=(114, 140), parts=[
+  WordNode(pos=(114, 121), word='command'),
+  WordNode(pos=(122, 124), word='-v'),
+  WordNode(pos=(125, 128), word='gpg'),
+  RedirectNode(output=
+    WordNode(pos=(131, 140), word='/dev/null'), pos=(129, 140), type='>'),
+])
+
+
+214) gpg --batch --export $GPG_KEYS > /etc/apt/trusted.gpg.d/cassandra.gpg
+
+CommandNode(pos=(150, 219), parts=[
+  WordNode(pos=(150, 153), word='gpg'),
+  WordNode(pos=(154, 161), word='--batch'),
+  WordNode(pos=(162, 170), word='--export'),
+  WordNode(pos=(171, 180), word='$GPG_KEYS', parts=[
+    ParameterNode(pos=(171, 180), value='GPG_KEYS'),
+  ]),
+  RedirectNode(output=
+    WordNode(pos=(183, 219), word='/etc/apt/trusted.gpg.d/cassandra.gpg'), pos=(181, 219), type='>'),
+])
+
+
+215) erl -noinput -eval '   { ok, AdminBin } = zip:foldl(fun(FileInArchive, GetInfo, GetBin, Acc) ->    case Acc of     "" ->      case lists:suffix("/rabbitmqadmin", FileInArchive) of       true -> GetBin();       false -> Acc      end;     _ -> Acc    end   end, "", init:get_plain_arguments()),   io:format("~s", [ AdminBin ]),   init:stop().  ' -- /plugins/rabbitmq_management-*.ez > /usr/local/bin/rabbitmqadmin
+
+CommandNode(pos=(11, 422), parts=[
+  WordNode(pos=(11, 14), word='erl'),
+  WordNode(pos=(15, 23), word='-noinput'),
+  WordNode(pos=(24, 29), word='-eval'),
+  WordNode(pos=(30, 354), word='   { ok, AdminBin } = zip:foldl(fun(FileInArchive, GetInfo, GetBin, Acc) ->    case Acc of     "" ->      case lists:suffix("/rabbitmqadmin", FileInArchive) of       true -> GetBin();       false -> Acc      end;     _ -> Acc    end   end, "", init:get_plain_arguments()),   io:format("~s", [ AdminBin ]),   init:stop().  '),
+  WordNode(pos=(355, 357), word='--'),
+  WordNode(pos=(358, 391), word='/plugins/rabbitmq_management-*.ez'),
+  RedirectNode(output=
+    WordNode(pos=(394, 422), word='/usr/local/bin/rabbitmqadmin'), pos=(392, 422), type='>'),
+])
+
+
+216) command -v gpgconf > /dev/null
+
+CommandNode(pos=(430, 460), parts=[
+  WordNode(pos=(430, 437), word='command'),
+  WordNode(pos=(438, 440), word='-v'),
+  WordNode(pos=(441, 448), word='gpgconf'),
+  RedirectNode(output=
+    WordNode(pos=(451, 460), word='/dev/null'), pos=(449, 460), type='>'),
+])
+
+
+217) apt-mark auto '.*' > /dev/null
+
+CommandNode(pos=(180, 210), parts=[
+  WordNode(pos=(180, 188), word='apt-mark'),
+  WordNode(pos=(189, 193), word='auto'),
+  WordNode(pos=(194, 198), word='.*'),
+  RedirectNode(output=
+    WordNode(pos=(201, 210), word='/dev/null'), pos=(199, 210), type='>'),
+])
+
+
+218) command -v gpgconf > /dev/null
+
+CommandNode(pos=(494, 524), parts=[
+  WordNode(pos=(494, 501), word='command'),
+  WordNode(pos=(502, 504), word='-v'),
+  WordNode(pos=(505, 512), word='gpgconf'),
+  RedirectNode(output=
+    WordNode(pos=(515, 524), word='/dev/null'), pos=(513, 524), type='>'),
+])
+
+
+219) command -v gpg > /dev/null
+
+CommandNode(pos=(15, 41), parts=[
+  WordNode(pos=(15, 22), word='command'),
+  WordNode(pos=(23, 25), word='-v'),
+  WordNode(pos=(26, 29), word='gpg'),
+  RedirectNode(output=
+    WordNode(pos=(32, 41), word='/dev/null'), pos=(30, 41), type='>'),
+])
+
+
+220) command -v gpg > /dev/null
+
+CommandNode(pos=(15, 41), parts=[
+  WordNode(pos=(15, 22), word='command'),
+  WordNode(pos=(23, 25), word='-v'),
+  WordNode(pos=(26, 29), word='gpg'),
+  RedirectNode(output=
+    WordNode(pos=(32, 41), word='/dev/null'), pos=(30, 41), type='>'),
+])
+
+
+221) command -v gpg > /dev/null
+
+CommandNode(pos=(40, 66), parts=[
+  WordNode(pos=(40, 47), word='command'),
+  WordNode(pos=(48, 50), word='-v'),
+  WordNode(pos=(51, 54), word='gpg'),
+  RedirectNode(output=
+    WordNode(pos=(57, 66), word='/dev/null'), pos=(55, 66), type='>'),
+])
+
+
+222) command -v gpgconf > /dev/null
+
+CommandNode(pos=(734, 764), parts=[
+  WordNode(pos=(734, 741), word='command'),
+  WordNode(pos=(742, 744), word='-v'),
+  WordNode(pos=(745, 752), word='gpgconf'),
+  RedirectNode(output=
+    WordNode(pos=(755, 764), word='/dev/null'), pos=(753, 764), type='>'),
+])
+
+
+223) tee php-fpm.conf > /dev/null
+
+CommandNode(pos=(104, 132), parts=[
+  WordNode(pos=(104, 107), word='tee'),
+  WordNode(pos=(108, 120), word='php-fpm.conf'),
+  RedirectNode(output=
+    WordNode(pos=(123, 132), word='/dev/null'), pos=(121, 132), type='>'),
+])
+
+
+224) command -v gpg > /dev/null
+
+CommandNode(pos=(15, 41), parts=[
+  WordNode(pos=(15, 22), word='command'),
+  WordNode(pos=(23, 25), word='-v'),
+  WordNode(pos=(26, 29), word='gpg'),
+  RedirectNode(output=
+    WordNode(pos=(32, 41), word='/dev/null'), pos=(30, 41), type='>'),
+])
+
+
+225) command -v gpgconf > /dev/null
+
+CommandNode(pos=(613, 643), parts=[
+  WordNode(pos=(613, 620), word='command'),
+  WordNode(pos=(621, 623), word='-v'),
+  WordNode(pos=(624, 631), word='gpgconf'),
+  RedirectNode(output=
+    WordNode(pos=(634, 643), word='/dev/null'), pos=(632, 643), type='>'),
+])
+
+
+226) gpg --batch --export "$key" > /etc/apt/trusted.gpg.d/postgres.gpg
+
+CommandNode(pos=(165, 230), parts=[
+  WordNode(pos=(165, 168), word='gpg'),
+  WordNode(pos=(169, 176), word='--batch'),
+  WordNode(pos=(177, 185), word='--export'),
+  WordNode(pos=(186, 192), word='$key', parts=[
+    ParameterNode(pos=(187, 191), value='key'),
+  ]),
+  RedirectNode(output=
+    WordNode(pos=(195, 230), word='/etc/apt/trusted.gpg.d/postgres.gpg'), pos=(193, 230), type='>'),
+])
+
+
+227) command -v gpgconf > /dev/null
+
+CommandNode(pos=(233, 263), parts=[
+  WordNode(pos=(233, 240), word='command'),
+  WordNode(pos=(241, 243), word='-v'),
+  WordNode(pos=(244, 251), word='gpgconf'),
+  RedirectNode(output=
+    WordNode(pos=(254, 263), word='/dev/null'), pos=(252, 263), type='>'),
+])
+
+
+228) awk '$1 == "#define" && $2 == "DEFAULT_PGSOCKET_DIR" && $3 == "\"/tmp\"" { $3 = "\"/var/run/postgresql\""; print; next } { print }' src/include/pg_config_manual.h > src/include/pg_config_manual.h.new
+
+CommandNode(pos=(700, 899), parts=[
+  WordNode(pos=(700, 703), word='awk'),
+  WordNode(pos=(704, 831), word='$1 == "#define" && $2 == "DEFAULT_PGSOCKET_DIR" && $3 == "\\"/tmp\\"" { $3 = "\\"/var/run/postgresql\\""; print; next } { print }'),
+  WordNode(pos=(832, 862), word='src/include/pg_config_manual.h'),
+  RedirectNode(output=
+    WordNode(pos=(865, 899), word='src/include/pg_config_manual.h.new'), pos=(863, 899), type='>'),
+])
+
+
+229) echo 'hosts: files dns' > /etc/nsswitch.conf
+
+CommandNode(pos=(31, 75), parts=[
+  WordNode(pos=(31, 35), word='echo'),
+  WordNode(pos=(36, 54), word='hosts: files dns'),
+  RedirectNode(output=
+    WordNode(pos=(57, 75), word='/etc/nsswitch.conf'), pos=(55, 75), type='>'),
+])
+
+
+230) echo >&2 "error: failed to download 'docker-${DOCKER_VERSION}' from '${DOCKER_CHANNEL}' for '${dockerArch}'"
+
+CommandNode(pos=(165, 273), parts=[
+  WordNode(pos=(165, 169), word='echo'),
+  RedirectNode(output=2, pos=(170, 173), type='>&'),
+  WordNode(pos=(174, 273), word="error: failed to download 'docker-${DOCKER_VERSION}' from '${DOCKER_CHANNEL}' for '${dockerArch}'", parts=[
+    ParameterNode(pos=(209, 226), value='DOCKER_VERSION'),
+    ParameterNode(pos=(234, 251), value='DOCKER_CHANNEL'),
+    ParameterNode(pos=(258, 271), value='dockerArch'),
+  ]),
+])
+
+
+231) awk '$1 == "#define" && $2 == "DEFAULT_PGSOCKET_DIR" && $3 == "\"/tmp\"" { $3 = "\"/var/run/postgresql\""; print; next } { print }' src/include/pg_config_manual.h > src/include/pg_config_manual.h.new
+
+CommandNode(pos=(710, 909), parts=[
+  WordNode(pos=(710, 713), word='awk'),
+  WordNode(pos=(714, 841), word='$1 == "#define" && $2 == "DEFAULT_PGSOCKET_DIR" && $3 == "\\"/tmp\\"" { $3 = "\\"/var/run/postgresql\\""; print; next } { print }'),
+  WordNode(pos=(842, 872), word='src/include/pg_config_manual.h'),
+  RedirectNode(output=
+    WordNode(pos=(875, 909), word='src/include/pg_config_manual.h.new'), pos=(873, 909), type='>'),
+])
+
+
+232) apt-mark auto '.*' > /dev/null
+
+CommandNode(pos=(1392, 1422), parts=[
+  WordNode(pos=(1392, 1400), word='apt-mark'),
+  WordNode(pos=(1401, 1405), word='auto'),
+  WordNode(pos=(1406, 1410), word='.*'),
+  RedirectNode(output=
+    WordNode(pos=(1413, 1422), word='/dev/null'), pos=(1411, 1422), type='>'),
+])
+
+
+233) echo 'config.logger = Logger.new(STDOUT)' > config/additional_environment.rb
+
+CommandNode(pos=(353, 429), parts=[
+  WordNode(pos=(353, 357), word='echo'),
+  WordNode(pos=(358, 394), word='config.logger = Logger.new(STDOUT)'),
+  RedirectNode(output=
+    WordNode(pos=(397, 429), word='config/additional_environment.rb'), pos=(395, 429), type='>'),
+])
+
+
+234) echo "$RAILS_ENV:" > ./config/database.yml
+
+CommandNode(pos=(951, 993), parts=[
+  WordNode(pos=(951, 955), word='echo'),
+  WordNode(pos=(956, 969), word='$RAILS_ENV:', parts=[
+    ParameterNode(pos=(957, 967), value='RAILS_ENV'),
+  ]),
+  RedirectNode(output=
+    WordNode(pos=(972, 993), word='./config/database.yml'), pos=(970, 993), type='>'),
+])
+
+
+235) echo "  adapter: $adapter" >> ./config/database.yml
+
+CommandNode(pos=(997, 1048), parts=[
+  WordNode(pos=(997, 1001), word='echo'),
+  WordNode(pos=(1002, 1023), word='  adapter: $adapter', parts=[
+    ParameterNode(pos=(1014, 1022), value='adapter'),
+  ]),
+  RedirectNode(output=
+    WordNode(pos=(1027, 1048), word='./config/database.yml'), pos=(1024, 1048), type='>>'),
+])
+
+
+236) apt-mark auto '.*' > /dev/null
+
+CommandNode(pos=(1259, 1289), parts=[
+  WordNode(pos=(1259, 1267), word='apt-mark'),
+  WordNode(pos=(1268, 1272), word='auto'),
+  WordNode(pos=(1273, 1277), word='.*'),
+  RedirectNode(output=
+    WordNode(pos=(1280, 1289), word='/dev/null'), pos=(1278, 1289), type='>'),
+])
+
+
+237) apt-mark auto '.*' > /dev/null
+
+CommandNode(pos=(1555, 1585), parts=[
+  WordNode(pos=(1555, 1563), word='apt-mark'),
+  WordNode(pos=(1564, 1568), word='auto'),
+  WordNode(pos=(1569, 1573), word='.*'),
+  RedirectNode(output=
+    WordNode(pos=(1576, 1585), word='/dev/null'), pos=(1574, 1585), type='>'),
+])
+
+
+238) apt-mark manual $savedAptMark > /dev/null
+
+CommandNode(pos=(1614, 1655), parts=[
+  WordNode(pos=(1614, 1622), word='apt-mark'),
+  WordNode(pos=(1623, 1629), word='manual'),
+  WordNode(pos=(1630, 1643), word='$savedAptMark', parts=[
+    ParameterNode(pos=(1630, 1643), value='savedAptMark'),
+  ]),
+  RedirectNode(output=
+    WordNode(pos=(1646, 1655), word='/dev/null'), pos=(1644, 1655), type='>'),
+])
+
+
+239) grep 'INFO: Loaded APR based Apache Tomcat Native library' >&2
+
+CommandNode(pos=(209, 271), parts=[
+  WordNode(pos=(209, 213), word='grep'),
+  WordNode(pos=(214, 267), word='INFO: Loaded APR based Apache Tomcat Native library'),
+  RedirectNode(output=2, pos=(268, 271), type='>&'),
+])
+
+
+240) echo >&2 "$nativeLines"
+
+CommandNode(pos=(280, 303), parts=[
+  WordNode(pos=(280, 284), word='echo'),
+  RedirectNode(output=2, pos=(285, 288), type='>&'),
+  WordNode(pos=(289, 303), word='$nativeLines', parts=[
+    ParameterNode(pos=(290, 302), value='nativeLines'),
+  ]),
+])
+
+
+241) command -v gpgconf > /dev/null
+
+CommandNode(pos=(661, 691), parts=[
+  WordNode(pos=(661, 668), word='command'),
+  WordNode(pos=(669, 671), word='-v'),
+  WordNode(pos=(672, 679), word='gpgconf'),
+  RedirectNode(output=
+    WordNode(pos=(682, 691), word='/dev/null'), pos=(680, 691), type='>'),
+])
+
+
+242) gpg --batch --export $GPG_KEYS > /etc/apt/trusted.gpg.d/mariadb.gpg
+
+CommandNode(pos=(150, 217), parts=[
+  WordNode(pos=(150, 153), word='gpg'),
+  WordNode(pos=(154, 161), word='--batch'),
+  WordNode(pos=(162, 170), word='--export'),
+  WordNode(pos=(171, 180), word='$GPG_KEYS', parts=[
+    ParameterNode(pos=(171, 180), value='GPG_KEYS'),
+  ]),
+  RedirectNode(output=
+    WordNode(pos=(183, 217), word='/etc/apt/trusted.gpg.d/mariadb.gpg'), pos=(181, 217), type='>'),
+])
+
+
+243) command -v gpgconf > /dev/null
+
+CommandNode(pos=(220, 250), parts=[
+  WordNode(pos=(220, 227), word='command'),
+  WordNode(pos=(228, 230), word='-v'),
+  WordNode(pos=(231, 238), word='gpgconf'),
+  RedirectNode(output=
+    WordNode(pos=(241, 250), word='/dev/null'), pos=(239, 250), type='>'),
+])
+
+
+244) echo "deb http://ftp.osuosl.org/pub/mariadb/repo/$MARIADB_MAJOR/ubuntu bionic main" > /etc/apt/sources.list.d/mariadb.list
+
+CommandNode(pos=(8, 130), parts=[
+  WordNode(pos=(8, 12), word='echo'),
+  WordNode(pos=(13, 91), word='deb http://ftp.osuosl.org/pub/mariadb/repo/$MARIADB_MAJOR/ubuntu bionic main', parts=[
+    ParameterNode(pos=(57, 71), value='MARIADB_MAJOR'),
+  ]),
+  RedirectNode(output=
+    WordNode(pos=(94, 130), word='/etc/apt/sources.list.d/mariadb.list'), pos=(92, 130), type='>'),
+])
+
+
+245) echo '[mysqld]\nskip-host-cache\nskip-name-resolve' > /etc/mysql/conf.d/docker.cnf
+
+CommandNode(pos=(705, 787), parts=[
+  WordNode(pos=(705, 709), word='echo'),
+  WordNode(pos=(710, 756), word='[mysqld]\\nskip-host-cache\\nskip-name-resolve'),
+  RedirectNode(output=
+    WordNode(pos=(759, 787), word='/etc/mysql/conf.d/docker.cnf'), pos=(757, 787), type='>'),
+])
+
+
+246) command -v gpg > /dev/null
+
+CommandNode(pos=(40, 66), parts=[
+  WordNode(pos=(40, 47), word='command'),
+  WordNode(pos=(48, 50), word='-v'),
+  WordNode(pos=(51, 54), word='gpg'),
+  RedirectNode(output=
+    WordNode(pos=(57, 66), word='/dev/null'), pos=(55, 66), type='>'),
+])
+
+
+247) command -v gpgconf > /dev/null
+
+CommandNode(pos=(734, 764), parts=[
+  WordNode(pos=(734, 741), word='command'),
+  WordNode(pos=(742, 744), word='-v'),
+  WordNode(pos=(745, 752), word='gpgconf'),
+  RedirectNode(output=
+    WordNode(pos=(755, 764), word='/dev/null'), pos=(753, 764), type='>'),
+])
+
+
+248) apt-mark auto '.*' > /dev/null
+
+CommandNode(pos=(370, 400), parts=[
+  WordNode(pos=(370, 378), word='apt-mark'),
+  WordNode(pos=(379, 383), word='auto'),
+  WordNode(pos=(384, 388), word='.*'),
+  RedirectNode(output=
+    WordNode(pos=(391, 400), word='/dev/null'), pos=(389, 400), type='>'),
+])
+
+
+249) apt-mark auto '.*' > /dev/null
+
+CommandNode(pos=(180, 210), parts=[
+  WordNode(pos=(180, 188), word='apt-mark'),
+  WordNode(pos=(189, 193), word='auto'),
+  WordNode(pos=(194, 198), word='.*'),
+  RedirectNode(output=
+    WordNode(pos=(201, 210), word='/dev/null'), pos=(199, 210), type='>'),
+])
+
+
+250) command -v gpgconf > /dev/null
+
+CommandNode(pos=(494, 524), parts=[
+  WordNode(pos=(494, 501), word='command'),
+  WordNode(pos=(502, 504), word='-v'),
+  WordNode(pos=(505, 512), word='gpgconf'),
+  RedirectNode(output=
+    WordNode(pos=(515, 524), word='/dev/null'), pos=(513, 524), type='>'),
+])
+
+
+251) apt-mark auto '.*' > /dev/null
+
+CommandNode(pos=(180, 210), parts=[
+  WordNode(pos=(180, 188), word='apt-mark'),
+  WordNode(pos=(189, 193), word='auto'),
+  WordNode(pos=(194, 198), word='.*'),
+  RedirectNode(output=
+    WordNode(pos=(201, 210), word='/dev/null'), pos=(199, 210), type='>'),
+])
+
+
+252) command -v gpgconf > /dev/null
+
+CommandNode(pos=(430, 460), parts=[
+  WordNode(pos=(430, 437), word='command'),
+  WordNode(pos=(438, 440), word='-v'),
+  WordNode(pos=(441, 448), word='gpgconf'),
+  RedirectNode(output=
+    WordNode(pos=(451, 460), word='/dev/null'), pos=(449, 460), type='>'),
+])
+
+
+253) command -v gpgconf > /dev/null
+
+CommandNode(pos=(494, 524), parts=[
+  WordNode(pos=(494, 501), word='command'),
+  WordNode(pos=(502, 504), word='-v'),
+  WordNode(pos=(505, 512), word='gpgconf'),
+  RedirectNode(output=
+    WordNode(pos=(515, 524), word='/dev/null'), pos=(513, 524), type='>'),
+])
+
+
+254) command -v gpg > /dev/null
+
+CommandNode(pos=(15, 41), parts=[
+  WordNode(pos=(15, 22), word='command'),
+  WordNode(pos=(23, 25), word='-v'),
+  WordNode(pos=(26, 29), word='gpg'),
+  RedirectNode(output=
+    WordNode(pos=(32, 41), word='/dev/null'), pos=(30, 41), type='>'),
+])
+
+
+255) echo '/usr/local/lib64' > /etc/ld.so.conf.d/local-lib64.conf
+
+CommandNode(pos=(10, 70), parts=[
+  WordNode(pos=(10, 14), word='echo'),
+  WordNode(pos=(15, 33), word='/usr/local/lib64'),
+  RedirectNode(output=
+    WordNode(pos=(36, 70), word='/etc/ld.so.conf.d/local-lib64.conf'), pos=(34, 70), type='>'),
+])
+
+
+256) apt-mark auto '.*' > /dev/null
+
+CommandNode(pos=(292, 322), parts=[
+  WordNode(pos=(292, 300), word='apt-mark'),
+  WordNode(pos=(301, 305), word='auto'),
+  WordNode(pos=(306, 310), word='.*'),
+  RedirectNode(output=
+    WordNode(pos=(313, 322), word='/dev/null'), pos=(311, 322), type='>'),
+])
+
+
+257) apt-mark manual $savedAptMark > /dev/null
+
+CommandNode(pos=(325, 366), parts=[
+  WordNode(pos=(325, 333), word='apt-mark'),
+  WordNode(pos=(334, 340), word='manual'),
+  WordNode(pos=(341, 354), word='$savedAptMark', parts=[
+    ParameterNode(pos=(341, 354), value='savedAptMark'),
+  ]),
+  RedirectNode(output=
+    WordNode(pos=(357, 366), word='/dev/null'), pos=(355, 366), type='>'),
+])
+
+
+258) apt-mark auto '.*' > /dev/null
+
+CommandNode(pos=(180, 210), parts=[
+  WordNode(pos=(180, 188), word='apt-mark'),
+  WordNode(pos=(189, 193), word='auto'),
+  WordNode(pos=(194, 198), word='.*'),
+  RedirectNode(output=
+    WordNode(pos=(201, 210), word='/dev/null'), pos=(199, 210), type='>'),
+])
+
+
+259) apt-mark auto '.*' > /dev/null
+
+CommandNode(pos=(381, 411), parts=[
+  WordNode(pos=(381, 389), word='apt-mark'),
+  WordNode(pos=(390, 394), word='auto'),
+  WordNode(pos=(395, 399), word='.*'),
+  RedirectNode(output=
+    WordNode(pos=(402, 411), word='/dev/null'), pos=(400, 411), type='>'),
+])
+
+
+260) apt-mark auto '.*' > /dev/null
+
+CommandNode(pos=(180, 210), parts=[
+  WordNode(pos=(180, 188), word='apt-mark'),
+  WordNode(pos=(189, 193), word='auto'),
+  WordNode(pos=(194, 198), word='.*'),
+  RedirectNode(output=
+    WordNode(pos=(201, 210), word='/dev/null'), pos=(199, 210), type='>'),
+])
+
+
+261) command -v gpg > /dev/null
+
+CommandNode(pos=(15, 41), parts=[
+  WordNode(pos=(15, 22), word='command'),
+  WordNode(pos=(23, 25), word='-v'),
+  WordNode(pos=(26, 29), word='gpg'),
+  RedirectNode(output=
+    WordNode(pos=(32, 41), word='/dev/null'), pos=(30, 41), type='>'),
+])
+
+
+262) command -v gpgconf > /dev/null
+
+CommandNode(pos=(613, 643), parts=[
+  WordNode(pos=(613, 620), word='command'),
+  WordNode(pos=(621, 623), word='-v'),
+  WordNode(pos=(624, 631), word='gpgconf'),
+  RedirectNode(output=
+    WordNode(pos=(634, 643), word='/dev/null'), pos=(632, 643), type='>'),
+])
+
+
+263) gpg --batch --export "$key" > /etc/apt/trusted.gpg.d/postgres.gpg
+
+CommandNode(pos=(165, 230), parts=[
+  WordNode(pos=(165, 168), word='gpg'),
+  WordNode(pos=(169, 176), word='--batch'),
+  WordNode(pos=(177, 185), word='--export'),
+  WordNode(pos=(186, 192), word='$key', parts=[
+    ParameterNode(pos=(187, 191), value='key'),
+  ]),
+  RedirectNode(output=
+    WordNode(pos=(195, 230), word='/etc/apt/trusted.gpg.d/postgres.gpg'), pos=(193, 230), type='>'),
+])
+
+
+264) command -v gpgconf > /dev/null
+
+CommandNode(pos=(233, 263), parts=[
+  WordNode(pos=(233, 240), word='command'),
+  WordNode(pos=(241, 243), word='-v'),
+  WordNode(pos=(244, 251), word='gpgconf'),
+  RedirectNode(output=
+    WordNode(pos=(254, 263), word='/dev/null'), pos=(252, 263), type='>'),
+])
+
+
+265) apt-mark auto '.*' > /dev/null
+
+CommandNode(pos=(383, 413), parts=[
+  WordNode(pos=(383, 391), word='apt-mark'),
+  WordNode(pos=(392, 396), word='auto'),
+  WordNode(pos=(397, 401), word='.*'),
+  RedirectNode(output=
+    WordNode(pos=(404, 413), word='/dev/null'), pos=(402, 413), type='>'),
+])
+
+
+266) apt-mark auto '.*' > /dev/null
+
+CommandNode(pos=(891, 921), parts=[
+  WordNode(pos=(891, 899), word='apt-mark'),
+  WordNode(pos=(900, 904), word='auto'),
+  WordNode(pos=(905, 909), word='.*'),
+  RedirectNode(output=
+    WordNode(pos=(912, 921), word='/dev/null'), pos=(910, 921), type='>'),
+])
+
+
+267) command -v gpg > /dev/null
+
+CommandNode(pos=(15, 41), parts=[
+  WordNode(pos=(15, 22), word='command'),
+  WordNode(pos=(23, 25), word='-v'),
+  WordNode(pos=(26, 29), word='gpg'),
+  RedirectNode(output=
+    WordNode(pos=(32, 41), word='/dev/null'), pos=(30, 41), type='>'),
+])
+
+
+268) echo '/usr/local/lib64' > /etc/ld.so.conf.d/local-lib64.conf
+
+CommandNode(pos=(10, 70), parts=[
+  WordNode(pos=(10, 14), word='echo'),
+  WordNode(pos=(15, 33), word='/usr/local/lib64'),
+  RedirectNode(output=
+    WordNode(pos=(36, 70), word='/etc/ld.so.conf.d/local-lib64.conf'), pos=(34, 70), type='>'),
+])
+
+
+269) xargs apt-mark auto > /dev/null
+
+CommandNode(pos=(1177, 1208), parts=[
+  WordNode(pos=(1177, 1182), word='xargs'),
+  WordNode(pos=(1183, 1191), word='apt-mark'),
+  WordNode(pos=(1192, 1196), word='auto'),
+  RedirectNode(output=
+    WordNode(pos=(1199, 1208), word='/dev/null'), pos=(1197, 1208), type='>'),
+])
+
+
+270) apt-mark auto '.*' > /dev/null
+
+CommandNode(pos=(381, 411), parts=[
+  WordNode(pos=(381, 389), word='apt-mark'),
+  WordNode(pos=(390, 394), word='auto'),
+  WordNode(pos=(395, 399), word='.*'),
+  RedirectNode(output=
+    WordNode(pos=(402, 411), word='/dev/null'), pos=(400, 411), type='>'),
+])
+
+
+271) apt-mark auto '.*' > /dev/null
+
+CommandNode(pos=(1555, 1585), parts=[
+  WordNode(pos=(1555, 1563), word='apt-mark'),
+  WordNode(pos=(1564, 1568), word='auto'),
+  WordNode(pos=(1569, 1573), word='.*'),
+  RedirectNode(output=
+    WordNode(pos=(1576, 1585), word='/dev/null'), pos=(1574, 1585), type='>'),
+])
+
+
+272) apt-mark manual $savedAptMark > /dev/null
+
+CommandNode(pos=(1614, 1655), parts=[
+  WordNode(pos=(1614, 1622), word='apt-mark'),
+  WordNode(pos=(1623, 1629), word='manual'),
+  WordNode(pos=(1630, 1643), word='$savedAptMark', parts=[
+    ParameterNode(pos=(1630, 1643), value='savedAptMark'),
+  ]),
+  RedirectNode(output=
+    WordNode(pos=(1646, 1655), word='/dev/null'), pos=(1644, 1655), type='>'),
+])
+
+
+273) grep 'INFO: Loaded APR based Apache Tomcat Native library' >&2
+
+CommandNode(pos=(209, 271), parts=[
+  WordNode(pos=(209, 213), word='grep'),
+  WordNode(pos=(214, 267), word='INFO: Loaded APR based Apache Tomcat Native library'),
+  RedirectNode(output=2, pos=(268, 271), type='>&'),
+])
+
+
+274) echo >&2 "$nativeLines"
+
+CommandNode(pos=(280, 303), parts=[
+  WordNode(pos=(280, 284), word='echo'),
+  RedirectNode(output=2, pos=(285, 288), type='>&'),
+  WordNode(pos=(289, 303), word='$nativeLines', parts=[
+    ParameterNode(pos=(290, 302), value='nativeLines'),
+  ]),
+])
+
+
+275) apt-mark auto '.*' > /dev/null
+
+CommandNode(pos=(890, 920), parts=[
+  WordNode(pos=(890, 898), word='apt-mark'),
+  WordNode(pos=(899, 903), word='auto'),
+  WordNode(pos=(904, 908), word='.*'),
+  RedirectNode(output=
+    WordNode(pos=(911, 920), word='/dev/null'), pos=(909, 920), type='>'),
+])
+
+
+276) erl -noinput -eval '   { ok, AdminBin } = zip:foldl(fun(FileInArchive, GetInfo, GetBin, Acc) ->    case Acc of     "" ->      case lists:suffix("/rabbitmqadmin", FileInArchive) of       true -> GetBin();       false -> Acc      end;     _ -> Acc    end   end, "", init:get_plain_arguments()),   io:format("~s", [ AdminBin ]),   init:stop().  ' -- /plugins/rabbitmq_management-*.ez > /usr/local/bin/rabbitmqadmin
+
+CommandNode(pos=(11, 422), parts=[
+  WordNode(pos=(11, 14), word='erl'),
+  WordNode(pos=(15, 23), word='-noinput'),
+  WordNode(pos=(24, 29), word='-eval'),
+  WordNode(pos=(30, 354), word='   { ok, AdminBin } = zip:foldl(fun(FileInArchive, GetInfo, GetBin, Acc) ->    case Acc of     "" ->      case lists:suffix("/rabbitmqadmin", FileInArchive) of       true -> GetBin();       false -> Acc      end;     _ -> Acc    end   end, "", init:get_plain_arguments()),   io:format("~s", [ AdminBin ]),   init:stop().  '),
+  WordNode(pos=(355, 357), word='--'),
+  WordNode(pos=(358, 391), word='/plugins/rabbitmq_management-*.ez'),
+  RedirectNode(output=
+    WordNode(pos=(394, 422), word='/usr/local/bin/rabbitmqadmin'), pos=(392, 422), type='>'),
+])
+
+
+277) command -v ps > /dev/null
+
+CommandNode(pos=(113, 138), parts=[
+  WordNode(pos=(113, 120), word='command'),
+  WordNode(pos=(121, 123), word='-v'),
+  WordNode(pos=(124, 126), word='ps'),
+  RedirectNode(output=
+    WordNode(pos=(129, 138), word='/dev/null'), pos=(127, 138), type='>'),
+])
+
+
+278) command -v gpg > /dev/null
+
+CommandNode(pos=(87, 113), parts=[
+  WordNode(pos=(87, 94), word='command'),
+  WordNode(pos=(95, 97), word='-v'),
+  WordNode(pos=(98, 101), word='gpg'),
+  RedirectNode(output=
+    WordNode(pos=(104, 113), word='/dev/null'), pos=(102, 113), type='>'),
+])
+
+
+279) gpg --batch --export $GPG_KEYS > /etc/apt/trusted.gpg.d/mongodb.gpg
+
+CommandNode(pos=(150, 217), parts=[
+  WordNode(pos=(150, 153), word='gpg'),
+  WordNode(pos=(154, 161), word='--batch'),
+  WordNode(pos=(162, 170), word='--export'),
+  WordNode(pos=(171, 180), word='$GPG_KEYS', parts=[
+    ParameterNode(pos=(171, 180), value='GPG_KEYS'),
+  ]),
+  RedirectNode(output=
+    WordNode(pos=(183, 217), word='/etc/apt/trusted.gpg.d/mongodb.gpg'), pos=(181, 217), type='>'),
+])
+
+
+280) apt-mark auto '.*' > /dev/null
+
+CommandNode(pos=(1555, 1585), parts=[
+  WordNode(pos=(1555, 1563), word='apt-mark'),
+  WordNode(pos=(1564, 1568), word='auto'),
+  WordNode(pos=(1569, 1573), word='.*'),
+  RedirectNode(output=
+    WordNode(pos=(1576, 1585), word='/dev/null'), pos=(1574, 1585), type='>'),
+])
+
+
+281) apt-mark manual $savedAptMark > /dev/null
+
+CommandNode(pos=(1614, 1655), parts=[
+  WordNode(pos=(1614, 1622), word='apt-mark'),
+  WordNode(pos=(1623, 1629), word='manual'),
+  WordNode(pos=(1630, 1643), word='$savedAptMark', parts=[
+    ParameterNode(pos=(1630, 1643), value='savedAptMark'),
+  ]),
+  RedirectNode(output=
+    WordNode(pos=(1646, 1655), word='/dev/null'), pos=(1644, 1655), type='>'),
+])
+
+
+282) grep 'INFO: Loaded APR based Apache Tomcat Native library' >&2
+
+CommandNode(pos=(209, 271), parts=[
+  WordNode(pos=(209, 213), word='grep'),
+  WordNode(pos=(214, 267), word='INFO: Loaded APR based Apache Tomcat Native library'),
+  RedirectNode(output=2, pos=(268, 271), type='>&'),
+])
+
+
+283) echo >&2 "$nativeLines"
+
+CommandNode(pos=(280, 303), parts=[
+  WordNode(pos=(280, 284), word='echo'),
+  RedirectNode(output=2, pos=(285, 288), type='>&'),
+  WordNode(pos=(289, 303), word='$nativeLines', parts=[
+    ParameterNode(pos=(290, 302), value='nativeLines'),
+  ]),
+])
+
+
+284) command -v gpg > /dev/null
+
+CommandNode(pos=(15, 41), parts=[
+  WordNode(pos=(15, 22), word='command'),
+  WordNode(pos=(23, 25), word='-v'),
+  WordNode(pos=(26, 29), word='gpg'),
+  RedirectNode(output=
+    WordNode(pos=(32, 41), word='/dev/null'), pos=(30, 41), type='>'),
+])
+
+
+285) command -v gpgconf > /dev/null
+
+CommandNode(pos=(430, 460), parts=[
+  WordNode(pos=(430, 437), word='command'),
+  WordNode(pos=(438, 440), word='-v'),
+  WordNode(pos=(441, 448), word='gpgconf'),
+  RedirectNode(output=
+    WordNode(pos=(451, 460), word='/dev/null'), pos=(449, 460), type='>'),
+])
+
+
+286) command -v gpgconf > /dev/null
+
+CommandNode(pos=(574, 604), parts=[
+  WordNode(pos=(574, 581), word='command'),
+  WordNode(pos=(582, 584), word='-v'),
+  WordNode(pos=(585, 592), word='gpgconf'),
+  RedirectNode(output=
+    WordNode(pos=(595, 604), word='/dev/null'), pos=(593, 604), type='>'),
+])
+
+
+287) tee php-fpm.conf > /dev/null
+
+CommandNode(pos=(104, 132), parts=[
+  WordNode(pos=(104, 107), word='tee'),
+  WordNode(pos=(108, 120), word='php-fpm.conf'),
+  RedirectNode(output=
+    WordNode(pos=(123, 132), word='/dev/null'), pos=(121, 132), type='>'),
+])
+
+
+288) command -v gpg > /dev/null
+
+CommandNode(pos=(40, 66), parts=[
+  WordNode(pos=(40, 47), word='command'),
+  WordNode(pos=(48, 50), word='-v'),
+  WordNode(pos=(51, 54), word='gpg'),
+  RedirectNode(output=
+    WordNode(pos=(57, 66), word='/dev/null'), pos=(55, 66), type='>'),
+])
+
+
+289) command -v gpgconf > /dev/null
+
+CommandNode(pos=(734, 764), parts=[
+  WordNode(pos=(734, 741), word='command'),
+  WordNode(pos=(742, 744), word='-v'),
+  WordNode(pos=(745, 752), word='gpgconf'),
+  RedirectNode(output=
+    WordNode(pos=(755, 764), word='/dev/null'), pos=(753, 764), type='>'),
+])
+
+
+290) tee php-fpm.conf > /dev/null
+
+CommandNode(pos=(104, 132), parts=[
+  WordNode(pos=(104, 107), word='tee'),
+  WordNode(pos=(108, 120), word='php-fpm.conf'),
+  RedirectNode(output=
+    WordNode(pos=(123, 132), word='/dev/null'), pos=(121, 132), type='>'),
+])
+
+
+291) apt-mark auto '.*' > /dev/null
+
+CommandNode(pos=(934, 964), parts=[
+  WordNode(pos=(934, 942), word='apt-mark'),
+  WordNode(pos=(943, 947), word='auto'),
+  WordNode(pos=(948, 952), word='.*'),
+  RedirectNode(output=
+    WordNode(pos=(955, 964), word='/dev/null'), pos=(953, 964), type='>'),
+])
+
+
+292) apt-mark auto '.*' > /dev/null
+
+CommandNode(pos=(381, 411), parts=[
+  WordNode(pos=(381, 389), word='apt-mark'),
+  WordNode(pos=(390, 394), word='auto'),
+  WordNode(pos=(395, 399), word='.*'),
+  RedirectNode(output=
+    WordNode(pos=(402, 411), word='/dev/null'), pos=(400, 411), type='>'),
+])
+
+
+293) awk '$1 == "#define" && $2 == "DEFAULT_PGSOCKET_DIR" && $3 == "\"/tmp\"" { $3 = "\"/var/run/postgresql\""; print; next } { print }' src/include/pg_config_manual.h > src/include/pg_config_manual.h.new
+
+CommandNode(pos=(710, 909), parts=[
+  WordNode(pos=(710, 713), word='awk'),
+  WordNode(pos=(714, 841), word='$1 == "#define" && $2 == "DEFAULT_PGSOCKET_DIR" && $3 == "\\"/tmp\\"" { $3 = "\\"/var/run/postgresql\\""; print; next } { print }'),
+  WordNode(pos=(842, 872), word='src/include/pg_config_manual.h'),
+  RedirectNode(output=
+    WordNode(pos=(875, 909), word='src/include/pg_config_manual.h.new'), pos=(873, 909), type='>'),
+])
+
+
+294) command -v ps > /dev/null
+
+CommandNode(pos=(113, 138), parts=[
+  WordNode(pos=(113, 120), word='command'),
+  WordNode(pos=(121, 123), word='-v'),
+  WordNode(pos=(124, 126), word='ps'),
+  RedirectNode(output=
+    WordNode(pos=(129, 138), word='/dev/null'), pos=(127, 138), type='>'),
+])
+
+
+295) command -v gpg > /dev/null
+
+CommandNode(pos=(87, 113), parts=[
+  WordNode(pos=(87, 94), word='command'),
+  WordNode(pos=(95, 97), word='-v'),
+  WordNode(pos=(98, 101), word='gpg'),
+  RedirectNode(output=
+    WordNode(pos=(104, 113), word='/dev/null'), pos=(102, 113), type='>'),
+])
+
+
+296) gpg --batch --export $GPG_KEYS > /etc/apt/trusted.gpg.d/mongodb.gpg
+
+CommandNode(pos=(150, 217), parts=[
+  WordNode(pos=(150, 153), word='gpg'),
+  WordNode(pos=(154, 161), word='--batch'),
+  WordNode(pos=(162, 170), word='--export'),
+  WordNode(pos=(171, 180), word='$GPG_KEYS', parts=[
+    ParameterNode(pos=(171, 180), value='GPG_KEYS'),
+  ]),
+  RedirectNode(output=
+    WordNode(pos=(183, 217), word='/etc/apt/trusted.gpg.d/mongodb.gpg'), pos=(181, 217), type='>'),
+])
+
+
+297) command -v gpg > /dev/null
+
+CommandNode(pos=(40, 66), parts=[
+  WordNode(pos=(40, 47), word='command'),
+  WordNode(pos=(48, 50), word='-v'),
+  WordNode(pos=(51, 54), word='gpg'),
+  RedirectNode(output=
+    WordNode(pos=(57, 66), word='/dev/null'), pos=(55, 66), type='>'),
+])
+
+
+298) command -v gpgconf > /dev/null
+
+CommandNode(pos=(734, 764), parts=[
+  WordNode(pos=(734, 741), word='command'),
+  WordNode(pos=(742, 744), word='-v'),
+  WordNode(pos=(745, 752), word='gpgconf'),
+  RedirectNode(output=
+    WordNode(pos=(755, 764), word='/dev/null'), pos=(753, 764), type='>'),
+])
+
+
+299) command -v gpgconf > /dev/null
+
+CommandNode(pos=(430, 460), parts=[
+  WordNode(pos=(430, 437), word='command'),
+  WordNode(pos=(438, 440), word='-v'),
+  WordNode(pos=(441, 448), word='gpgconf'),
+  RedirectNode(output=
+    WordNode(pos=(451, 460), word='/dev/null'), pos=(449, 460), type='>'),
+])
+
+
+300) apt-mark auto '.*' > /dev/null
+
+CommandNode(pos=(180, 210), parts=[
+  WordNode(pos=(180, 188), word='apt-mark'),
+  WordNode(pos=(189, 193), word='auto'),
+  WordNode(pos=(194, 198), word='.*'),
+  RedirectNode(output=
+    WordNode(pos=(201, 210), word='/dev/null'), pos=(199, 210), type='>'),
+])
+
+
+301) echo "deb http://deb.debian.org/debian $suite-backports main" > /etc/apt/sources.list.d/backports.list
+
+CommandNode(pos=(211, 313), parts=[
+  WordNode(pos=(211, 215), word='echo'),
+  WordNode(pos=(216, 272), word='deb http://deb.debian.org/debian $suite-backports main', parts=[
+    ParameterNode(pos=(250, 256), value='suite'),
+  ]),
+  RedirectNode(output=
+    WordNode(pos=(275, 313), word='/etc/apt/sources.list.d/backports.list'), pos=(273, 313), type='>'),
+])
+
+
+302) CGO_ENABLED=0 ./bashbrew/bashbrew.sh --help > /dev/null
+
+CommandNode(pos=(11, 66), parts=[
+  AssignmentNode(pos=(11, 24), word='CGO_ENABLED=0'),
+  WordNode(pos=(25, 47), word='./bashbrew/bashbrew.sh'),
+  WordNode(pos=(48, 54), word='--help'),
+  RedirectNode(output=
+    WordNode(pos=(57, 66), word='/dev/null'), pos=(55, 66), type='>'),
+])
+
+
+303) apt-mark auto '.*' > /dev/null
+
+CommandNode(pos=(1555, 1585), parts=[
+  WordNode(pos=(1555, 1563), word='apt-mark'),
+  WordNode(pos=(1564, 1568), word='auto'),
+  WordNode(pos=(1569, 1573), word='.*'),
+  RedirectNode(output=
+    WordNode(pos=(1576, 1585), word='/dev/null'), pos=(1574, 1585), type='>'),
+])
+
+
+304) apt-mark manual $savedAptMark > /dev/null
+
+CommandNode(pos=(1614, 1655), parts=[
+  WordNode(pos=(1614, 1622), word='apt-mark'),
+  WordNode(pos=(1623, 1629), word='manual'),
+  WordNode(pos=(1630, 1643), word='$savedAptMark', parts=[
+    ParameterNode(pos=(1630, 1643), value='savedAptMark'),
+  ]),
+  RedirectNode(output=
+    WordNode(pos=(1646, 1655), word='/dev/null'), pos=(1644, 1655), type='>'),
+])
+
+
+305) grep 'INFO: Loaded APR based Apache Tomcat Native library' >&2
+
+CommandNode(pos=(209, 271), parts=[
+  WordNode(pos=(209, 213), word='grep'),
+  WordNode(pos=(214, 267), word='INFO: Loaded APR based Apache Tomcat Native library'),
+  RedirectNode(output=2, pos=(268, 271), type='>&'),
+])
+
+
+306) echo >&2 "$nativeLines"
+
+CommandNode(pos=(280, 303), parts=[
+  WordNode(pos=(280, 284), word='echo'),
+  RedirectNode(output=2, pos=(285, 288), type='>&'),
+  WordNode(pos=(289, 303), word='$nativeLines', parts=[
+    ParameterNode(pos=(290, 302), value='nativeLines'),
+  ]),
+])
+
+
+307) command -v ps > /dev/null
+
+CommandNode(pos=(113, 138), parts=[
+  WordNode(pos=(113, 120), word='command'),
+  WordNode(pos=(121, 123), word='-v'),
+  WordNode(pos=(124, 126), word='ps'),
+  RedirectNode(output=
+    WordNode(pos=(129, 138), word='/dev/null'), pos=(127, 138), type='>'),
+])
+
+
+308) command -v gpg > /dev/null
+
+CommandNode(pos=(87, 113), parts=[
+  WordNode(pos=(87, 94), word='command'),
+  WordNode(pos=(95, 97), word='-v'),
+  WordNode(pos=(98, 101), word='gpg'),
+  RedirectNode(output=
+    WordNode(pos=(104, 113), word='/dev/null'), pos=(102, 113), type='>'),
+])
+
+
+309) gpg --batch --export $GPG_KEYS > /etc/apt/trusted.gpg.d/mongodb.gpg
+
+CommandNode(pos=(150, 217), parts=[
+  WordNode(pos=(150, 153), word='gpg'),
+  WordNode(pos=(154, 161), word='--batch'),
+  WordNode(pos=(162, 170), word='--export'),
+  WordNode(pos=(171, 180), word='$GPG_KEYS', parts=[
+    ParameterNode(pos=(171, 180), value='GPG_KEYS'),
+  ]),
+  RedirectNode(output=
+    WordNode(pos=(183, 217), word='/etc/apt/trusted.gpg.d/mongodb.gpg'), pos=(181, 217), type='>'),
+])
+
+
+310) apt-mark auto '.*' > /dev/null
+
+CommandNode(pos=(890, 920), parts=[
+  WordNode(pos=(890, 898), word='apt-mark'),
+  WordNode(pos=(899, 903), word='auto'),
+  WordNode(pos=(904, 908), word='.*'),
+  RedirectNode(output=
+    WordNode(pos=(911, 920), word='/dev/null'), pos=(909, 920), type='>'),
+])
+
+
+311) command -v gpg > /dev/null
+
+CommandNode(pos=(114, 140), parts=[
+  WordNode(pos=(114, 121), word='command'),
+  WordNode(pos=(122, 124), word='-v'),
+  WordNode(pos=(125, 128), word='gpg'),
+  RedirectNode(output=
+    WordNode(pos=(131, 140), word='/dev/null'), pos=(129, 140), type='>'),
+])
+
+
+312) gpg --batch --export $GPG_KEYS > /etc/apt/trusted.gpg.d/cassandra.gpg
+
+CommandNode(pos=(150, 219), parts=[
+  WordNode(pos=(150, 153), word='gpg'),
+  WordNode(pos=(154, 161), word='--batch'),
+  WordNode(pos=(162, 170), word='--export'),
+  WordNode(pos=(171, 180), word='$GPG_KEYS', parts=[
+    ParameterNode(pos=(171, 180), value='GPG_KEYS'),
+  ]),
+  RedirectNode(output=
+    WordNode(pos=(183, 219), word='/etc/apt/trusted.gpg.d/cassandra.gpg'), pos=(181, 219), type='>'),
+])
+
+
+313) command -v gpgconf > /dev/null
+
+CommandNode(pos=(574, 604), parts=[
+  WordNode(pos=(574, 581), word='command'),
+  WordNode(pos=(582, 584), word='-v'),
+  WordNode(pos=(585, 592), word='gpgconf'),
+  RedirectNode(output=
+    WordNode(pos=(595, 604), word='/dev/null'), pos=(593, 604), type='>'),
+])
+
+
+314) apt-mark auto '.*' > /dev/null
+
+CommandNode(pos=(1555, 1585), parts=[
+  WordNode(pos=(1555, 1563), word='apt-mark'),
+  WordNode(pos=(1564, 1568), word='auto'),
+  WordNode(pos=(1569, 1573), word='.*'),
+  RedirectNode(output=
+    WordNode(pos=(1576, 1585), word='/dev/null'), pos=(1574, 1585), type='>'),
+])
+
+
+315) apt-mark manual $savedAptMark > /dev/null
+
+CommandNode(pos=(1614, 1655), parts=[
+  WordNode(pos=(1614, 1622), word='apt-mark'),
+  WordNode(pos=(1623, 1629), word='manual'),
+  WordNode(pos=(1630, 1643), word='$savedAptMark', parts=[
+    ParameterNode(pos=(1630, 1643), value='savedAptMark'),
+  ]),
+  RedirectNode(output=
+    WordNode(pos=(1646, 1655), word='/dev/null'), pos=(1644, 1655), type='>'),
+])
+
+
+316) grep 'INFO: Loaded APR based Apache Tomcat Native library' >&2
+
+CommandNode(pos=(209, 271), parts=[
+  WordNode(pos=(209, 213), word='grep'),
+  WordNode(pos=(214, 267), word='INFO: Loaded APR based Apache Tomcat Native library'),
+  RedirectNode(output=2, pos=(268, 271), type='>&'),
+])
+
+
+317) echo >&2 "$nativeLines"
+
+CommandNode(pos=(280, 303), parts=[
+  WordNode(pos=(280, 284), word='echo'),
+  RedirectNode(output=2, pos=(285, 288), type='>&'),
+  WordNode(pos=(289, 303), word='$nativeLines', parts=[
+    ParameterNode(pos=(290, 302), value='nativeLines'),
+  ]),
+])
+
+
+318) apt-mark auto '.*' > /dev/null
+
+CommandNode(pos=(381, 411), parts=[
+  WordNode(pos=(381, 389), word='apt-mark'),
+  WordNode(pos=(390, 394), word='auto'),
+  WordNode(pos=(395, 399), word='.*'),
+  RedirectNode(output=
+    WordNode(pos=(402, 411), word='/dev/null'), pos=(400, 411), type='>'),
+])
+
+
+319) command -v gpg > /dev/null
+
+CommandNode(pos=(114, 140), parts=[
+  WordNode(pos=(114, 121), word='command'),
+  WordNode(pos=(122, 124), word='-v'),
+  WordNode(pos=(125, 128), word='gpg'),
+  RedirectNode(output=
+    WordNode(pos=(131, 140), word='/dev/null'), pos=(129, 140), type='>'),
+])
+
+
+320) gpg --batch --export $GPG_KEYS > /etc/apt/trusted.gpg.d/cassandra.gpg
+
+CommandNode(pos=(150, 219), parts=[
+  WordNode(pos=(150, 153), word='gpg'),
+  WordNode(pos=(154, 161), word='--batch'),
+  WordNode(pos=(162, 170), word='--export'),
+  WordNode(pos=(171, 180), word='$GPG_KEYS', parts=[
+    ParameterNode(pos=(171, 180), value='GPG_KEYS'),
+  ]),
+  RedirectNode(output=
+    WordNode(pos=(183, 219), word='/etc/apt/trusted.gpg.d/cassandra.gpg'), pos=(181, 219), type='>'),
+])
+
+
+321) gpg --batch --export "$key" > /etc/apt/trusted.gpg.d/mysql.gpg
+
+CommandNode(pos=(165, 227), parts=[
+  WordNode(pos=(165, 168), word='gpg'),
+  WordNode(pos=(169, 176), word='--batch'),
+  WordNode(pos=(177, 185), word='--export'),
+  WordNode(pos=(186, 192), word='$key', parts=[
+    ParameterNode(pos=(187, 191), value='key'),
+  ]),
+  RedirectNode(output=
+    WordNode(pos=(195, 227), word='/etc/apt/trusted.gpg.d/mysql.gpg'), pos=(193, 227), type='>'),
+])
+
+
+322) apt-key list > /dev/null
+
+CommandNode(pos=(273, 297), parts=[
+  WordNode(pos=(273, 280), word='apt-key'),
+  WordNode(pos=(281, 285), word='list'),
+  RedirectNode(output=
+    WordNode(pos=(288, 297), word='/dev/null'), pos=(286, 297), type='>'),
+])
+
+
+323) echo "deb http://repo.mysql.com/apt/debian/ stretch mysql-${MYSQL_MAJOR}" > /etc/apt/sources.list.d/mysql.list
+
+CommandNode(pos=(0, 110), parts=[
+  WordNode(pos=(0, 4), word='echo'),
+  WordNode(pos=(5, 73), word='deb http://repo.mysql.com/apt/debian/ stretch mysql-${MYSQL_MAJOR}', parts=[
+    ParameterNode(pos=(58, 72), value='MYSQL_MAJOR'),
+  ]),
+  RedirectNode(output=
+    WordNode(pos=(76, 110), word='/etc/apt/sources.list.d/mysql.list'), pos=(74, 110), type='>'),
+])
+
+
+324) echo '[mysqld]\nskip-host-cache\nskip-name-resolve' > /etc/mysql/conf.d/docker.cnf
+
+CommandNode(pos=(744, 826), parts=[
+  WordNode(pos=(744, 748), word='echo'),
+  WordNode(pos=(749, 795), word='[mysqld]\\nskip-host-cache\\nskip-name-resolve'),
+  RedirectNode(output=
+    WordNode(pos=(798, 826), word='/etc/mysql/conf.d/docker.cnf'), pos=(796, 826), type='>'),
+])
+
+
+325) command -v gpgconf > /dev/null
+
+CommandNode(pos=(494, 524), parts=[
+  WordNode(pos=(494, 501), word='command'),
+  WordNode(pos=(502, 504), word='-v'),
+  WordNode(pos=(505, 512), word='gpgconf'),
+  RedirectNode(output=
+    WordNode(pos=(515, 524), word='/dev/null'), pos=(513, 524), type='>'),
+])
+
+
+326) echo 'dockremap:165536:65536' >> /etc/subuid
+
+CommandNode(pos=(75, 119), parts=[
+  WordNode(pos=(75, 79), word='echo'),
+  WordNode(pos=(80, 104), word='dockremap:165536:65536'),
+  RedirectNode(output=
+    WordNode(pos=(108, 119), word='/etc/subuid'), pos=(105, 119), type='>>'),
+])
+
+
+327) echo 'dockremap:165536:65536' >> /etc/subgid
+
+CommandNode(pos=(124, 168), parts=[
+  WordNode(pos=(124, 128), word='echo'),
+  WordNode(pos=(129, 153), word='dockremap:165536:65536'),
+  RedirectNode(output=
+    WordNode(pos=(157, 168), word='/etc/subgid'), pos=(154, 168), type='>>'),
+])
+
+
+328) apt-mark auto '.*' > /dev/null
+
+CommandNode(pos=(934, 964), parts=[
+  WordNode(pos=(934, 942), word='apt-mark'),
+  WordNode(pos=(943, 947), word='auto'),
+  WordNode(pos=(948, 952), word='.*'),
+  RedirectNode(output=
+    WordNode(pos=(955, 964), word='/dev/null'), pos=(953, 964), type='>'),
+])
+
+
+329) apt-mark auto '.*' > /dev/null
+
+CommandNode(pos=(1555, 1585), parts=[
+  WordNode(pos=(1555, 1563), word='apt-mark'),
+  WordNode(pos=(1564, 1568), word='auto'),
+  WordNode(pos=(1569, 1573), word='.*'),
+  RedirectNode(output=
+    WordNode(pos=(1576, 1585), word='/dev/null'), pos=(1574, 1585), type='>'),
+])
+
+
+330) apt-mark manual $savedAptMark > /dev/null
+
+CommandNode(pos=(1614, 1655), parts=[
+  WordNode(pos=(1614, 1622), word='apt-mark'),
+  WordNode(pos=(1623, 1629), word='manual'),
+  WordNode(pos=(1630, 1643), word='$savedAptMark', parts=[
+    ParameterNode(pos=(1630, 1643), value='savedAptMark'),
+  ]),
+  RedirectNode(output=
+    WordNode(pos=(1646, 1655), word='/dev/null'), pos=(1644, 1655), type='>'),
+])
+
+
+331) grep 'INFO: Loaded APR based Apache Tomcat Native library' >&2
+
+CommandNode(pos=(209, 271), parts=[
+  WordNode(pos=(209, 213), word='grep'),
+  WordNode(pos=(214, 267), word='INFO: Loaded APR based Apache Tomcat Native library'),
+  RedirectNode(output=2, pos=(268, 271), type='>&'),
+])
+
+
+332) echo >&2 "$nativeLines"
+
+CommandNode(pos=(280, 303), parts=[
+  WordNode(pos=(280, 284), word='echo'),
+  RedirectNode(output=2, pos=(285, 288), type='>&'),
+  WordNode(pos=(289, 303), word='$nativeLines', parts=[
+    ParameterNode(pos=(290, 302), value='nativeLines'),
+  ]),
+])
+
+
+333) gpg --batch --export "$key" > /etc/apt/trusted.gpg.d/mysql.gpg
+
+CommandNode(pos=(165, 227), parts=[
+  WordNode(pos=(165, 168), word='gpg'),
+  WordNode(pos=(169, 176), word='--batch'),
+  WordNode(pos=(177, 185), word='--export'),
+  WordNode(pos=(186, 192), word='$key', parts=[
+    ParameterNode(pos=(187, 191), value='key'),
+  ]),
+  RedirectNode(output=
+    WordNode(pos=(195, 227), word='/etc/apt/trusted.gpg.d/mysql.gpg'), pos=(193, 227), type='>'),
+])
+
+
+334) apt-key list > /dev/null
+
+CommandNode(pos=(273, 297), parts=[
+  WordNode(pos=(273, 280), word='apt-key'),
+  WordNode(pos=(281, 285), word='list'),
+  RedirectNode(output=
+    WordNode(pos=(288, 297), word='/dev/null'), pos=(286, 297), type='>'),
+])
+
+
+335) echo "deb http://repo.mysql.com/apt/debian/ stretch mysql-${MYSQL_MAJOR}" > /etc/apt/sources.list.d/mysql.list
+
+CommandNode(pos=(0, 110), parts=[
+  WordNode(pos=(0, 4), word='echo'),
+  WordNode(pos=(5, 73), word='deb http://repo.mysql.com/apt/debian/ stretch mysql-${MYSQL_MAJOR}', parts=[
+    ParameterNode(pos=(58, 72), value='MYSQL_MAJOR'),
+  ]),
+  RedirectNode(output=
+    WordNode(pos=(76, 110), word='/etc/apt/sources.list.d/mysql.list'), pos=(74, 110), type='>'),
+])
+
+
+336) echo >&2
+
+CommandNode(pos=(253, 261), parts=[
+  WordNode(pos=(253, 257), word='echo'),
+  RedirectNode(output=2, pos=(258, 261), type='>&'),
+])
+
+
+337) echo >&2 'error: UNIMPLEMENTED'
+
+CommandNode(pos=(265, 296), parts=[
+  WordNode(pos=(265, 269), word='echo'),
+  RedirectNode(output=2, pos=(270, 273), type='>&'),
+  WordNode(pos=(274, 296), word='error: UNIMPLEMENTED'),
+])
+
+
+338) echo >&2 'TODO install golang-any from jessie-backports for GOROOT_BOOTSTRAP (and uninstall after build)'
+
+CommandNode(pos=(300, 405), parts=[
+  WordNode(pos=(300, 304), word='echo'),
+  RedirectNode(output=2, pos=(305, 308), type='>&'),
+  WordNode(pos=(309, 405), word='TODO install golang-any from jessie-backports for GOROOT_BOOTSTRAP (and uninstall after build)'),
+])
+
+
+339) echo >&2
+
+CommandNode(pos=(409, 417), parts=[
+  WordNode(pos=(409, 413), word='echo'),
+  RedirectNode(output=2, pos=(414, 417), type='>&'),
+])
+
+
+340) apt-mark auto '.*' > /dev/null
+
+CommandNode(pos=(1555, 1585), parts=[
+  WordNode(pos=(1555, 1563), word='apt-mark'),
+  WordNode(pos=(1564, 1568), word='auto'),
+  WordNode(pos=(1569, 1573), word='.*'),
+  RedirectNode(output=
+    WordNode(pos=(1576, 1585), word='/dev/null'), pos=(1574, 1585), type='>'),
+])
+
+
+341) apt-mark manual $savedAptMark > /dev/null
+
+CommandNode(pos=(1614, 1655), parts=[
+  WordNode(pos=(1614, 1622), word='apt-mark'),
+  WordNode(pos=(1623, 1629), word='manual'),
+  WordNode(pos=(1630, 1643), word='$savedAptMark', parts=[
+    ParameterNode(pos=(1630, 1643), value='savedAptMark'),
+  ]),
+  RedirectNode(output=
+    WordNode(pos=(1646, 1655), word='/dev/null'), pos=(1644, 1655), type='>'),
+])
+
+
+342) grep 'INFO: Loaded APR based Apache Tomcat Native library' >&2
+
+CommandNode(pos=(209, 271), parts=[
+  WordNode(pos=(209, 213), word='grep'),
+  WordNode(pos=(214, 267), word='INFO: Loaded APR based Apache Tomcat Native library'),
+  RedirectNode(output=2, pos=(268, 271), type='>&'),
+])
+
+
+343) echo >&2 "$nativeLines"
+
+CommandNode(pos=(280, 303), parts=[
+  WordNode(pos=(280, 284), word='echo'),
+  RedirectNode(output=2, pos=(285, 288), type='>&'),
+  WordNode(pos=(289, 303), word='$nativeLines', parts=[
+    ParameterNode(pos=(290, 302), value='nativeLines'),
+  ]),
+])
+
+
+344) apt-mark auto '.*' > /dev/null
+
+CommandNode(pos=(914, 944), parts=[
+  WordNode(pos=(914, 922), word='apt-mark'),
+  WordNode(pos=(923, 927), word='auto'),
+  WordNode(pos=(928, 932), word='.*'),
+  RedirectNode(output=
+    WordNode(pos=(935, 944), word='/dev/null'), pos=(933, 944), type='>'),
+])
+
+
+345) apt-mark manual $savedAptMark > /dev/null
+
+CommandNode(pos=(973, 1014), parts=[
+  WordNode(pos=(973, 981), word='apt-mark'),
+  WordNode(pos=(982, 988), word='manual'),
+  WordNode(pos=(989, 1002), word='$savedAptMark', parts=[
+    ParameterNode(pos=(989, 1002), value='savedAptMark'),
+  ]),
+  RedirectNode(output=
+    WordNode(pos=(1005, 1014), word='/dev/null'), pos=(1003, 1014), type='>'),
+])
+
+
+346) command -v gpg > /dev/null
+
+CommandNode(pos=(15, 41), parts=[
+  WordNode(pos=(15, 22), word='command'),
+  WordNode(pos=(23, 25), word='-v'),
+  WordNode(pos=(26, 29), word='gpg'),
+  RedirectNode(output=
+    WordNode(pos=(32, 41), word='/dev/null'), pos=(30, 41), type='>'),
+])
+
+
+347) command -v gpgconf > /dev/null
+
+CommandNode(pos=(613, 643), parts=[
+  WordNode(pos=(613, 620), word='command'),
+  WordNode(pos=(621, 623), word='-v'),
+  WordNode(pos=(624, 631), word='gpgconf'),
+  RedirectNode(output=
+    WordNode(pos=(634, 643), word='/dev/null'), pos=(632, 643), type='>'),
+])
+
+
+348) gpg --batch --export "$key" > /etc/apt/trusted.gpg.d/postgres.gpg
+
+CommandNode(pos=(165, 230), parts=[
+  WordNode(pos=(165, 168), word='gpg'),
+  WordNode(pos=(169, 176), word='--batch'),
+  WordNode(pos=(177, 185), word='--export'),
+  WordNode(pos=(186, 192), word='$key', parts=[
+    ParameterNode(pos=(187, 191), value='key'),
+  ]),
+  RedirectNode(output=
+    WordNode(pos=(195, 230), word='/etc/apt/trusted.gpg.d/postgres.gpg'), pos=(193, 230), type='>'),
+])
+
+
+349) command -v gpgconf > /dev/null
+
+CommandNode(pos=(233, 263), parts=[
+  WordNode(pos=(233, 240), word='command'),
+  WordNode(pos=(241, 243), word='-v'),
+  WordNode(pos=(244, 251), word='gpgconf'),
+  RedirectNode(output=
+    WordNode(pos=(254, 263), word='/dev/null'), pos=(252, 263), type='>'),
+])
+
+
+350) command -v gpg > /dev/null
+
+CommandNode(pos=(15, 41), parts=[
+  WordNode(pos=(15, 22), word='command'),
+  WordNode(pos=(23, 25), word='-v'),
+  WordNode(pos=(26, 29), word='gpg'),
+  RedirectNode(output=
+    WordNode(pos=(32, 41), word='/dev/null'), pos=(30, 41), type='>'),
+])
+
+
+351) command -v gpgconf > /dev/null
+
+CommandNode(pos=(613, 643), parts=[
+  WordNode(pos=(613, 620), word='command'),
+  WordNode(pos=(621, 623), word='-v'),
+  WordNode(pos=(624, 631), word='gpgconf'),
+  RedirectNode(output=
+    WordNode(pos=(634, 643), word='/dev/null'), pos=(632, 643), type='>'),
+])
+
+
+352) gpg --batch --export "$key" > /etc/apt/trusted.gpg.d/postgres.gpg
+
+CommandNode(pos=(165, 230), parts=[
+  WordNode(pos=(165, 168), word='gpg'),
+  WordNode(pos=(169, 176), word='--batch'),
+  WordNode(pos=(177, 185), word='--export'),
+  WordNode(pos=(186, 192), word='$key', parts=[
+    ParameterNode(pos=(187, 191), value='key'),
+  ]),
+  RedirectNode(output=
+    WordNode(pos=(195, 230), word='/etc/apt/trusted.gpg.d/postgres.gpg'), pos=(193, 230), type='>'),
+])
+
+
+353) command -v gpgconf > /dev/null
+
+CommandNode(pos=(233, 263), parts=[
+  WordNode(pos=(233, 240), word='command'),
+  WordNode(pos=(241, 243), word='-v'),
+  WordNode(pos=(244, 251), word='gpgconf'),
+  RedirectNode(output=
+    WordNode(pos=(254, 263), word='/dev/null'), pos=(252, 263), type='>'),
+])
+
+
+354) xargs apt-mark auto > /dev/null
+
+CommandNode(pos=(1094, 1125), parts=[
+  WordNode(pos=(1094, 1099), word='xargs'),
+  WordNode(pos=(1100, 1108), word='apt-mark'),
+  WordNode(pos=(1109, 1113), word='auto'),
+  RedirectNode(output=
+    WordNode(pos=(1116, 1125), word='/dev/null'), pos=(1114, 1125), type='>'),
+])
+
+
+355) apt-mark auto '.*' > /dev/null
+
+CommandNode(pos=(1555, 1585), parts=[
+  WordNode(pos=(1555, 1563), word='apt-mark'),
+  WordNode(pos=(1564, 1568), word='auto'),
+  WordNode(pos=(1569, 1573), word='.*'),
+  RedirectNode(output=
+    WordNode(pos=(1576, 1585), word='/dev/null'), pos=(1574, 1585), type='>'),
+])
+
+
+356) apt-mark manual $savedAptMark > /dev/null
+
+CommandNode(pos=(1614, 1655), parts=[
+  WordNode(pos=(1614, 1622), word='apt-mark'),
+  WordNode(pos=(1623, 1629), word='manual'),
+  WordNode(pos=(1630, 1643), word='$savedAptMark', parts=[
+    ParameterNode(pos=(1630, 1643), value='savedAptMark'),
+  ]),
+  RedirectNode(output=
+    WordNode(pos=(1646, 1655), word='/dev/null'), pos=(1644, 1655), type='>'),
+])
+
+
+357) grep 'INFO: Loaded APR based Apache Tomcat Native library' >&2
+
+CommandNode(pos=(209, 271), parts=[
+  WordNode(pos=(209, 213), word='grep'),
+  WordNode(pos=(214, 267), word='INFO: Loaded APR based Apache Tomcat Native library'),
+  RedirectNode(output=2, pos=(268, 271), type='>&'),
+])
+
+
+358) echo >&2 "$nativeLines"
+
+CommandNode(pos=(280, 303), parts=[
+  WordNode(pos=(280, 284), word='echo'),
+  RedirectNode(output=2, pos=(285, 288), type='>&'),
+  WordNode(pos=(289, 303), word='$nativeLines', parts=[
+    ParameterNode(pos=(290, 302), value='nativeLines'),
+  ]),
+])
+
+
+359) echo 'dockremap:165536:65536' >> /etc/subuid
+
+CommandNode(pos=(75, 119), parts=[
+  WordNode(pos=(75, 79), word='echo'),
+  WordNode(pos=(80, 104), word='dockremap:165536:65536'),
+  RedirectNode(output=
+    WordNode(pos=(108, 119), word='/etc/subuid'), pos=(105, 119), type='>>'),
+])
+
+
+360) echo 'dockremap:165536:65536' >> /etc/subgid
+
+CommandNode(pos=(124, 168), parts=[
+  WordNode(pos=(124, 128), word='echo'),
+  WordNode(pos=(129, 153), word='dockremap:165536:65536'),
+  RedirectNode(output=
+    WordNode(pos=(157, 168), word='/etc/subgid'), pos=(154, 168), type='>>'),
+])
+
+
+361) apt-mark auto '.*' > /dev/null
+
+CommandNode(pos=(1555, 1585), parts=[
+  WordNode(pos=(1555, 1563), word='apt-mark'),
+  WordNode(pos=(1564, 1568), word='auto'),
+  WordNode(pos=(1569, 1573), word='.*'),
+  RedirectNode(output=
+    WordNode(pos=(1576, 1585), word='/dev/null'), pos=(1574, 1585), type='>'),
+])
+
+
+362) apt-mark manual $savedAptMark > /dev/null
+
+CommandNode(pos=(1614, 1655), parts=[
+  WordNode(pos=(1614, 1622), word='apt-mark'),
+  WordNode(pos=(1623, 1629), word='manual'),
+  WordNode(pos=(1630, 1643), word='$savedAptMark', parts=[
+    ParameterNode(pos=(1630, 1643), value='savedAptMark'),
+  ]),
+  RedirectNode(output=
+    WordNode(pos=(1646, 1655), word='/dev/null'), pos=(1644, 1655), type='>'),
+])
+
+
+363) grep 'INFO: Loaded APR based Apache Tomcat Native library' >&2
+
+CommandNode(pos=(209, 271), parts=[
+  WordNode(pos=(209, 213), word='grep'),
+  WordNode(pos=(214, 267), word='INFO: Loaded APR based Apache Tomcat Native library'),
+  RedirectNode(output=2, pos=(268, 271), type='>&'),
+])
+
+
+364) echo >&2 "$nativeLines"
+
+CommandNode(pos=(280, 303), parts=[
+  WordNode(pos=(280, 284), word='echo'),
+  RedirectNode(output=2, pos=(285, 288), type='>&'),
+  WordNode(pos=(289, 303), word='$nativeLines', parts=[
+    ParameterNode(pos=(290, 302), value='nativeLines'),
+  ]),
+])
+
+
+365) command -v gpgconf > /dev/null
+
+CommandNode(pos=(494, 524), parts=[
+  WordNode(pos=(494, 501), word='command'),
+  WordNode(pos=(502, 504), word='-v'),
+  WordNode(pos=(505, 512), word='gpgconf'),
+  RedirectNode(output=
+    WordNode(pos=(515, 524), word='/dev/null'), pos=(513, 524), type='>'),
+])
+
+
+366) command -v gpgconf > /dev/null
+
+CommandNode(pos=(661, 691), parts=[
+  WordNode(pos=(661, 668), word='command'),
+  WordNode(pos=(669, 671), word='-v'),
+  WordNode(pos=(672, 679), word='gpgconf'),
+  RedirectNode(output=
+    WordNode(pos=(682, 691), word='/dev/null'), pos=(680, 691), type='>'),
+])
+
+
+367) gpg --batch --export $GPG_KEYS > /etc/apt/trusted.gpg.d/percona.gpg
+
+CommandNode(pos=(150, 217), parts=[
+  WordNode(pos=(150, 153), word='gpg'),
+  WordNode(pos=(154, 161), word='--batch'),
+  WordNode(pos=(162, 170), word='--export'),
+  WordNode(pos=(171, 180), word='$GPG_KEYS', parts=[
+    ParameterNode(pos=(171, 180), value='GPG_KEYS'),
+  ]),
+  RedirectNode(output=
+    WordNode(pos=(183, 217), word='/etc/apt/trusted.gpg.d/percona.gpg'), pos=(181, 217), type='>'),
+])
+
+
+368) command -v gpgconf > /dev/null
+
+CommandNode(pos=(220, 250), parts=[
+  WordNode(pos=(220, 227), word='command'),
+  WordNode(pos=(228, 230), word='-v'),
+  WordNode(pos=(231, 238), word='gpgconf'),
+  RedirectNode(output=
+    WordNode(pos=(241, 250), word='/dev/null'), pos=(239, 250), type='>'),
+])
+
+
+369) echo 'deb https://repo.percona.com/apt %%SUITE%% main' > /etc/apt/sources.list.d/percona.list
+
+CommandNode(pos=(0, 93), parts=[
+  WordNode(pos=(0, 4), word='echo'),
+  WordNode(pos=(5, 54), word='deb https://repo.percona.com/apt %%SUITE%% main'),
+  RedirectNode(output=
+    WordNode(pos=(57, 93), word='/etc/apt/sources.list.d/percona.list'), pos=(55, 93), type='>'),
+])
+
+
+370) echo '[mysqld]\nskip-host-cache\nskip-name-resolve' > /etc/mysql/conf.d/docker.cnf
+
+CommandNode(pos=(791, 873), parts=[
+  WordNode(pos=(791, 795), word='echo'),
+  WordNode(pos=(796, 842), word='[mysqld]\\nskip-host-cache\\nskip-name-resolve'),
+  RedirectNode(output=
+    WordNode(pos=(845, 873), word='/etc/mysql/conf.d/docker.cnf'), pos=(843, 873), type='>'),
+])
+
+
+371) apt-mark auto '.*' > /dev/null
+
+CommandNode(pos=(1555, 1585), parts=[
+  WordNode(pos=(1555, 1563), word='apt-mark'),
+  WordNode(pos=(1564, 1568), word='auto'),
+  WordNode(pos=(1569, 1573), word='.*'),
+  RedirectNode(output=
+    WordNode(pos=(1576, 1585), word='/dev/null'), pos=(1574, 1585), type='>'),
+])
+
+
+372) apt-mark manual $savedAptMark > /dev/null
+
+CommandNode(pos=(1614, 1655), parts=[
+  WordNode(pos=(1614, 1622), word='apt-mark'),
+  WordNode(pos=(1623, 1629), word='manual'),
+  WordNode(pos=(1630, 1643), word='$savedAptMark', parts=[
+    ParameterNode(pos=(1630, 1643), value='savedAptMark'),
+  ]),
+  RedirectNode(output=
+    WordNode(pos=(1646, 1655), word='/dev/null'), pos=(1644, 1655), type='>'),
+])
+
+
+373) grep 'INFO: Loaded APR based Apache Tomcat Native library' >&2
+
+CommandNode(pos=(209, 271), parts=[
+  WordNode(pos=(209, 213), word='grep'),
+  WordNode(pos=(214, 267), word='INFO: Loaded APR based Apache Tomcat Native library'),
+  RedirectNode(output=2, pos=(268, 271), type='>&'),
+])
+
+
+374) echo >&2 "$nativeLines"
+
+CommandNode(pos=(280, 303), parts=[
+  WordNode(pos=(280, 284), word='echo'),
+  RedirectNode(output=2, pos=(285, 288), type='>&'),
+  WordNode(pos=(289, 303), word='$nativeLines', parts=[
+    ParameterNode(pos=(290, 302), value='nativeLines'),
+  ]),
+])
+
+
+375) command -v gpg > /dev/null
+
+CommandNode(pos=(15, 41), parts=[
+  WordNode(pos=(15, 22), word='command'),
+  WordNode(pos=(23, 25), word='-v'),
+  WordNode(pos=(26, 29), word='gpg'),
+  RedirectNode(output=
+    WordNode(pos=(32, 41), word='/dev/null'), pos=(30, 41), type='>'),
+])
+
+
+376) command -v gpgconf > /dev/null
+
+CommandNode(pos=(613, 643), parts=[
+  WordNode(pos=(613, 620), word='command'),
+  WordNode(pos=(621, 623), word='-v'),
+  WordNode(pos=(624, 631), word='gpgconf'),
+  RedirectNode(output=
+    WordNode(pos=(634, 643), word='/dev/null'), pos=(632, 643), type='>'),
+])
+
+
+377) gpg --batch --export "$key" > /etc/apt/trusted.gpg.d/postgres.gpg
+
+CommandNode(pos=(165, 230), parts=[
+  WordNode(pos=(165, 168), word='gpg'),
+  WordNode(pos=(169, 176), word='--batch'),
+  WordNode(pos=(177, 185), word='--export'),
+  WordNode(pos=(186, 192), word='$key', parts=[
+    ParameterNode(pos=(187, 191), value='key'),
+  ]),
+  RedirectNode(output=
+    WordNode(pos=(195, 230), word='/etc/apt/trusted.gpg.d/postgres.gpg'), pos=(193, 230), type='>'),
+])
+
+
+378) command -v gpgconf > /dev/null
+
+CommandNode(pos=(233, 263), parts=[
+  WordNode(pos=(233, 240), word='command'),
+  WordNode(pos=(241, 243), word='-v'),
+  WordNode(pos=(244, 251), word='gpgconf'),
+  RedirectNode(output=
+    WordNode(pos=(254, 263), word='/dev/null'), pos=(252, 263), type='>'),
+])
+
+
+379) command -v gpg > /dev/null
+
+CommandNode(pos=(40, 66), parts=[
+  WordNode(pos=(40, 47), word='command'),
+  WordNode(pos=(48, 50), word='-v'),
+  WordNode(pos=(51, 54), word='gpg'),
+  RedirectNode(output=
+    WordNode(pos=(57, 66), word='/dev/null'), pos=(55, 66), type='>'),
+])
+
+
+380) command -v gpgconf > /dev/null
+
+CommandNode(pos=(734, 764), parts=[
+  WordNode(pos=(734, 741), word='command'),
+  WordNode(pos=(742, 744), word='-v'),
+  WordNode(pos=(745, 752), word='gpgconf'),
+  RedirectNode(output=
+    WordNode(pos=(755, 764), word='/dev/null'), pos=(753, 764), type='>'),
+])
+
+
+381) echo 'hosts: files dns' > /etc/nsswitch.conf
+
+CommandNode(pos=(31, 75), parts=[
+  WordNode(pos=(31, 35), word='echo'),
+  WordNode(pos=(36, 54), word='hosts: files dns'),
+  RedirectNode(output=
+    WordNode(pos=(57, 75), word='/etc/nsswitch.conf'), pos=(55, 75), type='>'),
+])
+
+
+382) command -v gpgconf > /dev/null
+
+CommandNode(pos=(430, 460), parts=[
+  WordNode(pos=(430, 437), word='command'),
+  WordNode(pos=(438, 440), word='-v'),
+  WordNode(pos=(441, 448), word='gpgconf'),
+  RedirectNode(output=
+    WordNode(pos=(451, 460), word='/dev/null'), pos=(449, 460), type='>'),
+])
+
+
+383) erl -noinput -eval '   { ok, AdminBin } = zip:foldl(fun(FileInArchive, GetInfo, GetBin, Acc) ->    case Acc of     "" ->      case lists:suffix("/rabbitmqadmin", FileInArchive) of       true -> GetBin();       false -> Acc      end;     _ -> Acc    end   end, "", init:get_plain_arguments()),   io:format("~s", [ AdminBin ]),   init:stop().  ' -- /plugins/rabbitmq_management-*.ez > /usr/local/bin/rabbitmqadmin
+
+CommandNode(pos=(11, 422), parts=[
+  WordNode(pos=(11, 14), word='erl'),
+  WordNode(pos=(15, 23), word='-noinput'),
+  WordNode(pos=(24, 29), word='-eval'),
+  WordNode(pos=(30, 354), word='   { ok, AdminBin } = zip:foldl(fun(FileInArchive, GetInfo, GetBin, Acc) ->    case Acc of     "" ->      case lists:suffix("/rabbitmqadmin", FileInArchive) of       true -> GetBin();       false -> Acc      end;     _ -> Acc    end   end, "", init:get_plain_arguments()),   io:format("~s", [ AdminBin ]),   init:stop().  '),
+  WordNode(pos=(355, 357), word='--'),
+  WordNode(pos=(358, 391), word='/plugins/rabbitmq_management-*.ez'),
+  RedirectNode(output=
+    WordNode(pos=(394, 422), word='/usr/local/bin/rabbitmqadmin'), pos=(392, 422), type='>'),
+])
+
+
+384) command -v ps > /dev/null
+
+CommandNode(pos=(113, 138), parts=[
+  WordNode(pos=(113, 120), word='command'),
+  WordNode(pos=(121, 123), word='-v'),
+  WordNode(pos=(124, 126), word='ps'),
+  RedirectNode(output=
+    WordNode(pos=(129, 138), word='/dev/null'), pos=(127, 138), type='>'),
+])
+
+
+385) command -v gpg > /dev/null
+
+CommandNode(pos=(87, 113), parts=[
+  WordNode(pos=(87, 94), word='command'),
+  WordNode(pos=(95, 97), word='-v'),
+  WordNode(pos=(98, 101), word='gpg'),
+  RedirectNode(output=
+    WordNode(pos=(104, 113), word='/dev/null'), pos=(102, 113), type='>'),
+])
+
+
+386) gpg --batch --export $GPG_KEYS > /etc/apt/trusted.gpg.d/mongodb.gpg
+
+CommandNode(pos=(150, 217), parts=[
+  WordNode(pos=(150, 153), word='gpg'),
+  WordNode(pos=(154, 161), word='--batch'),
+  WordNode(pos=(162, 170), word='--export'),
+  WordNode(pos=(171, 180), word='$GPG_KEYS', parts=[
+    ParameterNode(pos=(171, 180), value='GPG_KEYS'),
+  ]),
+  RedirectNode(output=
+    WordNode(pos=(183, 217), word='/etc/apt/trusted.gpg.d/mongodb.gpg'), pos=(181, 217), type='>'),
+])
+
+
+387) command -v gpgconf > /dev/null
+
+CommandNode(pos=(494, 524), parts=[
+  WordNode(pos=(494, 501), word='command'),
+  WordNode(pos=(502, 504), word='-v'),
+  WordNode(pos=(505, 512), word='gpgconf'),
+  RedirectNode(output=
+    WordNode(pos=(515, 524), word='/dev/null'), pos=(513, 524), type='>'),
+])
+
+
+388) command -v gpg > /dev/null
+
+CommandNode(pos=(40, 66), parts=[
+  WordNode(pos=(40, 47), word='command'),
+  WordNode(pos=(48, 50), word='-v'),
+  WordNode(pos=(51, 54), word='gpg'),
+  RedirectNode(output=
+    WordNode(pos=(57, 66), word='/dev/null'), pos=(55, 66), type='>'),
+])
+
+
+389) command -v gpgconf > /dev/null
+
+CommandNode(pos=(734, 764), parts=[
+  WordNode(pos=(734, 741), word='command'),
+  WordNode(pos=(742, 744), word='-v'),
+  WordNode(pos=(745, 752), word='gpgconf'),
+  RedirectNode(output=
+    WordNode(pos=(755, 764), word='/dev/null'), pos=(753, 764), type='>'),
+])
+
+
+390) tee php-fpm.conf > /dev/null
+
+CommandNode(pos=(104, 132), parts=[
+  WordNode(pos=(104, 107), word='tee'),
+  WordNode(pos=(108, 120), word='php-fpm.conf'),
+  RedirectNode(output=
+    WordNode(pos=(123, 132), word='/dev/null'), pos=(121, 132), type='>'),
+])
+
+
+391) apt-mark auto '.*' > /dev/null
+
+CommandNode(pos=(180, 210), parts=[
+  WordNode(pos=(180, 188), word='apt-mark'),
+  WordNode(pos=(189, 193), word='auto'),
+  WordNode(pos=(194, 198), word='.*'),
+  RedirectNode(output=
+    WordNode(pos=(201, 210), word='/dev/null'), pos=(199, 210), type='>'),
+])
+
+
+392) apt-mark auto '.*' > /dev/null
+
+CommandNode(pos=(381, 411), parts=[
+  WordNode(pos=(381, 389), word='apt-mark'),
+  WordNode(pos=(390, 394), word='auto'),
+  WordNode(pos=(395, 399), word='.*'),
+  RedirectNode(output=
+    WordNode(pos=(402, 411), word='/dev/null'), pos=(400, 411), type='>'),
+])
+
+
+393) command -v gpgconf > /dev/null
+
+CommandNode(pos=(494, 524), parts=[
+  WordNode(pos=(494, 501), word='command'),
+  WordNode(pos=(502, 504), word='-v'),
+  WordNode(pos=(505, 512), word='gpgconf'),
+  RedirectNode(output=
+    WordNode(pos=(515, 524), word='/dev/null'), pos=(513, 524), type='>'),
+])
+
+
+394) apt-mark auto '.*' > /dev/null
+
+CommandNode(pos=(1555, 1585), parts=[
+  WordNode(pos=(1555, 1563), word='apt-mark'),
+  WordNode(pos=(1564, 1568), word='auto'),
+  WordNode(pos=(1569, 1573), word='.*'),
+  RedirectNode(output=
+    WordNode(pos=(1576, 1585), word='/dev/null'), pos=(1574, 1585), type='>'),
+])
+
+
+395) apt-mark manual $savedAptMark > /dev/null
+
+CommandNode(pos=(1614, 1655), parts=[
+  WordNode(pos=(1614, 1622), word='apt-mark'),
+  WordNode(pos=(1623, 1629), word='manual'),
+  WordNode(pos=(1630, 1643), word='$savedAptMark', parts=[
+    ParameterNode(pos=(1630, 1643), value='savedAptMark'),
+  ]),
+  RedirectNode(output=
+    WordNode(pos=(1646, 1655), word='/dev/null'), pos=(1644, 1655), type='>'),
+])
+
+
+396) grep 'INFO: Loaded APR based Apache Tomcat Native library' >&2
+
+CommandNode(pos=(209, 271), parts=[
+  WordNode(pos=(209, 213), word='grep'),
+  WordNode(pos=(214, 267), word='INFO: Loaded APR based Apache Tomcat Native library'),
+  RedirectNode(output=2, pos=(268, 271), type='>&'),
+])
+
+
+397) echo >&2 "$nativeLines"
+
+CommandNode(pos=(280, 303), parts=[
+  WordNode(pos=(280, 284), word='echo'),
+  RedirectNode(output=2, pos=(285, 288), type='>&'),
+  WordNode(pos=(289, 303), word='$nativeLines', parts=[
+    ParameterNode(pos=(290, 302), value='nativeLines'),
+  ]),
+])
+
+
+398) command -v gpg > /dev/null
+
+CommandNode(pos=(40, 66), parts=[
+  WordNode(pos=(40, 47), word='command'),
+  WordNode(pos=(48, 50), word='-v'),
+  WordNode(pos=(51, 54), word='gpg'),
+  RedirectNode(output=
+    WordNode(pos=(57, 66), word='/dev/null'), pos=(55, 66), type='>'),
+])
+
+
+399) command -v gpgconf > /dev/null
+
+CommandNode(pos=(734, 764), parts=[
+  WordNode(pos=(734, 741), word='command'),
+  WordNode(pos=(742, 744), word='-v'),
+  WordNode(pos=(745, 752), word='gpgconf'),
+  RedirectNode(output=
+    WordNode(pos=(755, 764), word='/dev/null'), pos=(753, 764), type='>'),
+])
+
+
+400) apt-mark auto '.*' > /dev/null
+
+CommandNode(pos=(1555, 1585), parts=[
+  WordNode(pos=(1555, 1563), word='apt-mark'),
+  WordNode(pos=(1564, 1568), word='auto'),
+  WordNode(pos=(1569, 1573), word='.*'),
+  RedirectNode(output=
+    WordNode(pos=(1576, 1585), word='/dev/null'), pos=(1574, 1585), type='>'),
+])
+
+
+401) apt-mark manual $savedAptMark > /dev/null
+
+CommandNode(pos=(1614, 1655), parts=[
+  WordNode(pos=(1614, 1622), word='apt-mark'),
+  WordNode(pos=(1623, 1629), word='manual'),
+  WordNode(pos=(1630, 1643), word='$savedAptMark', parts=[
+    ParameterNode(pos=(1630, 1643), value='savedAptMark'),
+  ]),
+  RedirectNode(output=
+    WordNode(pos=(1646, 1655), word='/dev/null'), pos=(1644, 1655), type='>'),
+])
+
+
+402) grep 'INFO: Loaded APR based Apache Tomcat Native library' >&2
+
+CommandNode(pos=(209, 271), parts=[
+  WordNode(pos=(209, 213), word='grep'),
+  WordNode(pos=(214, 267), word='INFO: Loaded APR based Apache Tomcat Native library'),
+  RedirectNode(output=2, pos=(268, 271), type='>&'),
+])
+
+
+403) echo >&2 "$nativeLines"
+
+CommandNode(pos=(280, 303), parts=[
+  WordNode(pos=(280, 284), word='echo'),
+  RedirectNode(output=2, pos=(285, 288), type='>&'),
+  WordNode(pos=(289, 303), word='$nativeLines', parts=[
+    ParameterNode(pos=(290, 302), value='nativeLines'),
+  ]),
+])
+
+
+404) command -v gpgconf > /dev/null
+
+CommandNode(pos=(494, 524), parts=[
+  WordNode(pos=(494, 501), word='command'),
+  WordNode(pos=(502, 504), word='-v'),
+  WordNode(pos=(505, 512), word='gpgconf'),
+  RedirectNode(output=
+    WordNode(pos=(515, 524), word='/dev/null'), pos=(513, 524), type='>'),
+])
+
+
+405) echo '/usr/local/lib' > /etc/ld.so.conf.d/000-openssl-libc.conf
+
+CommandNode(pos=(1449, 1512), parts=[
+  WordNode(pos=(1449, 1453), word='echo'),
+  WordNode(pos=(1454, 1470), word='/usr/local/lib'),
+  RedirectNode(output=
+    WordNode(pos=(1473, 1512), word='/etc/ld.so.conf.d/000-openssl-libc.conf'), pos=(1471, 1512), type='>'),
+])
+
+
+406) apt-mark auto '.*' > /dev/null
+
+CommandNode(pos=(3281, 3311), parts=[
+  WordNode(pos=(3281, 3289), word='apt-mark'),
+  WordNode(pos=(3290, 3294), word='auto'),
+  WordNode(pos=(3295, 3299), word='.*'),
+  RedirectNode(output=
+    WordNode(pos=(3302, 3311), word='/dev/null'), pos=(3300, 3311), type='>'),
+])
+
+
+407) apt-mark auto '.*' > /dev/null
+
+CommandNode(pos=(1272, 1302), parts=[
+  WordNode(pos=(1272, 1280), word='apt-mark'),
+  WordNode(pos=(1281, 1285), word='auto'),
+  WordNode(pos=(1286, 1290), word='.*'),
+  RedirectNode(output=
+    WordNode(pos=(1293, 1302), word='/dev/null'), pos=(1291, 1302), type='>'),
+])
+
+
+408) apt-mark auto '.*' > /dev/null
+
+CommandNode(pos=(1555, 1585), parts=[
+  WordNode(pos=(1555, 1563), word='apt-mark'),
+  WordNode(pos=(1564, 1568), word='auto'),
+  WordNode(pos=(1569, 1573), word='.*'),
+  RedirectNode(output=
+    WordNode(pos=(1576, 1585), word='/dev/null'), pos=(1574, 1585), type='>'),
+])
+
+
+409) apt-mark manual $savedAptMark > /dev/null
+
+CommandNode(pos=(1614, 1655), parts=[
+  WordNode(pos=(1614, 1622), word='apt-mark'),
+  WordNode(pos=(1623, 1629), word='manual'),
+  WordNode(pos=(1630, 1643), word='$savedAptMark', parts=[
+    ParameterNode(pos=(1630, 1643), value='savedAptMark'),
+  ]),
+  RedirectNode(output=
+    WordNode(pos=(1646, 1655), word='/dev/null'), pos=(1644, 1655), type='>'),
+])
+
+
+410) grep 'INFO: Loaded APR based Apache Tomcat Native library' >&2
+
+CommandNode(pos=(209, 271), parts=[
+  WordNode(pos=(209, 213), word='grep'),
+  WordNode(pos=(214, 267), word='INFO: Loaded APR based Apache Tomcat Native library'),
+  RedirectNode(output=2, pos=(268, 271), type='>&'),
+])
+
+
+411) echo >&2 "$nativeLines"
+
+CommandNode(pos=(280, 303), parts=[
+  WordNode(pos=(280, 284), word='echo'),
+  RedirectNode(output=2, pos=(285, 288), type='>&'),
+  WordNode(pos=(289, 303), word='$nativeLines', parts=[
+    ParameterNode(pos=(290, 302), value='nativeLines'),
+  ]),
+])
+
+
+412) erl -noinput -eval '   { ok, AdminBin } = zip:foldl(fun(FileInArchive, GetInfo, GetBin, Acc) ->    case Acc of     "" ->      case lists:suffix("/rabbitmqadmin", FileInArchive) of       true -> GetBin();       false -> Acc      end;     _ -> Acc    end   end, "", init:get_plain_arguments()),   io:format("~s", [ AdminBin ]),   init:stop().  ' -- /plugins/rabbitmq_management-*.ez > /usr/local/bin/rabbitmqadmin
+
+CommandNode(pos=(11, 422), parts=[
+  WordNode(pos=(11, 14), word='erl'),
+  WordNode(pos=(15, 23), word='-noinput'),
+  WordNode(pos=(24, 29), word='-eval'),
+  WordNode(pos=(30, 354), word='   { ok, AdminBin } = zip:foldl(fun(FileInArchive, GetInfo, GetBin, Acc) ->    case Acc of     "" ->      case lists:suffix("/rabbitmqadmin", FileInArchive) of       true -> GetBin();       false -> Acc      end;     _ -> Acc    end   end, "", init:get_plain_arguments()),   io:format("~s", [ AdminBin ]),   init:stop().  '),
+  WordNode(pos=(355, 357), word='--'),
+  WordNode(pos=(358, 391), word='/plugins/rabbitmq_management-*.ez'),
+  RedirectNode(output=
+    WordNode(pos=(394, 422), word='/usr/local/bin/rabbitmqadmin'), pos=(392, 422), type='>'),
+])
+
+
+413) apt-mark auto '.*' > /dev/null
+
+CommandNode(pos=(888, 918), parts=[
+  WordNode(pos=(888, 896), word='apt-mark'),
+  WordNode(pos=(897, 901), word='auto'),
+  WordNode(pos=(902, 906), word='.*'),
+  RedirectNode(output=
+    WordNode(pos=(909, 918), word='/dev/null'), pos=(907, 918), type='>'),
+])
+
+
+414) echo '/usr/local/lib' > /etc/ld.so.conf.d/000-openssl-libc.conf
+
+CommandNode(pos=(1449, 1512), parts=[
+  WordNode(pos=(1449, 1453), word='echo'),
+  WordNode(pos=(1454, 1470), word='/usr/local/lib'),
+  RedirectNode(output=
+    WordNode(pos=(1473, 1512), word='/etc/ld.so.conf.d/000-openssl-libc.conf'), pos=(1471, 1512), type='>'),
+])
+
+
+415) apt-mark auto '.*' > /dev/null
+
+CommandNode(pos=(3281, 3311), parts=[
+  WordNode(pos=(3281, 3289), word='apt-mark'),
+  WordNode(pos=(3290, 3294), word='auto'),
+  WordNode(pos=(3295, 3299), word='.*'),
+  RedirectNode(output=
+    WordNode(pos=(3302, 3311), word='/dev/null'), pos=(3300, 3311), type='>'),
+])
+
+
+416) apt-mark auto '.*' > /dev/null
+
+CommandNode(pos=(1272, 1302), parts=[
+  WordNode(pos=(1272, 1280), word='apt-mark'),
+  WordNode(pos=(1281, 1285), word='auto'),
+  WordNode(pos=(1286, 1290), word='.*'),
+  RedirectNode(output=
+    WordNode(pos=(1293, 1302), word='/dev/null'), pos=(1291, 1302), type='>'),
+])
+
+
+417) command -v gpg > /dev/null
+
+CommandNode(pos=(40, 66), parts=[
+  WordNode(pos=(40, 47), word='command'),
+  WordNode(pos=(48, 50), word='-v'),
+  WordNode(pos=(51, 54), word='gpg'),
+  RedirectNode(output=
+    WordNode(pos=(57, 66), word='/dev/null'), pos=(55, 66), type='>'),
+])
+
+
+418) command -v gpgconf > /dev/null
+
+CommandNode(pos=(734, 764), parts=[
+  WordNode(pos=(734, 741), word='command'),
+  WordNode(pos=(742, 744), word='-v'),
+  WordNode(pos=(745, 752), word='gpgconf'),
+  RedirectNode(output=
+    WordNode(pos=(755, 764), word='/dev/null'), pos=(753, 764), type='>'),
+])
+
+
