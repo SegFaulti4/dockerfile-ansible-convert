@@ -52,6 +52,15 @@ def stat_redirect(node, stats):
 
 def stat_assignment(node, stats):
     stat_default(node, stats)
+    if stats['values'][node.kind].get('parts count', None) is None:
+        stats['values'][node.kind]['parts count'] = {}
+    parts_count = len(node.parts)
+    if stats['values'][node.kind]['parts count'].get(parts_count, None) is None:
+        stats['values'][node.kind]['parts count'][parts_count] = 0
+    stats['values'][node.kind]['parts count'][parts_count] += 1
+
+    if parts_count > 1:
+        print(node)
 
 
 def stat_compound(node, stats):

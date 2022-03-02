@@ -1,5 +1,10 @@
+import bashlex
+
 import exception
 from log import globalLog
+
+
+BASH_WORD_SUBSTITUTION_CHILDREN_TYPES = ['BASH-PARAMETER', 'BASH-VALUE']
 
 
 def _bashlex_logical_expression_tree(command_list):
@@ -72,7 +77,7 @@ def parse_bashlex_word(node, line):
             child = parse_bashlex_node(part, line)
             if not child:
                 return []
-            for param in filter(lambda x: x['type'] == 'BASH-PARAMETER', child):
+            for param in filter(lambda x: x['type'] in BASH_WORD_SUBSTITUTION_CHILDREN_TYPES, child):
                 param['pos'] = (param['pos'][0] - node.pos[0], param['pos'][1] - node.pos[0])
                 res['children'].append(param)
     else:
@@ -82,6 +87,35 @@ def parse_bashlex_word(node, line):
 
 def parse_bashlex_parameter(node, line):
     return [{'type': 'BASH-PARAMETER', 'value': node.value, 'pos': node.pos}]
+
+
+def parse_bashlex_bash_value(value):
+    nodes = bashlex.parse(value)
+    # if it's a simple list of words - leave it as it is
+    # if not - let the shell do the work
+    if len(nodes) == 1 and nodes[0].kind == 'command' and \
+            all(part.kind == 'word' and not part.parts for part in nodes[0].parts):
+        return {'type': 'STRING-CONSTANT', 'value': value}
+    else:
+        return {'type': 'BASH-VALUE', 'value': value}
+
+
+def parse_bashlex_assignment(node, line):
+    find_space = node.word.find('=')
+    name, value = node.word[0:find_space], node.word[find_space + 1:]
+    return [{
+        'type': 'BASH-ASSIGNMENT',
+        'name': name,
+        'children': [parse_bashlex_bash_value(value)]
+    }]
+
+
+def parse_bashlex_commandsubstitution(node, line):
+    return [{
+        'type': 'BASH-VALUE',
+        'value': line[node.pos[0]:node.pos[1]],
+        'pos': (node.pos[0], node.pos[1])
+    }]
 
 
 def parse_bashlex_node(node, line):
@@ -95,5 +129,9 @@ def parse_bashlex_node(node, line):
         return parse_bashlex_word(node, line)
     elif node.kind == 'parameter':
         return parse_bashlex_parameter(node, line)
+    elif node.kind == 'assignment':
+        return parse_bashlex_assignment(node, line)
+    elif node.kind == 'commandsubstitution':
+        return parse_bashlex_commandsubstitution(node, line)
     globalLog.info('Bashlex node kind "' + node.kind + '" is not supported')
     return []

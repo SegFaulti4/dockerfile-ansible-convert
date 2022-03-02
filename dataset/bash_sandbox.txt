@@ -1,1 +1,1 @@
-set -eux;  [ ! -d "$HOME" ];  mkdir -p "$HOME";  chown redmine:redmine "$HOME";  chmod 1777 "$HOME"
+fetchDeps=$(dpkg-architecture --query DEB_BUILD_MULTIARCH)-01

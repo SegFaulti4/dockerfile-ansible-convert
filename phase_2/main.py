@@ -8,12 +8,12 @@ from bashlex.errors import ParsingError
 
 import exception
 from log import globalLog
-from phase_2.parse_bashlex import parse_bashlex_node
+from phase_2.parse_bashlex import parse_bashlex_node, parse_bashlex_bash_value
 
 globalLog.setLevel(logging.DEBUG)
 
 
-# BASHLEX_IMPLEMENTED_NODES = ['list', 'command', 'operator', 'word', 'parameter']
+# BASHLEX_IMPLEMENTED_NODES = ['list', 'command', 'operator', 'word', 'parameter', 'assignment']
 # BASHLEX_NODE_PARSING = {node_kind: getattr(parse_bashlex, 'parse_bashlex_' + node_kind)
 #                         for node_kind in BASHLEX_IMPLEMENTED_NODES}
 
@@ -45,12 +45,7 @@ def phase_2_parse_bash_command(bash_line):
 def phase_2_parse_bash_value(bash_value):
     res = None
     try:
-        res = bashlex.parse(bash_value)
-        if len(res) == 1 and res[0].kind == 'command' and \
-                all(part.kind == 'word' and not part.parts for part in res[0].parts):
-            res = {'type': 'STRING-CONSTANT', 'value': bash_value}
-        else:
-            res = {'type': 'BASH-VALUE', 'value': bash_value}
+        res = parse_bashlex_bash_value(bash_value)
     except Exception as exc:
         globalLog.warning(type(exc))
         globalLog.warning(exc)
