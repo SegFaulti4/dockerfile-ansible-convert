@@ -1,1 +1,1 @@
-apt-get install -y ${MONGO_PACKAGE}=$MONGO_VERSION ; apt-get install $E0
+export E0=batman ; apt-get install $E0
