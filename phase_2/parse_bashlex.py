@@ -72,12 +72,14 @@ def parse_bashlex_operator(node, line):
 
 def parse_bashlex_word(node, line):
     if len(node.parts):
-        res = {'type': 'BASH-WORD-SUBSTITUTION', 'children': [], 'line': line[node.pos[0]:node.pos[1]]}
+        res = {'type': 'BASH-PARAMETERIZED-WORD', 'children': [], 'line': line[node.pos[0]:node.pos[1]]}
         for part in node.parts:
             child = parse_bashlex_node(part, line)
             if not child:
                 return []
             for param in filter(lambda x: x['type'] in BASH_WORD_SUBSTITUTION_CHILDREN_TYPES, child):
+                if param['type'] != 'BASH-PARAMETER':
+                    res['type'] = 'BASH-WORD-SUBSTITUTION'
                 param['pos'] = (param['pos'][0] - node.pos[0], param['pos'][1] - node.pos[0])
                 res['children'].append(param)
     else:
@@ -86,6 +88,7 @@ def parse_bashlex_word(node, line):
 
 
 def parse_bashlex_parameter(node, line):
+    # TODO: change 'value' for 'name'
     return [{'type': 'BASH-PARAMETER', 'value': node.value, 'pos': node.pos}]
 
 

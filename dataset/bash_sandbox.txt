@@ -1,1 +1,1 @@
-fetchDeps=$(dpkg-architecture --query DEB_BUILD_MULTIARCH)-01
+apt-get install $E0

@@ -35,7 +35,7 @@ def process_cmd(directive):
         'type': 'DOCKER-CMD',
         'children': [{
             'type': 'DOCKER-CMD-ARG',
-            'value': directive.value[0],
+            'value': directive.value[0] if directive.value else None,
             'children': []
         }]
     }]

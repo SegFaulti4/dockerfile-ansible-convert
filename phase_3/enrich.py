@@ -178,7 +178,7 @@ def _scenario_is_suitable(scenario, comm, name):
         node = {'type': 'ENRICHED-COMMAND', 'name': name, 'full name': scenario['name'], 'options': dict(),
                 'line': comm['line']}
         cmd = scenario['cmd'].split()
-        comm_list = [child['value'] for child in comm['children']]
+        comm_list = comm['children'].copy()
         comm_list.pop(0)
         accepting_command_options = True
 
@@ -233,12 +233,8 @@ def _scenario_is_suitable(scenario, comm, name):
         return None
 
 
-def enrich_command(comm):
-    if len(comm['children']) == 0:
-        return comm
-    if comm['children'][0]['type'] != 'BASH-WORD' or commands_config.get(comm['children'][0]['value'], None) is None:
-        return comm
-    else:
+def enrich_command(comm, global_stack=set(), local_stack=set()):
+    if commands_config.get(comm['children'][0]['value'], None) is not None:
         conf = commands_config[comm['children'][0]['value']]['command']
         suitable_scenarios = conf['scenarios'].copy()
         for scenario in suitable_scenarios:
@@ -246,4 +242,4 @@ def enrich_command(comm):
             if scenario_res is not None:
                 return scenario_res
         globalLog.warning("Suitable scenario not found for command " + comm['line'])
-        return comm
+    return comm

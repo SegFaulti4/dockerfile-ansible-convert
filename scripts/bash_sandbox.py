@@ -21,8 +21,11 @@ with open('./dataset/bash_sandbox.txt', 'r') as inF:
         parsed = phase_2_parse_bash_command(bash_line)
         print("\nphase_2:")
         print(json.dumps(parsed, indent=4, sort_keys=True))
-        if False and parsed:
-            parsed = phase_3_process(parsed)
+        if parsed:
+            parsed = phase_3_process({'type': 'DOCKERFILE', 'children': [
+                {'type': 'DOCKER-ENV', 'name': 'E0'},
+                {'type': 'DOCKER-RUN', 'children': parsed}
+            ]})
             print("\nphase_3:")
             print(json.dumps(parsed, indent=4, sort_keys=True))
 
