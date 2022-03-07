@@ -4,22 +4,29 @@ command:
     booleans:
       - --no-install-recommends
       - --install-suggests
-      - -d, --download-only
-      - -f, --fix-broken
-      - -m, --ignore-missing
+      - -d
+      - --download-only
+      - -f
+      - --fix-broken
+      - -m
+      - --ignore-missing
       - --fix-missing
       - --no-download
-      - -s, --simulate
+      - -s
+      - --simulate
       - --just-print
       - --dry-run
       - --recon
       - --no-act
-      - -y, --yes
+      - -y
+      - --yes
       - --assume-yes
       - --assume-no
       - --no-show-upgraded
-      - -V, --verbose-versions
-      - -b, --compile
+      - -V
+      - --verbose-versions
+      - -b
+      - --compile
       - --build
       - --ignore-hold
       - --with-new-pkgs
@@ -51,16 +58,22 @@ command:
       - -h, --help
       - -v, --version
     paths:
-      - -c, --config-file
+      - -c
+      - --config-file
       - --with-source
-      - -a, --host-architecture
-      - -P, --build-profiles
-      - -t, --target-release
+      - -a
+      - --host-architecture
+      - -P
+      - --build-profiles
+      - -t
+      - --target-release
       - --default-release
     counts:
-      - -q, --quiet
+      - -q
+      - --quiet
     arrays:
-      - -o, --option
+      - -o
+      - --option
   scenarios:
     - cmd: $0 update
       options: *options

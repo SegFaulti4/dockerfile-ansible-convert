@@ -4,13 +4,17 @@ command:
     - cmd: $0 [paths...]
       options:
         booleans:
-          - -r, --recursive
-          - -R, --recursive
-          - -f, --force
+          - -r
+          - --recursive
+          - -R
+          - --recursive
+          - -f
+          - --force
           - -i
           - -I
           - --one-file-system
-          - -v, --verbose
+          - -v
+          - --verbose
           - --version
           - --help
           - --preserve-root

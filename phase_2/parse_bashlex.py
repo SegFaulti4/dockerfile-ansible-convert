@@ -72,7 +72,7 @@ def parse_bashlex_operator(node, line):
 
 def parse_bashlex_word(node, line):
     if len(node.parts):
-        res = {'type': 'BASH-PARAMETERIZED-WORD', 'children': [], 'line': line[node.pos[0]:node.pos[1]]}
+        res = {'type': 'BASH-PARAMETERIZED-WORD', 'children': [], 'value': line[node.pos[0]:node.pos[1]]}
         for part in node.parts:
             child = parse_bashlex_node(part, line)
             if not child:

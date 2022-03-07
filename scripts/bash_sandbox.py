@@ -29,10 +29,11 @@ with open('./dataset/bash_sandbox.txt', 'r') as inF:
             print("\nphase_3:")
             print(json.dumps(parsed, indent=4, sort_keys=True))
 
+            '''
             ast = {'hosts': 'localhost',
                    'name': 'Generated from dockerfile',
                    'tasks': list()}
             bash_command_to_task(ast, parsed)
-
             print("\nfinal:")
             print(json.dumps(ast, indent=4, sort_keys=True))
+            '''

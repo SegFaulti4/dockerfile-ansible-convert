@@ -11,7 +11,6 @@ globalLog.setLevel(logging.DEBUG)
 
 
 BASH_PARAMETERIZED_WORD_CLASSES = ['local', 'global', 'untracked']
-ENRICHED_COMMAND_CHILDREN_TYPES = ['BASH-WORD', 'BASH-PARAMETERIZED-WORD']
 
 
 class Global:
@@ -24,7 +23,7 @@ def load_phase_2(in_stream):
 
 
 def phase_3_enrich_command(obj):
-    return enrich.enrich_command(obj, global_stack=Global.stack, local_stack=Global.directive_stack)
+    return enrich.enrich_command(obj)
 
 
 def _enrich_command_is_applicable(comm):
