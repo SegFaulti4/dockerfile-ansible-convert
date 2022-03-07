@@ -71,6 +71,15 @@ def parse_bashlex_operator(node, line):
 
 
 def parse_bashlex_word(node, line):
+    # check if it's an assignment
+    if node.word[0] != '-':
+        eq_pos = node.word.find('=')
+        if eq_pos != -1 and all(x.pos[0] > eq_pos + node.pos[0] for x in node.parts):
+            return parse_bashlex_assignment(node, line)
+
+        if eq_pos != -1:
+            globalLog.info("Unexpected '=' symbol in word node " + node.dump())
+
     if len(node.parts):
         res = {'type': 'BASH-PARAMETERIZED-WORD', 'children': [], 'value': line[node.pos[0]:node.pos[1]]}
         for part in node.parts:
@@ -88,8 +97,7 @@ def parse_bashlex_word(node, line):
 
 
 def parse_bashlex_parameter(node, line):
-    # TODO: change 'value' for 'name'
-    return [{'type': 'BASH-PARAMETER', 'value': node.value, 'pos': node.pos}]
+    return [{'type': 'BASH-PARAMETER', 'name': node.value, 'pos': node.pos}]
 
 
 def parse_bashlex_bash_value(value):
@@ -104,8 +112,8 @@ def parse_bashlex_bash_value(value):
 
 
 def parse_bashlex_assignment(node, line):
-    find_space = node.word.find('=')
-    name, value = node.word[0:find_space], node.word[find_space + 1:]
+    eq_pos = node.word.find('=')
+    name, value = node.word[0:eq_pos], node.word[eq_pos + 1:]
     return [{
         'type': 'BASH-ASSIGNMENT',
         'name': name,

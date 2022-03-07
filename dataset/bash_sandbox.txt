@@ -1,1 +1,1 @@
-E0=python; apt-get install $E0
+apt-get install -y ${MONGO_PACKAGE}=$MONGO_VERSION ; apt-get install $E0

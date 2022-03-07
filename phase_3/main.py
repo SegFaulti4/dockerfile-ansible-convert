@@ -40,13 +40,15 @@ def phase_3_ast_visit(obj):
         for i in range(len(obj['children'])):
             obj['children'][i] = phase_3_ast_visit(obj['children'][i])
     elif obj['type'] == 'BASH-COMMAND':
+        # checking assignment node
+
         # TODO: check for assignments and export
         for parameterized in filter(lambda x: x['type'] == 'BASH-PARAMETERIZED-WORD', obj['children']):
             class_flag = 0
             for param in filter(lambda x: x['type'] == 'BASH-PARAMETER', parameterized['children']):
-                if param['value'] in Global.directive_stack:
+                if param['name'] in Global.directive_stack:
                     param['type'] = 'LOCAL-BASH-PARAMETER'
-                elif param['value'] in Global.stack:
+                elif param['name'] in Global.stack:
                     class_flag = max(class_flag, 1)
                     param['type'] = 'GLOBAL-BASH-PARAMETER'
                 else:
