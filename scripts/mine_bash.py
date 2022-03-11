@@ -7,7 +7,7 @@ from log import globalLog
 
 def _mine_sh(json_o):
     if json_o.get('type', '') == 'MAYBE-BASH':
-        return [json_o['value']]
+        return [json_o['line']]
 
     res = []
     if 'children' in json_o.keys():

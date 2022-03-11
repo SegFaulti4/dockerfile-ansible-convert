@@ -1,1 +1,1 @@
-export E0=batman ; apt-get install $E0
+apt-get install -y --no-install-recommends apt-transport-https ca-certificates pwgen

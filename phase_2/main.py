@@ -57,7 +57,7 @@ def phase_2_parse_bash_value(bash_value):
 
 def phase_2_ast_visit(obj):
     if len(obj['children']) == 1 and obj['children'][0]['type'] == 'MAYBE-BASH':
-        res = phase_2_parse_bash_command(obj['children'][0]['value'])
+        res = phase_2_parse_bash_command(obj['children'][0]['line'])
         if not res:
             globalLog.info(obj['type'] + ' node is untouched')
         else:

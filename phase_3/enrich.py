@@ -7,7 +7,7 @@ from log import globalLog
 commands_config = {}
 
 
-ENRICHED_COMMAND_CHILDREN_TYPES = ['BASH-WORD', 'BASH-PARAMETERIZED-WORD']
+ENRICHED_COMMAND_CHILDREN_TYPES = ['BASH-WORD', 'BASH-WORD-PARAMETERIZED']
 
 
 def init_commands_config():
@@ -74,7 +74,7 @@ def _scenario_opt_name(node):
     return _scenario_short_opt_name(node['value'])
 
 
-def _scenario_opt_obtain_str_value(comm_list, new_option):
+def _scenario_opt_obtain_str_value(comm_list, new_option, listed_value=True):
     default_opt_value = {'type': 'BASH-WORD', 'value': ''}
 
     eq_pos = new_option['value'].find('=')
@@ -88,7 +88,7 @@ def _scenario_opt_obtain_str_value(comm_list, new_option):
             }
             if new_option['type'] == 'BASH-WORD':
                 pass
-            elif new_option['type'] == 'BASH-PARAMETERIZED-WORD':
+            elif new_option['type'] == 'BASH-WORD-PARAMETERIZED':
                 opt_value['children'] = new_option['children'].copy()
                 for child in opt_value['children']:
                     child['pos'] = (child['pos'][0] - eq_pos - 1, child['pos'][1] - eq_pos - 1)
@@ -97,7 +97,7 @@ def _scenario_opt_obtain_str_value(comm_list, new_option):
                     'Unsupported node type for enriched command with string value option: ' + new_option['type']
                 )
     else:
-        if len(comm_list) == 0 or _bash_word_is_an_option(comm_list[0]):
+        if not listed_value or len(comm_list) == 0 or _bash_word_is_an_option(comm_list[0]):
             opt_value = default_opt_value
         else:
             opt_value = comm_list.pop(0)
@@ -105,13 +105,13 @@ def _scenario_opt_obtain_str_value(comm_list, new_option):
 
 
 def _scenario_fit_opt_type_booleans(comm_list, node_options, new_option_name, new_option):
-    opt_value = _scenario_opt_obtain_str_value(comm_list, new_option)
+    opt_value = _scenario_opt_obtain_str_value(comm_list, new_option, listed_value=False)
     if not opt_value['value']:
-        node_options[new_option_name] = {'type': 'BASH-WORD', 'value': 'yes'}
+        opt_value = {'type': 'BASH-WORD', 'value': 'yes'}
     elif opt_value['value'] == 'yes' or opt_value['value'] == 'no':
         pass
     else:
-        globalLog.warning('Unexpected value for boolean option: ' + new_option)
+        globalLog.warning('Unexpected value for boolean option: ' + str(new_option))
     node_options[new_option_name] = opt_value
 
 
@@ -128,13 +128,13 @@ def _scenario_fit_opt_type_paths(comm_list, node_options, new_option_name, new_o
 
 
 def _scenario_fit_opt_type_counts(comm_list, node_options, new_option_name, new_option):
-    opt_value = _scenario_opt_obtain_str_value(comm_list, new_option)
+    opt_value = _scenario_opt_obtain_str_value(comm_list, new_option, listed_value=False)
     if not opt_value['value']:
         if node_options.get(new_option_name, None) is None:
             node_options[new_option_name] = {'type': 'BASH-WORD', 'value': '1'}
         elif node_options[new_option_name]['type'] == 'BASH-WORD':
             node_options[new_option_name]['value'] = str(int(node_options[new_option_name]['value']) + 1)
-        elif node_options[new_option_name]['type'] == 'BASH-PARAMETERIZED-WORD':
+        elif node_options[new_option_name]['type'] == 'BASH-WORD-PARAMETERIZED':
             node_options[new_option_name]['value'] = node_options[new_option_name]['value'] + ' + 1'
         else:
             raise exception.EnrichCommandException(
@@ -155,7 +155,7 @@ def _scenario_explode_option_list(comm_list):
     if comm_list[0]['value'][0:2] == '--':
         values = [comm_list[0]]
     else:
-        if comm_list[0]['values'].find('=') != -1:
+        if comm_list[0]['value'].find('=') != -1:
             values = [comm_list[0]]
         else:
             # No parameterized words here
@@ -207,7 +207,7 @@ def _bash_word_is_an_option(node):
     if node['value'][0] == '-':
         if node['type'] == 'BASH-WORD':
             return True
-        elif node['type'] == 'BASH-PARAMETERIZED-WORD':
+        elif node['type'] == 'BASH-WORD-PARAMETERIZED':
             eq_pos = node['value'].find('=')
             min_param_pos = min(map(lambda x: x['pos'][0], node['children']))
             if min_param_pos > eq_pos > 1:
@@ -224,7 +224,7 @@ def _bash_word_is_a_skip_word(node):
 
 def _scenario_is_suitable(scenario, comm, name):
     try:
-        node = {'type': 'ENRICHED-COMMAND', 'name': name, 'full name': scenario['name'], 'options': dict(),
+        node = {'type': 'BASH-COMMAND-ENRICHED', 'name': name, 'full name': scenario['name'], 'options': dict(),
                 'line': comm['line']}
         cmd = scenario['cmd'].split()
         comm_list = comm['children'].copy()

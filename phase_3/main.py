@@ -27,7 +27,7 @@ def phase_3_enrich_command(obj):
 
 def _enrich_command_is_applicable(comm):
     return comm['children'][0]['type'] == 'BASH-WORD' and \
-           all(x['type'] == 'BASH-WORD' or x['type'] == 'BASH-PARAMETERIZED-WORD' and x['class'] != 'untracked'
+           all(x['type'] == 'BASH-WORD' or x['type'] == 'BASH-WORD-PARAMETERIZED' and x['class'] != 'untracked'
                for x in comm['children'])
 
 
@@ -53,17 +53,17 @@ def phase_3_ast_visit(obj):
             Global.directive_stack.add(var_name)
             obj = {'type': 'BASH-VARIABLE-DEFINITION', 'name': var_name, 'children': var_value_list}
         else:
-            for parameterized in filter(lambda x: x['type'] == 'BASH-PARAMETERIZED-WORD', obj['children']):
+            for parameterized in filter(lambda x: x['type'] == 'BASH-WORD-PARAMETERIZED', obj['children']):
                 class_flag = 0
                 for param in filter(lambda x: x['type'] == 'BASH-PARAMETER', parameterized['children']):
                     if param['name'] in Global.directive_stack:
-                        param['type'] = 'LOCAL-BASH-PARAMETER'
+                        param['type'] = 'BASH-PARAMETER-LOCAL'
                     elif param['name'] in Global.stack:
                         class_flag = max(class_flag, 1)
-                        param['type'] = 'GLOBAL-BASH-PARAMETER'
+                        param['type'] = 'BASH-PARAMETER-GLOBAL'
                     else:
                         class_flag = max(class_flag, 2)
-                        param['type'] = 'UNTRACKED-BASH-PARAMETER'
+                        param['type'] = 'BASH-PARAMETER-UNTRACKED'
                 parameterized['class'] = BASH_PARAMETERIZED_WORD_CLASSES[class_flag]
 
             if _enrich_command_is_applicable(obj):

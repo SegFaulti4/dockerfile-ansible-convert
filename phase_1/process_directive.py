@@ -24,7 +24,7 @@ def process_run(directive):
         'type': 'DOCKER-RUN',
         'children': [{
             'type': 'MAYBE-BASH',
-            'value': directive.value[0],
+            'line': directive.value[0],
             'children': []
         }]
     }]

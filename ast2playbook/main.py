@@ -1,12 +1,10 @@
-import sys
-import argparse
 import json
 import logging
 import yaml
 
 import exception
 from log import globalLog
-from ast2playbook.match_module import match_ansible_module, default_match
+from ast2playbook.match_module.main import match_ansible_module, default_match
 
 
 globalLog.setLevel(logging.DEBUG)
@@ -15,6 +13,9 @@ globalLog.setLevel(logging.DEBUG)
 class Global:
     BASH_COMMAND_COUNT = 0
     REGISTER_COUNT = 0
+    stack = dict()
+    directive_stack = dict()
+    cur_playbook = dict()
 
 
 def load_phase_3(in_stream):
@@ -39,74 +40,147 @@ def new_task_name():
     return 'Generated task ' + str(Global.BASH_COMMAND_COUNT)
 
 
-def match_ansible_task(new_task, command):
-    try:
-        match = None
-        if command['type'] == 'MAYBE-BASH':
-            match = {'shell': {'cmd': command['value']}}
-        elif command['type'] == 'BASH-COMMAND':
-            match = default_match(command)
-        elif command['type'] == 'ENRICHED-COMMAND':
-            match = match_ansible_module(command)
-        if match is None:
-            globalLog.warning('Unknown command type ' + command['type'])
-        else:
-            for key in match:
-                new_task[key] = match[key]
-    except exception.MatchAnsibleModuleException as exc:
-        globalLog.info(exc)
-        globalLog.info('Failed to match command ' + command['name'])
-        globalLog.info('Resolving to shell: ' + command['line'])
-        new_task['shell'] = command['line']
+def _last_task():
+    return Global.cur_playbook['tasks'][-1]
 
 
-def bash_command_to_task(ansible_ast, command, pass_register=False):
-    if command['type'] == 'BASH-COMMAND-LIST':
-        for child in command['children']:
-            bash_command_to_task(ansible_ast, child)
-    elif command['type'] == 'BASH-OPERATOR-AND' or command['type'] == 'BASH-OPERATOR-OR':
-        bash_command_to_task(ansible_ast, command['children'][0], pass_register=True)
-        bash_command_to_task(ansible_ast, command['children'][1], pass_register=pass_register)
-        if command['type'] == 'BASH-OPERATOR-AND':
-            ansible_ast['tasks'][-1]['when'] = prev_register_name() + ' is succeeded'
-        elif command['type'] == 'BASH-OPERATOR-OR':
-            ansible_ast['tasks'][-1]['when'] = prev_register_name() + ' is not succeeded'
+def wrap_ansible_matched_module_task(task):
+    # TODO
+    pass
+
+
+def wrap_ansible_shell_task(task):
+    # TODO
+    pass
+
+
+def handle_bash_default(obj):
+    handle_default(obj)
+
+
+def handle_bash_variable_definition(obj):
+    # TODO
+    pass
+
+
+def _handle_bash_operator_general(obj):
+    ast2playbook_ast_visit(obj['children'][0])
+    _last_task()['register'] = new_register_name()
+    ast2playbook_ast_visit(obj['children'][1])
+
+
+def handle_bash_operator_or(obj):
+    _handle_bash_operator_general(obj)
+    _last_task()['when'] = prev_register_name() + ' is not succeeded'
+
+
+def handle_bash_operator_and(obj):
+    _handle_bash_operator_general(obj)
+    _last_task()['when'] = prev_register_name() + ' is succeeded'
+
+
+def handle_bash_command_enriched(obj):
+    match = match_ansible_module(obj)
+
+    if match:
+        Global.cur_playbook['tasks'].append(match)
+        wrap_ansible_matched_module_task(_last_task())
     else:
-        new_task = {'name': new_task_name()}
-        if pass_register:
-            new_task['register'] = new_register_name()
-
-        match_ansible_task(new_task, command)
-        ansible_ast['tasks'].append(new_task)
+        globalLog.info('Failed to match command ' + obj['name'])
+        globalLog.info('Resolving to shell: ' + obj['line'])
+        _handle_bash_with_default_match(obj)
 
 
-def handle_docker_ast_default(directive):
-    globalLog.info('Docker AST node type ' + directive['type'] + ' is not implemented')
+def _handle_bash_with_default_match(obj):
+    match = default_match(obj)
+    Global.cur_playbook['tasks'].append(match)
+    wrap_ansible_shell_task(_last_task())
 
 
-def handle_docker_ast_run(ansible_ast, directive):
+def handle_bash_command(obj):
+    _handle_bash_with_default_match(obj)
+
+
+def handle_maybe_bash(obj):
+    _handle_bash_with_default_match(obj)
+
+
+def handle_docker_ast_default(obj):
+    handle_default(obj)
+
+
+def handle_docker_ast_run(directive):
+    Global.directive_stack = dict()
     for child in directive['children']:
-        bash_command_to_task(ansible_ast, child)
+        ast2playbook_ast_visit(child)
 
 
-def docker2ansible(docker_ast):
+def handle_docker_ast_env(obj):
+    Global.stack[obj['name']] = obj['children'][0]
+    if obj['children'][0]['type'] == 'BASH-VALUE':
+        Global.cur_playbook['tasks'].append({
+            'shell': {
+                'cmd': 'echo "' + obj['children'][0]['value'] + '"'
+            },
+            'register': new_register_name()
+        })
+        wrap_ansible_shell_task(_last_task())
+        Global.stack[obj['name']]['register'] = _last_task()['register']
+
+
+def handle_default(obj):
+    globalLog.info('Docker AST node type ' + obj['type'] + ' is not implemented')
+
+
+def ast2playbook_ast_visit(obj):
+    if obj['type'].find('DOCKER') == 0:
+        if obj['type'] == 'DOCKER-FROM':
+            handle_docker_ast_default(obj)
+        elif obj['type'] == 'DOCKER-RUN':
+            handle_docker_ast_run(obj)
+        elif obj['type'] == 'DOCKER-ENV':
+            handle_docker_ast_env(obj)
+        else:
+            handle_docker_ast_default(obj)
+    elif obj['type'].find('BASH') == 0:
+        if obj['type'].find('BASH-COMMAND') == 0:
+            if obj['type'] == 'BASH-COMMAND':
+                handle_bash_command(obj)
+            elif obj['type'] == 'BASH-COMMAND-ENRICHED':
+                handle_bash_command_enriched(obj)
+        elif obj['type'].find('BASH-OPERATOR') == 0:
+            if obj['type'] == 'BASH-OPERATOR-AND':
+                handle_bash_operator_and(obj)
+            elif obj['type'] == 'BASH-OPERATOR-OR':
+                handle_bash_operator_or(obj)
+            else:
+                handle_bash_default(obj)
+        elif obj['type'] == 'BASH-VARIABLE-DEFINITION':
+            handle_bash_variable_definition(obj)
+        else:
+            handle_bash_default(obj)
+    elif obj['type'] == 'MAYBE-BASH':
+        handle_maybe_bash(obj)
+    else:
+        handle_default(obj)
+
+
+def ast2playbook_process(docker_ast):
     Global.BASH_COMMAND_COUNT = 0
     Global.REGISTER_COUNT = 0
-
-    res = {'hosts': 'localhost',
-           'name': 'Generated from dockerfile',
-           'tasks': list()}
+    Global.stack = dict()
+    Global.cur_playbook = {
+        'hosts': 'default',
+        'name': 'Generated from dockerfile',
+        'tasks': list()
+    }
 
     if docker_ast['type'] != 'DOCKER-FILE':
         raise exception.GenerateAnsibleASTException('Wrong node type provided ' + docker_ast['type'])
+    for obj in docker_ast['children']:
+        ast2playbook_ast_visit(obj)
 
-    for directive in docker_ast['children']:
-        if directive['type'] == 'DOCKER-RUN':
-            handle_docker_ast_run(res, directive)
-        else:
-            handle_docker_ast_default(directive)
-
-    return [res]
+    return [Global.cur_playbook]
 
 
 def dump_playbook(ansible_ast, filename):
@@ -122,7 +196,7 @@ def dump_playbooks(in_stream):
     for docker_ast in ph_3:
         ansible_ast = {}
         try:
-            ansible_ast = docker2ansible(docker_ast)
+            ansible_ast = ast2playbook_process(docker_ast)
         except exception.GenerateAnsibleASTException as exc:
             globalLog.warning(exc)
             globalLog.warning("Couldn't generate playbook from docker AST")
