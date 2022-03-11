@@ -126,6 +126,7 @@ def handle_docker_ast_env(obj):
         })
         wrap_ansible_shell_task(_last_task())
         Global.stack[obj['name']]['register'] = _last_task()['register']
+    # TODO: add set_fact task
 
 
 def handle_default(obj):
