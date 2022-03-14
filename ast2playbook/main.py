@@ -4,7 +4,8 @@ import yaml
 
 import exception
 from log import globalLog
-from ast2playbook.match_module.main import match_ansible_module, default_match
+from ast2playbook.match_module.module_matcher import ModuleMatcher
+from ast2playbook.ansible_stack import AnsibleStack
 
 
 globalLog.setLevel(logging.DEBUG)
@@ -13,8 +14,8 @@ globalLog.setLevel(logging.DEBUG)
 class Global:
     BASH_COMMAND_COUNT = 0
     REGISTER_COUNT = 0
-    stack = dict()
-    directive_stack = dict()
+    stack = AnsibleStack()
+    module_matcher = ModuleMatcher(stack)
     cur_playbook = dict()
 
 
@@ -44,23 +45,33 @@ def _last_task():
     return Global.cur_playbook['tasks'][-1]
 
 
-def wrap_ansible_matched_module_task(task):
-    # TODO
-    pass
+def add_set_fact_task(fact_name, fact_value):
+    Global.cur_playbook['tasks'].append({
+        'set_fact': {
+            fact_name: fact_value
+        }
+    })
 
 
-def wrap_ansible_shell_task(task):
-    # TODO
-    pass
+def add_task_to_calculate_bash_value(obj):
+    Global.cur_playbook['tasks'].append({
+        'shell': {
+            'cmd': 'echo "' + obj['value'] + '"'
+        },
+        'register': new_register_name()
+    })
+    add_context_to_last_task()
+
+
+def add_context_to_last_task():
+    context = Global.stack.get_context()
+    if context:
+        for key in _last_task():
+            _last_task()[key]['environment'] = context
 
 
 def handle_bash_default(obj):
     handle_default(obj)
-
-
-def handle_bash_variable_definition(obj):
-    # TODO
-    pass
 
 
 def _handle_bash_operator_general(obj):
@@ -80,11 +91,11 @@ def handle_bash_operator_and(obj):
 
 
 def handle_bash_command_enriched(obj):
-    match = match_ansible_module(obj)
+    match = Global.module_matcher.match_ansible_module(obj)
 
     if match:
         Global.cur_playbook['tasks'].append(match)
-        wrap_ansible_matched_module_task(_last_task())
+        add_context_to_last_task()
     else:
         globalLog.info('Failed to match command ' + obj['name'])
         globalLog.info('Resolving to shell: ' + obj['line'])
@@ -92,9 +103,9 @@ def handle_bash_command_enriched(obj):
 
 
 def _handle_bash_with_default_match(obj):
-    match = default_match(obj)
+    match = Global.module_matcher.default_match(obj)
     Global.cur_playbook['tasks'].append(match)
-    wrap_ansible_shell_task(_last_task())
+    add_context_to_last_task()
 
 
 def handle_bash_command(obj):
@@ -110,23 +121,36 @@ def handle_docker_ast_default(obj):
 
 
 def handle_docker_ast_run(directive):
-    Global.directive_stack = dict()
+    Global.stack.local_vars.clear()
     for child in directive['children']:
         ast2playbook_ast_visit(child)
 
 
+def handle_bash_variable_definition(obj):
+    res = obj['children'][0]
+    if obj['children'][0]['type'] == 'STRING-CONSTANT':
+        pass
+    elif obj['children'][0]['type'] == 'BASH-VALUE':
+        add_task_to_calculate_bash_value(obj['children'][0])
+        res['register'] = _last_task()['register']
+    else:
+        raise exception.GenerateAnsibleASTException('Unknown variable def node type ' + obj['children'][0]['type'])
+    Global.stack.local_vars[obj['name']] = res
+
+
 def handle_docker_ast_env(obj):
-    Global.stack[obj['name']] = obj['children'][0]
-    if obj['children'][0]['type'] == 'BASH-VALUE':
-        Global.cur_playbook['tasks'].append({
-            'shell': {
-                'cmd': 'echo "' + obj['children'][0]['value'] + '"'
-            },
-            'register': new_register_name()
-        })
-        wrap_ansible_shell_task(_last_task())
-        Global.stack[obj['name']]['register'] = _last_task()['register']
-    # TODO: add set_fact task
+    res = obj['children'][0]
+    if obj['children'][0]['type'] == 'STRING-CONSTANT':
+        add_set_fact_task(fact_name=Global.stack.var2fact(obj['name']),
+                          fact_value=obj['children'][0]['value'])
+    elif obj['children'][0]['type'] == 'BASH-VALUE':
+        add_task_to_calculate_bash_value(obj['children'][0])
+        res['register'] = _last_task()['register']
+        add_set_fact_task(fact_name=Global.stack.var2fact(obj['name']),
+                          fact_value='{{ ' + _last_task()['register'] + '.stdout }}')
+    else:
+        raise exception.GenerateAnsibleASTException('Unknown ENV value node type ' + obj['children'][0]['type'])
+    Global.stack.global_vars[obj['name']] = res
 
 
 def handle_default(obj):
@@ -169,7 +193,7 @@ def ast2playbook_ast_visit(obj):
 def ast2playbook_process(docker_ast):
     Global.BASH_COMMAND_COUNT = 0
     Global.REGISTER_COUNT = 0
-    Global.stack = dict()
+    Global.stack.global_vars.clear()
     Global.cur_playbook = {
         'hosts': 'default',
         'name': 'Generated from dockerfile',

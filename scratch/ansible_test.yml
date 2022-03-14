@@ -1,11 +1,10 @@
 - hosts: localhost
   name: Test
   tasks:
-    - shell:
-        cmd: "set -ex"
-    - shell:
-        cmd: "set -ex; uygugu; echo 1"
-    - shell:
-        cmd: uweuq
-    - shell:
-        cmd: "set -ex"
+    - name: SF 
+      set_fact:
+        E0: never
+        E1: gonna
+    - name: DG
+      debug:
+        msg: "{{ E0 | default('')}}{{ E1 }}"

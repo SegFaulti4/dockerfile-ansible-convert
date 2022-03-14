@@ -6,6 +6,7 @@ import logging
 import phase_1.main
 import phase_2.main
 import phase_3.main
+import ast2playbook.main
 
 import exception
 from log import globalLog
@@ -25,7 +26,9 @@ def main():
         ast = phase_1.main.parse_dockerfile_from_path(filepath)
         ast = phase_1.main.phase_1_process(parsed_dockerfile=ast, meta_info=path)
         ast = phase_2.main.phase_2_process(obj=ast)
-        # ast = phase_3.main.phase_3_process(obj=ast)
+        ast = phase_3.main.phase_3_process(obj=ast)
+        ast = ast2playbook.main.ast2playbook_process(ast)
+        ast2playbook.main.dump_playbook(ast, filepath + '.yml')
         fancy_print(ast)
 
 

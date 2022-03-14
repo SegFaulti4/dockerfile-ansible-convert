@@ -14,5 +14,9 @@ class GenerateAnsibleASTException(ConvertException):
     pass
 
 
+class DockerfileStackException(GenerateAnsibleASTException):
+    pass
+
+
 class MatchAnsibleModuleException(ConvertException):
     pass
