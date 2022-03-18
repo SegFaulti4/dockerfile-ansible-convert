@@ -1,1 +1,1 @@
-apt-get install -y --no-install-recommends apt-transport-https ca-certificates pwgen
+rm -rf /var/lib/apt/lists/*

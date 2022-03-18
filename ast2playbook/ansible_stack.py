@@ -21,7 +21,7 @@ class AnsibleStack(object):
         if value_obj['type'] == 'STRING-CONSTANT':
             return value_obj['value']
         else:
-            return '{{ ' + value_obj['register'] + '.stdout }}'
+            return '{{ ' + value_obj['register'] + ' }}'
 
     def var_value(self, name):
         if self.local_vars.get(name, None) is None:
@@ -33,7 +33,7 @@ class AnsibleStack(object):
             return self._local_var_value(name)
 
     def resolve_bash_word_with_context(self, obj):
-        if obj['type'] == 'BASH_WORD':
+        if obj['type'] == 'BASH-WORD':
             return obj['value']
         elif obj['type'] == 'BASH-WORD-PARAMETERIZED':
             params = [child for child in obj['children']]

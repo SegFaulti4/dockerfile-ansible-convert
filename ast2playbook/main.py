@@ -57,17 +57,16 @@ def add_task_to_calculate_bash_value(obj):
     Global.cur_playbook['tasks'].append({
         'shell': {
             'cmd': 'echo "' + obj['value'] + '"'
-        },
-        'register': new_register_name()
+        }
     })
     add_context_to_last_task()
+    _last_task()['register'] = new_register_name()
 
 
 def add_context_to_last_task():
     context = Global.stack.get_context()
     if context:
-        for key in _last_task():
-            _last_task()[key]['environment'] = context
+        _last_task()['environment'] = context
 
 
 def handle_bash_default(obj):
@@ -76,18 +75,21 @@ def handle_bash_default(obj):
 
 def _handle_bash_operator_general(obj):
     ast2playbook_ast_visit(obj['children'][0])
-    _last_task()['register'] = new_register_name()
+    if _last_task().get('register', None) is None:
+        _last_task()['register'] = new_register_name()
+    res = _last_task()['register']
     ast2playbook_ast_visit(obj['children'][1])
+    return res
 
 
 def handle_bash_operator_or(obj):
-    _handle_bash_operator_general(obj)
-    _last_task()['when'] = prev_register_name() + ' is not succeeded'
+    prev_reg_name = _handle_bash_operator_general(obj)
+    _last_task()['when'] = prev_reg_name + ' is not succeeded'
 
 
 def handle_bash_operator_and(obj):
-    _handle_bash_operator_general(obj)
-    _last_task()['when'] = prev_register_name() + ' is succeeded'
+    prev_reg_name = _handle_bash_operator_general(obj)
+    _last_task()['when'] = prev_reg_name + ' is succeeded'
 
 
 def handle_bash_command_enriched(obj):
@@ -147,7 +149,7 @@ def handle_docker_ast_env(obj):
         add_task_to_calculate_bash_value(obj['children'][0])
         res['register'] = _last_task()['register']
         add_set_fact_task(fact_name=Global.stack.var2fact(obj['name']),
-                          fact_value='{{ ' + _last_task()['register'] + '.stdout }}')
+                          fact_value='{{ ' + _last_task()['register'] + ' }}')
     else:
         raise exception.GenerateAnsibleASTException('Unknown ENV value node type ' + obj['children'][0]['type'])
     Global.stack.global_vars[obj['name']] = res
@@ -195,7 +197,7 @@ def ast2playbook_process(docker_ast):
     Global.REGISTER_COUNT = 0
     Global.stack.global_vars.clear()
     Global.cur_playbook = {
-        'hosts': 'default',
+        'hosts': 'localhost',
         'name': 'Generated from dockerfile',
         'tasks': list()
     }

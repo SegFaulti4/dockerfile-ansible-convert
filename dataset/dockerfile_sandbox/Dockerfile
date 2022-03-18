@@ -1,4 +1,6 @@
-FROM busybox
-RUN echo $E1
-ENV E1=never
-RUN echo $E1
+FROM debian:stretch-slim
+
+ENV GOSU_VERSION 1.7
+RUN apt update \
+	&& export GNUPGHOME="$(mktemp -d)" \
+	&& apt update
