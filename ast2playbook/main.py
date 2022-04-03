@@ -210,10 +210,9 @@ def ast2playbook_process(docker_ast):
     return [Global.cur_playbook]
 
 
-def dump_playbook(ansible_ast, filename):
+def dump_playbook(ansible_ast, out_stream):
     try:
-        out_file = open(filename, 'w')
-        yaml.dump(ansible_ast, out_file)
+        yaml.dump(ansible_ast, out_stream)
     except Exception as exc:
         globalLog.error(exc)
 
@@ -232,8 +231,9 @@ def dump_playbooks(in_stream):
             globalLog.error(exc)
             globalLog.error("Couldn't generate playbook from docker AST")
         meta_info = docker_ast['meta_info']
-        dump_playbook(ansible_ast, './dataset/playbooks/' +
-                      meta_info[meta_info.rfind('/') + 1:meta_info.find('.Dockerfile')] + '.yml')
+        out_file = open('./dataset/playbooks/' +
+                        meta_info[meta_info.rfind('/') + 1:meta_info.find('.Dockerfile')] + '.yml', 'w')
+        dump_playbook(ansible_ast, out_file)
 
 
 def main():
