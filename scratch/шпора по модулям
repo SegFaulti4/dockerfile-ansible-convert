@@ -1,0 +1,100 @@
+ansible apt:
+		allow_unauthenticated - флаг
+	
+	autoclean - сценарий autoclean, auto-clean
+	autoremove - сценарий autoremove, auto-remove или сценарий install или remove, флаг --auto-remove, --autoremove
+	
+		cache_valid_time - нет аналога
+		deb - огребаем
+		default_release - флаг -t
+	
+	dpkg_options - флаг -o с содержимым вида "Dpkg::Options::=*"
+	
+		force - флаг --force-yes или флаги --allow-unauthenticated, --allow-downgrades, --allow-remove-essential, --allow-change-held-packages
+		force-apt-get - yes
+		install_recommends - флаг --no-install-recommends
+	
+	name - список пакетов
+	only_upgrade - понятно
+	policy_rc_d - игнор
+	purge - сценарий purge или сценарий remove с флагом --purge
+	state - выбор сценария
+	update_cache - сценарий update
+	upgrade - понятно
+	
+
+ubuntu apt:
+	сценарии:
+		update - поддержка
+		upgrade - поддержка
+		dist-upgrade - поддержка
+		dselect-upgrade - нет поддержки
+		install - поддержка
+		reinstall - алиас install --reinstall
+		remove - поддержка
+		purge - алиас remove --purge
+		source - нет поддержки
+		build-dep - поддержка
+		satisfy - нет поддержки
+		check - поддержка (просто update, без проверки)
+		download - нет поддержки
+		clean - нет поддержки
+		autoclean - поддержка
+		autoremove - поддержка
+		changelog - нет поддержки
+		indextargets - нет поддержки
+		
+		
+	флаги:
+      		- --install-suggests - bash
+      		- -d, --download-only - bash
+      		
+	- -f, --fix-broken - state: fixed
+      		
+      		- -m, --ignore-missing, --fix-missing, --no-download - bash
+      		- -s, --simulate, --just-print, --dry-run, --recon, --no-act - bash
+      		- -y, --yes, --assume-yes, --assume-no - bash
+      		- --no-show-upgraded - ignore
+      		- -V, --verbose-versions - ignore
+		- -a, --host-architecture - bash
+		- -P, --build-profiles - bash
+		- -b, --compile, --build - bash
+		- --ignore-hold - bash
+		- --with-new-pkgs - bash
+		
+	- --no-upgrade - install --no-upgrade -> state: present
+      		
+      		- --only-upgrade - only_upgrade: yes
+      		- --allow-downgrades - force
+      		- --allow-remove-essential - force
+      		- --allow-change-held-packages - force
+      		- --force-yes - force
+      		- --print-uris - ignore
+		- --purge - purge: yes
+		
+	- --reinstall - install --reinstall -> state: latest
+	
+      		- --list-cleanup - ignore
+      		- --no-list-cleanup - ignore
+      		- -t, --target-release, --default-release - default_release
+		- --trivial-only - bash
+		- --no-remove - bash
+	      	- --auto-remove, --autoremove - autoremove: yes	  	       
+		- --only-source - bash
+		- --diff-only - bash
+		- --dsc-only - bash
+		- --tar-only - bash
+		- --arch-only - bash
+		- --indep-only - bash
+      		- --allow-unauthenticated - force
+		- --no-allow-insecure-repositories - bash
+		- --allow-releaseinfo-change - bash
+      		- --show-progress - ignore
+		- -h, --help - bash
+		- -v, --version - bash
+		- -c, --config-file - bash
+		- --with-source - bash
+      		- -q, --quiet - ignore
+      		- -o, --option - смотря какие опции (мб - dpkg_options:)
+      
+      

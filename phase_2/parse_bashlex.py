@@ -1,5 +1,10 @@
+import bashlex
+
 import exception
 from log import globalLog
+
+
+BASH_WORD_SUBSTITUTION_CHILDREN_TYPES = ['BASH-PARAMETER', 'BASH-VALUE']
 
 
 def _bashlex_logical_expression_tree(command_list):
@@ -34,16 +39,14 @@ def _bashlex_logical_expression_tree(command_list):
 
 
 def parse_bashlex_list(node, line):
-    res = {'type': 'BASH-COMMAND-LIST', 'children': []}
+    res = []
     for part in node.parts:
         child = parse_bashlex_node(part, line)
-        if child is None:
-            return None
-        if child['type'] != 'BASH-EOC':
-            res['children'].append(child)
+        if not child:
+            return []
+        res.extend(filter(lambda x: x['type'] != 'BASH-EOC', child))
 
-    res['children'] = _bashlex_logical_expression_tree(res['children'])
-
+    res = _bashlex_logical_expression_tree(res)
     return res
 
 
@@ -51,39 +54,79 @@ def parse_bashlex_command(node, line):
     res = {'type': 'BASH-COMMAND', 'children': [], 'line': line[node.pos[0]:node.pos[1]]}
     for part in node.parts:
         child = parse_bashlex_node(part, line)
-        if child is None:
-            return None
-        res['children'].append(child)
+        if not child:
+            return []
+        res['children'].extend(child)
 
-    return res
+    return [res]
 
 
 def parse_bashlex_operator(node, line):
     if node.op == ';':
-        return {'type': 'BASH-EOC'}
+        return [{'type': 'BASH-EOC'}]
     elif node.op == '&&':
-        return {'type': 'BASH-OPERATOR-AND'}
+        return [{'type': 'BASH-OPERATOR-AND'}]
     elif node.op == '||':
-        return {'type': 'BASH-OPERATOR-OR'}
+        return [{'type': 'BASH-OPERATOR-OR'}]
 
 
 def parse_bashlex_word(node, line):
+    # check if it's an assignment
+    if node.word[0] != '-':
+        eq_pos = node.word.find('=')
+        if eq_pos != -1 and all(x.pos[0] > eq_pos + node.pos[0] for x in node.parts):
+            return parse_bashlex_assignment(node, line)
+
+        if eq_pos != -1:
+            globalLog.info("Unexpected '=' symbol in word node " + node.dump())
+
     if len(node.parts):
-        res = {'type': 'BASH-WORD-SUBSTITUTION', 'children': [], 'line': line[node.pos[0]:node.pos[1]]}
+        res = {'type': 'BASH-WORD-PARAMETERIZED', 'children': [], 'value': line[node.pos[0]:node.pos[1]]}
         for part in node.parts:
             child = parse_bashlex_node(part, line)
-            if child is None:
-                return None
-            if child['type'] == 'BASH-PARAMETER':
-                child['pos'] = (child['pos'][0] - node.pos[0], child['pos'][1] - node.pos[0])
-                res['children'].append(child)
+            if not child:
+                return []
+            for param in filter(lambda x: x['type'] in BASH_WORD_SUBSTITUTION_CHILDREN_TYPES, child):
+                if param['type'] != 'BASH-PARAMETER':
+                    res['type'] = 'BASH-WORD-SUBSTITUTION'
+                param['pos'] = (param['pos'][0] - node.pos[0], param['pos'][1] - node.pos[0])
+                res['children'].append(param)
     else:
         res = {'type': 'BASH-WORD', 'value': line[node.pos[0]:node.pos[1]]}
-    return res
+    return [res]
 
 
 def parse_bashlex_parameter(node, line):
-    return {'type': 'BASH-PARAMETER', 'value': node.value, 'pos': node.pos}
+    return [{'type': 'BASH-PARAMETER', 'name': node.value, 'pos': node.pos}]
+
+
+def parse_bashlex_bash_value(value):
+    nodes = bashlex.parse(value)
+    # if it's a simple list of words - leave it as it is
+    # if not - let the shell do the work
+    if len(nodes) == 1 and nodes[0].kind == 'command' and \
+            all(part.kind == 'word' and not part.parts for part in nodes[0].parts):
+        return {'type': 'STRING-CONSTANT', 'value': value}
+    else:
+        return {'type': 'BASH-VALUE', 'value': value}
+
+
+def parse_bashlex_assignment(node, line):
+    eq_pos = node.word.find('=')
+    name, value = node.word[0:eq_pos], node.word[eq_pos + 1:]
+    return [{
+        'type': 'BASH-ASSIGNMENT',
+        'name': name,
+        'children': [parse_bashlex_bash_value(value)]
+    }]
+
+
+def parse_bashlex_commandsubstitution(node, line):
+    return [{
+        'type': 'BASH-VALUE',
+        'value': line[node.pos[0]:node.pos[1]],
+        'pos': (node.pos[0], node.pos[1])
+    }]
 
 
 def parse_bashlex_node(node, line):
@@ -97,5 +140,9 @@ def parse_bashlex_node(node, line):
         return parse_bashlex_word(node, line)
     elif node.kind == 'parameter':
         return parse_bashlex_parameter(node, line)
+    elif node.kind == 'assignment':
+        return parse_bashlex_assignment(node, line)
+    elif node.kind == 'commandsubstitution':
+        return parse_bashlex_commandsubstitution(node, line)
     globalLog.info('Bashlex node kind "' + node.kind + '" is not supported')
-    return None
+    return []

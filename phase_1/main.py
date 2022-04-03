@@ -3,7 +3,7 @@ import dockerfile
 import sys
 import argparse
 import logging
-import process_directive
+import phase_1.process_directive
 
 from exception import ConvertException
 from log import globalLog
@@ -16,7 +16,7 @@ class InvalidDirectiveException(ConvertException):
 
 
 VALID_DIRECTIVES = [*dockerfile.all_cmds()]
-DIRECTIVE_PROCESSING = {cmd: getattr(process_directive, 'process_' + cmd) for cmd in VALID_DIRECTIVES}
+DIRECTIVE_PROCESSING = {cmd: getattr(phase_1.process_directive, 'process_' + cmd) for cmd in VALID_DIRECTIVES}
 
 
 def parse_dockerfile_from_path(filepath):

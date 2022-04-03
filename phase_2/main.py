@@ -8,11 +8,12 @@ from bashlex.errors import ParsingError
 
 import exception
 from log import globalLog
-from phase_2.parse_bashlex import parse_bashlex_node
+from phase_2.parse_bashlex import parse_bashlex_node, parse_bashlex_bash_value
 
 globalLog.setLevel(logging.DEBUG)
 
-# BASHLEX_IMPLEMENTED_NODES = ['list', 'command', 'operator', 'word', 'parameter']
+
+# BASHLEX_IMPLEMENTED_NODES = ['list', 'command', 'operator', 'word', 'parameter', 'assignment']
 # BASHLEX_NODE_PARSING = {node_kind: getattr(parse_bashlex, 'parse_bashlex_' + node_kind)
 #                         for node_kind in BASHLEX_IMPLEMENTED_NODES}
 
@@ -21,9 +22,9 @@ def load_phase_1(in_stream):
     return json.load(in_stream)
 
 
-def phase_2_parse_bash(bash_line):
+def phase_2_parse_bash_command(bash_line):
     parts = None
-    res = None
+    res = []
     try:
         parts = bashlex.parse(bash_line)
         res = parse_bashlex_node(parts[0], bash_line)
@@ -36,24 +37,39 @@ def phase_2_parse_bash(bash_line):
     except Exception as exc:
         globalLog.warning(type(exc))
         globalLog.warning(exc)
-        globalLog.warning(bash_line)
+        globalLog.warning('Unexpected behavior while parsing line: ' + bash_line)
+    finally:
+        return res
+
+
+def phase_2_parse_bash_value(bash_value):
+    res = None
+    try:
+        res = parse_bashlex_bash_value(bash_value)
+    except Exception as exc:
+        globalLog.warning(type(exc))
+        globalLog.warning(exc)
+        globalLog.warning('Unexpected behavior while parsing value: ' + bash_value)
+        res = {'type': 'STRING-CONSTANT', 'value': bash_value}
     finally:
         return res
 
 
 def phase_2_ast_visit(obj):
-    if obj['type'] == 'MAYBE-BASH':
-        res = phase_2_parse_bash(obj['value'])
-        if res is None:
+    if len(obj['children']) == 1 and obj['children'][0]['type'] == 'MAYBE-BASH':
+        res = phase_2_parse_bash_command(obj['children'][0]['line'])
+        if not res:
             globalLog.info(obj['type'] + ' node is untouched')
-            return obj
         else:
-            return res
+            obj['children'] = res
+        return obj
+    elif obj['type'] == 'MAYBE-BASH-VALUE':
+        return phase_2_parse_bash_value(obj['value'])
     else:
         if len(obj['children']):
             for i in range(len(obj['children'])):
                 obj['children'][i] = phase_2_ast_visit(obj['children'][i])
-    return obj
+        return obj
 
 
 def phase_2_process(obj):
@@ -100,7 +116,7 @@ def main():
             globalLog.warning(os_ex)
             globalLog.info("Redirect file output into stdout")
 
-    dump_phase_2(sys.stdin, out_stream)
+    dump_phase_2(open("./dataset/phase_1.json", 'r'), out_stream)
 
 
 if __name__ == '__main__':

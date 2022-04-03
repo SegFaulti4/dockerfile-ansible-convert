@@ -8,25 +8,13 @@ def process_from(directive):
     name = value.split('/')[-1].strip() if '/' in value else value
     name = name.split(':')[0].strip() if ':' in name else name
 
-    res['children'].append({
-        'type': 'DOCKER-IMAGE-NAME',
-        'value': name,
-        'children': []
-    })
+    res['image_name'] = name
 
     if '/' in value:
-        res['children'].append({
-            'type': 'DOCKER-IMAGE-REPO',
-            'value': value.split('/')[0].strip(),
-            'children': []
-        })
+        res['repo'] = value.split('/')[0].strip()
 
     if ':' in value:
-        res['children'].append({
-            'type': 'DOCKER-IMAGE-TAG',
-            'value': value.split(':')[-1].strip() if ':' in value else None,
-            'children': []
-        })
+        res['tag'] = value.split(':')[-1].strip()
 
     return [res]
 
@@ -36,26 +24,21 @@ def process_run(directive):
         'type': 'DOCKER-RUN',
         'children': [{
             'type': 'MAYBE-BASH',
-            'value': directive.value[0],
+            'line': directive.value[0],
             'children': []
         }]
     }]
 
 
 def process_cmd(directive):
-    res = {
+    return [{
         'type': 'DOCKER-CMD',
-        'children': []
-    }
-
-    for value in directive.value:
-        res['children'].append({
+        'children': [{
             'type': 'DOCKER-CMD-ARG',
-            'value': value,
+            'value': directive.value[0] if directive.value else None,
             'children': []
-        })
-
-    return [res]
+        }]
+    }]
 
 
 def process_label(directive):
@@ -69,11 +52,8 @@ def process_maintainer(directive):
 def process_expose(directive):
     return [{
         'type': 'DOCKER-EXPOSE',
-        'children': [{
-            'type': 'DOCKER-PORT',
-            'value': directive.value[0],
-            'children': []
-        }]
+        'port': directive.value[0],
+        'children': []
     }]
 
 
@@ -81,9 +61,9 @@ def process_env(directive):
     return [
         {
             'type': 'DOCKER-ENV',
+            'name': name,
             'children': [
-                {'type': 'DOCKER-NAME', 'value': name, 'children': []},
-                {'type': 'DOCKER-LITERAL', 'value': value, 'children': []}
+                {'type': 'MAYBE-BASH-VALUE', 'value': value, 'children': []}
             ]
         }
         for name, value in zip(directive.value[::2], directive.value[1::2])
@@ -91,59 +71,21 @@ def process_env(directive):
 
 
 def process_add(directive):
-    res = {
+    return [{
         'type': 'DOCKER-ADD',
+        'target_path': directive.value[-1],
+        'source_paths': directive.value[:-1],
         'children': []
-    }
-
-    res['children'].append({
-        'type': 'DOCKER-ADD-TARGET',
-        'children': [{
-            'type': 'DOCKER-PATH',
-            'value': directive.value[-1],
-            'children': []
-        }]
-    })
-
-    for arg in directive.value[:-1]:
-        res['children'].append({
-            'type': 'DOCKER-ADD-SOURCE',
-            'children': [{
-                'type': 'DOCKER-PATH',
-                'value': arg,
-                'children': []
-            }]
-        })
-
-    return [res]
+    }]
 
 
 def process_copy(directive):
-    res = {
+    return [{
         'type': 'DOCKER-COPY',
+        'target_path': directive.value[-1],
+        'source_paths': directive.value[:-1],
         'children': []
-    }
-
-    res['children'].append({
-        'type': 'DOCKER-COPY-TARGET',
-        'children': [{
-            'type': 'DOCKER-PATH',
-            'value': directive.value[-1],
-            'children': []
-        }]
-    })
-
-    for arg in directive.value[:-1]:
-        res['children'].append({
-            'type': 'DOCKER-COPY-SOURCE',
-            'children': [{
-                'type': 'DOCKER-PATH',
-                'value': arg,
-                'children': []
-            }]
-        })
-
-    return [res]
+    }]
 
 
 def process_entrypoint(directive):

@@ -1,0 +1,10 @@
+- hosts: localhost
+  name: Test
+  tasks:
+    - name: SF 
+      set_fact:
+        E0: never
+        E1: gonna
+    - name: DG
+      debug:
+        msg: "{{ E0 | default('')}}{{ E1 }}"
