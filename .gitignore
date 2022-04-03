@@ -129,3 +129,4 @@ dmypy.json
 .pyre/
 /phase_1/out.json
 /dataset/gold/
+/dataset/playbooks/
