@@ -11,16 +11,14 @@ import os.path
 
 
 def run_ansible_check(path):
-    playbook = yaml.load(path)
+    """
     path = os.path.join(os.environ['VIRTUAL_ENV'], 'bin') + ':' + os.environ.get('PATH', '')
-
     envvars = {
         'PATH': path,
         #'PYTHONPATH': '/home/sprygada/Workspaces/ansible/lib:',
         #'ANSIBLE_ROLES_PATH': '/home/sprygada/Workspaces/roles:',
         #'ANSIBLE_INVENTORY_PLUGIN_EXTS': '.json'
     }
-
     hosts = {
         'hosts': {
             'localhost': {
@@ -31,14 +29,10 @@ def run_ansible_check(path):
             }
         }
     }
-
-    kwargs = {
-        'playbook': [playbook],
-        'inventory': {'all': hosts},
-        'envvars': envvars
-    }
-
-    result = ansible_runner.run(**kwargs)
+    """
+    playbook = yaml.safe_load(open(path, 'r'))
+    # inventory = yaml.safe_load(open('./inventory.yml', 'r'))
+    result = ansible_runner.run(playbook=playbook, cmdline='--check')
 
     stdout = result.stdout.read()
     events = list(result.events)
