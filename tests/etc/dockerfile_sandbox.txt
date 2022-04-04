@@ -1,0 +1,4 @@
+FROM busybox
+RUN echo $E1
+RUN export E1=never; echo $E1
+RUN echo $E1

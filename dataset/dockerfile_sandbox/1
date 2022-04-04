@@ -1,4 +1,0 @@
-FROM busybox
-ENV PKG1=yum
-ARG PKG2=python
-RUN PKG3=docker apt-get update && apt-get install -y PKG1 PKG2 PKG3
