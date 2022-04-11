@@ -73,18 +73,18 @@ def process_env(directive):
 def process_add(directive):
     return [{
         'type': 'DOCKER-ADD',
-        'target_path': directive.value[-1],
-        'source_paths': directive.value[:-1],
-        'children': []
+        'children': [
+            {'type': 'MAYBE-BASH-VALUE', 'value': v, 'children': []} for v in directive.value
+        ]
     }]
 
 
 def process_copy(directive):
     return [{
         'type': 'DOCKER-COPY',
-        'target_path': directive.value[-1],
-        'source_paths': directive.value[:-1],
-        'children': []
+        'children': [
+            {'type': 'MAYBE-BASH-VALUE', 'value': v, 'children': []} for v in directive.value
+        ]
     }]
 
 

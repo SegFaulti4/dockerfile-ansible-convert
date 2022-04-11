@@ -13,7 +13,7 @@ BASHLEX_NODE_KINDS = ['word', 'redirect', 'assignment', 'compound', 'command', '
                       'reservedword', 'operator', 'for', 'function', 'if', 'pipeline', 'pipe',
                       'parameter', 'commandsubstitution', 'tilde', 'while', 'until', 'heredoc',
                       'processsubstitution', 'unknown']
-BLANK_BASHLEX_NODE_INDEX= {kind: 0 for kind in BASHLEX_NODE_KINDS}
+BLANK_BASHLEX_NODE_INDEX = {kind: 0 for kind in BASHLEX_NODE_KINDS}
 
 
 stats = {'values': {kind: dict() for kind in BASHLEX_NODE_KINDS},
@@ -49,7 +49,7 @@ def dump_examples(ex_dir=None):
         ex_dir = 'bashlex_examples'
 
     for key in examples:
-        with open('./data/' + ex_dir + '/' + key, 'w') as outF:
+        with open('./' + ex_dir + '/' + key, 'w') as outF:
             old_stdout = sys.stdout
             sys.stdout = outF
             i = 1
@@ -106,5 +106,4 @@ if __name__ == '__main__':
             except NotImplementedError as er:
                 continue
 
-    pass
-    # dump_examples()
+    dump_examples()

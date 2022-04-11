@@ -18,7 +18,7 @@ class AnsibleStack(object):
 
     def _local_var_value(self, name):
         value_obj = self.local_vars[name]
-        if value_obj['type'] == 'STRING-CONSTANT':
+        if value_obj['type'] == 'BASH-STRING-CONSTANT':
             return value_obj['value']
         else:
             return '{{ ' + value_obj['register'] + ' }}'
@@ -46,6 +46,9 @@ class AnsibleStack(object):
 
             return res
 
+    def resolve_bash_string_parameterized_with_context(self, obj):
+        return [self.resolve_bash_word_with_context(child) for child in obj['children']]
+
     def get_context(self):
         var_names = set([name for name in self.global_vars] + [name for name in self.local_vars])
         context = {name: self.var_value(name) for name in var_names}
@@ -53,7 +56,7 @@ class AnsibleStack(object):
 
 
 def _bool_opt_value_is_true(command, opt_name):
-    # may check for PARAMETERIZED-WORD with only STRING-CONSTANTs as well
+    # may check for PARAMETERIZED-WORD with only BASH-STRING-CONSTANTs as well
     opt_val = command['options'].get(opt_name, False)
     if opt_val and opt_val['type'] == 'BASH-WORD' and opt_val['value'] == 'yes':
         opt_val = True

@@ -9,7 +9,7 @@ globalLog.setLevel(logging.INFO)
 
 
 def main():
-    with open('./data/bash_sandbox.txt', 'r') as inF:
+    with open('./bash_sandbox', 'r') as inF:
 
         for bash_line in inF.readlines():
             print("bashlex:")

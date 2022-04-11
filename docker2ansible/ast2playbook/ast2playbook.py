@@ -69,6 +69,24 @@ def add_context_to_last_task():
         _last_task()['environment'] = context
 
 
+# might create tasks to calculate bash values
+def resolve_bash_strings(bash_strings):
+    res = []
+    for child in bash_strings:
+        tmp = None
+        if child['type'] == 'BASH-STRING-CONSTANT':
+            tmp = child['value']
+        elif child['type'] == 'BASH-STRING-PARAMETERIZED':
+            tmp = Global.stack.resolve_bash_string_parameterized_with_context(child)
+        elif child['type'] == 'BASH-STRING-COMPLEX':
+            add_task_to_calculate_bash_value(child)
+            tmp = '{{ ' + _last_task()['register'] + ' }}'
+        else:
+            raise exception.GenerateAnsibleASTException('Unknown ENV value node type ' + child['type'])
+        res.append(tmp)
+    return res
+
+
 def handle_bash_default(obj):
     handle_default(obj)
 
@@ -130,9 +148,11 @@ def handle_docker_ast_run(directive):
 
 def handle_bash_variable_definition(obj):
     res = obj['children'][0]
-    if obj['children'][0]['type'] == 'STRING-CONSTANT':
+    if obj['children'][0]['type'] == 'BASH-STRING-CONSTANT':
         pass
-    elif obj['children'][0]['type'] == 'BASH-VALUE':
+    # TODO: add implementation for parameterized
+    elif obj['children'][0]['type'] == 'BASH-STRING-COMPLEX' \
+            or obj['children'][0]['type'] == 'BASH-STRING-PARAMETERIZED':
         add_task_to_calculate_bash_value(obj['children'][0])
         res['register'] = _last_task()['register']
     else:
@@ -142,10 +162,12 @@ def handle_bash_variable_definition(obj):
 
 def handle_docker_ast_env(obj):
     res = obj['children'][0]
-    if obj['children'][0]['type'] == 'STRING-CONSTANT':
+    if obj['children'][0]['type'] == 'BASH-STRING-CONSTANT':
         add_set_fact_task(fact_name=Global.stack.var2fact(obj['name']),
                           fact_value=obj['children'][0]['value'])
-    elif obj['children'][0]['type'] == 'BASH-VALUE':
+    # TODO: add implementation for parameterized
+    elif obj['children'][0]['type'] == 'BASH-STRING-COMPLEX'\
+            or obj['children'][0]['type'] == 'BASH-STRING-PARAMETERIZED':
         add_task_to_calculate_bash_value(obj['children'][0])
         res['register'] = _last_task()['register']
         add_set_fact_task(fact_name=Global.stack.var2fact(obj['name']),
@@ -153,6 +175,17 @@ def handle_docker_ast_env(obj):
     else:
         raise exception.GenerateAnsibleASTException('Unknown ENV value node type ' + obj['children'][0]['type'])
     Global.stack.global_vars[obj['name']] = res
+
+
+def handle_docker_ast_copy(obj):
+    children = resolve_bash_strings(obj['children'])
+    for dst in children[1:]:
+        Global.cur_playbook['tasks'].append({
+            'copy': {
+                'src': children[0],
+                'dst': dst
+            }
+        })
 
 
 def handle_default(obj):
@@ -167,6 +200,8 @@ def ast2playbook_ast_visit(obj):
             handle_docker_ast_run(obj)
         elif obj['type'] == 'DOCKER-ENV':
             handle_docker_ast_env(obj)
+        elif obj['type'] == 'DOCKER-COPY':
+            handle_docker_ast_copy(obj)
         else:
             handle_docker_ast_default(obj)
     elif obj['type'].find('BASH') == 0:

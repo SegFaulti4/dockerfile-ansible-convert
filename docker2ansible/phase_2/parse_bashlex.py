@@ -3,7 +3,7 @@ import bashlex
 from docker2ansible.log import globalLog
 
 
-BASH_WORD_SUBSTITUTION_CHILDREN_TYPES = ['BASH-PARAMETER', 'BASH-VALUE']
+BASH_WORD_SUBSTITUTION_CHILDREN_TYPES = ['BASH-PARAMETER', 'BASH-STRING-COMPLEX']
 
 
 def _bashlex_logical_expression_tree(command_list):
@@ -101,13 +101,17 @@ def parse_bashlex_parameter(node, line):
 
 def parse_bashlex_bash_value(value):
     nodes = bashlex.parse(value)
-    # if it's a simple list of words - leave it as it is
-    # if not - let the shell do the work
-    if len(nodes) == 1 and nodes[0].kind == 'command' and \
-            all(part.kind == 'word' and not part.parts for part in nodes[0].parts):
-        return {'type': 'STRING-CONSTANT', 'value': value}
+    parsed_node = parse_bashlex_node(nodes[0], value)[0]
+
+    if len(nodes) == 1 and bool(parsed_node) and parsed_node['type'] == 'BASH-COMMAND' and \
+            all(bool(child) and child['type'] == 'BASH-WORD' for child in parsed_node['children']):
+        return {'type': 'BASH-STRING-CONSTANT', 'value': value}
+    elif len(nodes) == 1 and bool(parsed_node) and parsed_node['type'] == 'BASH-COMMAND' and \
+            all(bool(child) and (child['type'] == 'BASH-WORD' or child['type'] == 'BASH-WORD-PARAMETERIZED')
+                for child in parsed_node['children']):
+        return {'type': 'BASH-STRING-PARAMETERIZED', 'children': parsed_node['children'], 'value': value}
     else:
-        return {'type': 'BASH-VALUE', 'value': value}
+        return {'type': 'BASH-STRING-COMPLEX', 'value': value}
 
 
 def parse_bashlex_assignment(node, line):
@@ -122,7 +126,7 @@ def parse_bashlex_assignment(node, line):
 
 def parse_bashlex_commandsubstitution(node, line):
     return [{
-        'type': 'BASH-VALUE',
+        'type': 'BASH-STRING-COMPLEX',
         'value': line[node.pos[0]:node.pos[1]],
         'pos': (node.pos[0], node.pos[1])
     }]

@@ -50,7 +50,7 @@ def phase_2_parse_bash_value(bash_value):
         globalLog.warning(type(exc))
         globalLog.warning(exc)
         globalLog.warning('Unexpected behavior while parsing value: ' + bash_value)
-        res = {'type': 'STRING-CONSTANT', 'value': bash_value}
+        res = {'type': 'BASH-STRING-COMPLEX', 'value': bash_value}
     finally:
         return res
 

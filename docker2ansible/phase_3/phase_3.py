@@ -24,6 +24,11 @@ def phase_3_enrich_command(obj):
     return enrich.enrich_command(obj)
 
 
+def _obj_is_parameterized_string(obj):
+    return all(x['type'] == 'BASH-WORD' or x['type'] == 'BASH-WORD-PARAMETERIZED' and x['class'] != 'untracked'
+               for x in obj['children'])
+
+
 def _enrich_command_is_applicable(comm):
     return comm['children'][0]['type'] == 'BASH-WORD' and \
            all(x['type'] == 'BASH-WORD' or x['type'] == 'BASH-WORD-PARAMETERIZED' and x['class'] != 'untracked'
@@ -38,6 +43,21 @@ def _variable_definition_in_command(comm):
     return None, None
 
 
+def _track_bash_variables_in_list(l):
+    for parameterized in filter(lambda x: x['type'] == 'BASH-WORD-PARAMETERIZED', l):
+        class_flag = 0
+        for param in filter(lambda x: x['type'] == 'BASH-PARAMETER', parameterized['children']):
+            if param['name'] in Global.directive_stack:
+                param['type'] = 'BASH-PARAMETER-LOCAL'
+            elif param['name'] in Global.stack:
+                class_flag = max(class_flag, 1)
+                param['type'] = 'BASH-PARAMETER-GLOBAL'
+            else:
+                class_flag = max(class_flag, 2)
+                param['type'] = 'BASH-PARAMETER-UNTRACKED'
+        parameterized['class'] = BASH_PARAMETERIZED_WORD_CLASSES[class_flag]
+
+
 def phase_3_ast_visit(obj):
     if obj['type'] == 'DOCKER-ENV':
         Global.stack.add(obj['name'])
@@ -45,28 +65,21 @@ def phase_3_ast_visit(obj):
         Global.directive_stack = set()
         for i in range(len(obj['children'])):
             obj['children'][i] = phase_3_ast_visit(obj['children'][i])
-    elif obj['type'] == 'BASH-COMMAND':
+    if obj['type'] == 'BASH-COMMAND':
         # checking assignment node
         var_name, var_value_list = _variable_definition_in_command(obj)
         if var_name is not None:
             Global.directive_stack.add(var_name)
             obj = {'type': 'BASH-VARIABLE-DEFINITION', 'name': var_name, 'children': var_value_list}
         else:
-            for parameterized in filter(lambda x: x['type'] == 'BASH-WORD-PARAMETERIZED', obj['children']):
-                class_flag = 0
-                for param in filter(lambda x: x['type'] == 'BASH-PARAMETER', parameterized['children']):
-                    if param['name'] in Global.directive_stack:
-                        param['type'] = 'BASH-PARAMETER-LOCAL'
-                    elif param['name'] in Global.stack:
-                        class_flag = max(class_flag, 1)
-                        param['type'] = 'BASH-PARAMETER-GLOBAL'
-                    else:
-                        class_flag = max(class_flag, 2)
-                        param['type'] = 'BASH-PARAMETER-UNTRACKED'
-                parameterized['class'] = BASH_PARAMETERIZED_WORD_CLASSES[class_flag]
-
+            _track_bash_variables_in_list(obj['children'])
             if _enrich_command_is_applicable(obj):
                 obj = phase_3_enrich_command(obj)
+    elif obj['type'] == 'BASH-STRING-PARAMETERIZED':
+        _track_bash_variables_in_list(obj['children'])
+        if not _obj_is_parameterized_string(obj):
+            obj['type'] = 'BASH-STRING-COMPLEX'
+            del obj['children']
     else:
         if obj.get('children', None) is not None:
             if len(obj['children']):
