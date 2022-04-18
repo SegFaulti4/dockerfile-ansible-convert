@@ -7,4 +7,4 @@ FROM ubuntu:bionic
 #ARG MONGO_PACKAGE=mongodb-org-unstable
 #ENV MONGO_VERSION 4.1.13
 ENV PATH asd
-COPY ./abc ./$PATH/abc
+COPY ./abc /

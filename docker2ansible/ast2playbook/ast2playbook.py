@@ -77,7 +77,7 @@ def resolve_bash_strings(bash_strings):
         if child['type'] == 'BASH-STRING-CONSTANT':
             tmp = child['value']
         elif child['type'] == 'BASH-STRING-PARAMETERIZED':
-            tmp = Global.stack.resolve_bash_string_parameterized_with_context(child)
+            tmp = " ".join(Global.stack.resolve_bash_string_parameterized_with_context(child))
         elif child['type'] == 'BASH-STRING-COMPLEX':
             add_task_to_calculate_bash_value(child)
             tmp = '{{ ' + _last_task()['register'] + ' }}'
@@ -179,11 +179,11 @@ def handle_docker_ast_env(obj):
 
 def handle_docker_ast_copy(obj):
     children = resolve_bash_strings(obj['children'])
-    for dst in children[1:]:
+    for dest in children[1:]:
         Global.cur_playbook['tasks'].append({
             'copy': {
                 'src': children[0],
-                'dst': dst
+                'dest': dest
             }
         })
 
@@ -232,7 +232,7 @@ def ast2playbook_process(docker_ast):
     Global.REGISTER_COUNT = 0
     Global.stack.global_vars.clear()
     Global.cur_playbook = {
-        'hosts': 'localhost',
+        'hosts': 'all',
         'name': 'Generated from dockerfile',
         'tasks': list()
     }

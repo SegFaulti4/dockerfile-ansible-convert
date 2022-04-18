@@ -20,3 +20,7 @@ class DockerfileStackException(GenerateAnsibleASTException):
 
 class MatchAnsibleModuleException(ConvertException):
     pass
+
+
+class AnsibleCheckException(Exception):
+    pass
