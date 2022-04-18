@@ -130,3 +130,4 @@ dmypy.json
 /data/dockerfiles/
 /data/playbooks/
 /tests/etc/dockerfile_sandbox.yml
+/tests/clouds.yaml
