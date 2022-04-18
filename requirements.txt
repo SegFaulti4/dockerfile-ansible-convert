@@ -2,4 +2,4 @@ dockerfile==3.2.0
 
 bashlex~=0.16
 PyYAML~=6.0
-ansible~=5.1.0
+ansible==5.6.0

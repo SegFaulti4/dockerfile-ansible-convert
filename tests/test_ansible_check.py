@@ -1,15 +1,9 @@
 import yaml
+import ansible_runner
 
 import tests.prepare_playbooks as prepare_playbooks
 import tests.utils as utils
 from docker2ansible.log import globalLog
-import docker2ansible.exception
-
-import ansible_runner
-import logging
-import json
-import os
-import os.path
 
 
 def run_ansible_check(path):

@@ -9,8 +9,6 @@ import docker2ansible.ast2playbook.ast2playbook
 
 from docker2ansible.log import globalLog
 
-globalLog.setLevel(logging.INFO)
-
 
 def fancy_print(ast):
     print(json.dumps(ast, indent=4, sort_keys=True))
@@ -29,4 +27,5 @@ def main():
 
 
 if __name__ == '__main__':
+    globalLog.setLevel(logging.INFO)
     main()

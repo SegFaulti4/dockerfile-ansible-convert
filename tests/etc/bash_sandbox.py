@@ -5,8 +5,6 @@ from docker2ansible.phase_2.phase_2 import phase_2_parse_bash_command
 from docker2ansible.phase_3.phase_3 import phase_3_process
 from docker2ansible.log import globalLog
 
-globalLog.setLevel(logging.INFO)
-
 
 def main():
     with open('./bash_sandbox', 'r') as inF:
@@ -29,4 +27,5 @@ def main():
 
 
 if __name__ == '__main__':
+    globalLog.setLevel(logging.INFO)
     main()
