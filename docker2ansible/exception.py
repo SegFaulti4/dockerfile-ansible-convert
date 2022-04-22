@@ -22,5 +22,13 @@ class MatchAnsibleModuleException(ConvertException):
     pass
 
 
-class AnsibleCheckException(Exception):
+class TestException(Exception):
+    pass
+
+
+class AnsibleCheckException(TestException):
+    pass
+
+
+class CloudException(TestException):
     pass

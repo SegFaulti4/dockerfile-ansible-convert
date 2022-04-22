@@ -1,5 +1,6 @@
-import tests.prepare_playbooks as prepare_playbooks
+import tests.playbook_utils as playbook_utils
 import tests.utils as utils
+import tests.instance_utils as instance_utils
 from docker2ansible.log import globalLog
 
 from cotea.runner import runner
@@ -29,14 +30,18 @@ def run_playbook_on_remote_host(path):
 
 
 def main():
+    instance_utils.setup_instance()
+
     globalLog.info('Preparing UBUNTU playbooks')
-    prepare_playbooks.prepare_ubuntu_playbooks_set()
+    playbook_utils.setup_ubuntu_playbooks_set()
     globalLog.info('Playbooks are prepared')
     playbook_paths = utils.filepaths_from_dir(utils.UBUNTU_PLAYBOOKS_DIR_PATH)
     for path in playbook_paths:
         globalLog.info("Running playbook: " + path + " on remote host")
         run_playbook_on_remote_host(path)
         break
+
+    instance_utils.teardown_instance()
 
 
 if __name__ == '__main__':

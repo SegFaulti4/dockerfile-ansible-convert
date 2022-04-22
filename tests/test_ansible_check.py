@@ -1,7 +1,7 @@
 import yaml
 import ansible_runner
 
-import tests.prepare_playbooks as prepare_playbooks
+import tests.playbook_utils as prepare_playbooks
 import tests.utils as utils
 from docker2ansible.log import globalLog
 
@@ -15,7 +15,7 @@ def run_ansible_check(path):
 
 def main():
     globalLog.info('Preparing playbooks')
-    prepare_playbooks.prepare_main_playbooks_set()
+    prepare_playbooks.setup_main_playbooks_set()
     globalLog.info('Playbooks are prepared')
     playbook_paths = utils.filepaths_from_dir(utils.PLAYBOOKS_DIR_PATH)
     for path in playbook_paths:

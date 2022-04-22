@@ -36,7 +36,7 @@ def _copy_ubuntu_dockerfiles():
                 shutil.copyfile(src_path, dst_path)
 
 
-def _prepare_playbooks_set(dockerfiles_dir, playbooks_dir):
+def _setup_playbooks_set(dockerfiles_dir, playbooks_dir):
     dockerfiles = filenames_from_dir(dockerfiles_dir)
     for d in dockerfiles:
         src_path = os.path.join(dockerfiles_dir, d)
@@ -47,33 +47,33 @@ def _prepare_playbooks_set(dockerfiles_dir, playbooks_dir):
         docker2ansible.docker2ansible.main(dockerfile_path=src_path, out_stream=dst_stream)
 
 
-def prepare_main_playbooks_set():
+def setup_main_playbooks_set():
     _extract_dockerfiles()
     if not os.path.exists(PLAYBOOKS_DIR_PATH):
         os.makedirs(PLAYBOOKS_DIR_PATH)
-        _prepare_playbooks_set(DOCKERFILES_DIR_PATH, PLAYBOOKS_DIR_PATH)
+        _setup_playbooks_set(DOCKERFILES_DIR_PATH, PLAYBOOKS_DIR_PATH)
 
 
-def prepare_ubuntu_playbooks_set():
+def setup_ubuntu_playbooks_set():
     _extract_dockerfiles()
     _copy_ubuntu_dockerfiles()
     if not os.path.exists(PLAYBOOKS_DIR_PATH):
         os.makedirs(PLAYBOOKS_DIR_PATH)
         if not os.path.exists(UBUNTU_PLAYBOOKS_DIR_PATH):
             os.makedirs(UBUNTU_PLAYBOOKS_DIR_PATH)
-            _prepare_playbooks_set(UBUNTU_DOCKERFILES_DIR_PATH, UBUNTU_PLAYBOOKS_DIR_PATH)
+            _setup_playbooks_set(UBUNTU_DOCKERFILES_DIR_PATH, UBUNTU_PLAYBOOKS_DIR_PATH)
 
 
-def main():
+def setup_playbooks():
     _extract_dockerfiles()
     _copy_ubuntu_dockerfiles()
     if not os.path.exists(PLAYBOOKS_DIR_PATH):
         os.makedirs(PLAYBOOKS_DIR_PATH)
     if not os.path.exists(UBUNTU_PLAYBOOKS_DIR_PATH):
         os.makedirs(UBUNTU_PLAYBOOKS_DIR_PATH)
-    _prepare_playbooks_set(DOCKERFILES_DIR_PATH, PLAYBOOKS_DIR_PATH)
-    _prepare_playbooks_set(UBUNTU_DOCKERFILES_DIR_PATH, UBUNTU_PLAYBOOKS_DIR_PATH)
+    _setup_playbooks_set(DOCKERFILES_DIR_PATH, PLAYBOOKS_DIR_PATH)
+    _setup_playbooks_set(UBUNTU_DOCKERFILES_DIR_PATH, UBUNTU_PLAYBOOKS_DIR_PATH)
 
 
 if __name__ == '__main__':
-    main()
+    setup_playbooks()

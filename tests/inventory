@@ -1,2 +1,2 @@
 [dummy]
-10.100.151.97 ansible_ssh_user=ubuntu
+10.100.151.35 ansible_ssh_user=ubuntu
