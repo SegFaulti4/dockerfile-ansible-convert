@@ -14,7 +14,7 @@ from utils import DATA_PATH, DOCKERFILES_ARCHIVE_PATH, DOCKERFILES_DIR_PATH, PLA
 
 
 def _extract_dockerfiles():
-    if not os.path.exists(DOCKERFILES_DIR_PATH):
+    if not os.path.exists(DOCKERFILES_DIR_PATH) or not os.listdir(DOCKERFILES_DIR_PATH):
         globalLog.info('Extracting dockerfiles archive')
         with zipfile.ZipFile(DOCKERFILES_ARCHIVE_PATH, 'r') as zip_ref:
             zip_ref.extractall(DATA_PATH)
@@ -22,7 +22,7 @@ def _extract_dockerfiles():
 
 
 def _copy_ubuntu_dockerfiles():
-    if not os.path.exists(UBUNTU_DOCKERFILES_DIR_PATH):
+    if not os.path.exists(UBUNTU_DOCKERFILES_DIR_PATH) or not os.listdir(UBUNTU_DOCKERFILES_DIR_PATH):
         os.makedirs(UBUNTU_DOCKERFILES_DIR_PATH)
 
         dockerfiles = filenames_from_dir(DOCKERFILES_DIR_PATH)
@@ -51,6 +51,7 @@ def setup_main_playbooks_set():
     _extract_dockerfiles()
     if not os.path.exists(PLAYBOOKS_DIR_PATH):
         os.makedirs(PLAYBOOKS_DIR_PATH)
+    if not os.listdir(PLAYBOOKS_DIR_PATH):
         _setup_playbooks_set(DOCKERFILES_DIR_PATH, PLAYBOOKS_DIR_PATH)
 
 
@@ -59,20 +60,16 @@ def setup_ubuntu_playbooks_set():
     _copy_ubuntu_dockerfiles()
     if not os.path.exists(PLAYBOOKS_DIR_PATH):
         os.makedirs(PLAYBOOKS_DIR_PATH)
-        if not os.path.exists(UBUNTU_PLAYBOOKS_DIR_PATH):
-            os.makedirs(UBUNTU_PLAYBOOKS_DIR_PATH)
-            _setup_playbooks_set(UBUNTU_DOCKERFILES_DIR_PATH, UBUNTU_PLAYBOOKS_DIR_PATH)
+    if not os.path.exists(UBUNTU_PLAYBOOKS_DIR_PATH):
+        os.makedirs(UBUNTU_PLAYBOOKS_DIR_PATH)
+    if not os.listdir(UBUNTU_PLAYBOOKS_DIR_PATH):
+        _setup_playbooks_set(UBUNTU_DOCKERFILES_DIR_PATH, UBUNTU_PLAYBOOKS_DIR_PATH)
 
 
 def setup_playbooks():
-    _extract_dockerfiles()
-    _copy_ubuntu_dockerfiles()
-    if not os.path.exists(PLAYBOOKS_DIR_PATH):
-        os.makedirs(PLAYBOOKS_DIR_PATH)
-    if not os.path.exists(UBUNTU_PLAYBOOKS_DIR_PATH):
-        os.makedirs(UBUNTU_PLAYBOOKS_DIR_PATH)
-    _setup_playbooks_set(DOCKERFILES_DIR_PATH, PLAYBOOKS_DIR_PATH)
-    _setup_playbooks_set(UBUNTU_DOCKERFILES_DIR_PATH, UBUNTU_PLAYBOOKS_DIR_PATH)
+    setup_ubuntu_playbooks_set()
+    if not os.listdir(PLAYBOOKS_DIR_PATH):
+        _setup_playbooks_set(DOCKERFILES_DIR_PATH, PLAYBOOKS_DIR_PATH)
 
 
 if __name__ == '__main__':

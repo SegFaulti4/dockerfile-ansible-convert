@@ -1,6 +1,0 @@
----
-dummy:
-  hosts:
-    dummy1:
-      ansible_host: 10.100.151.97
-      ansible_ssh_user: ubuntu

@@ -1,3 +1,6 @@
+import os
+import time
+
 import openstack
 import openstack.exceptions
 
@@ -49,7 +52,7 @@ def _create_instance(conn):
 
 
 def _update_inventory(server):
-    with open("config/inventory", "w") as outF:
+    with open("inventory", "w") as outF:
         outF.writelines(["[dummy]\n", server.public_v4 + " ansible_ssh_user=ubuntu"])
 
 
@@ -57,13 +60,18 @@ def setup_instance():
     with _cloud_connection() as conn:
         server = conn.get_server(INSTANCE_NAME)
         if server is None:
+            globalLog.debug("Instance was not found, creating instance")
             server = _create_instance(conn)
         else:
+            globalLog.debug("Instance was found, rebuilding instance")
             server = conn.rebuild_server(server_id=server.id, image_id=server.image.id, wait=True)
+        globalLog.debug("Updating inventory in " + os.getcwd() + '/inventory')
         _update_inventory(server)
+        globalLog.debug("Sleeping for 60s")
+        time.sleep(60)
 
 
-def teardown_instance():
+def destroy_instance():
     with _cloud_connection() as conn:
         server = conn.compute.find_server(INSTANCE_NAME)
         if server is not None:

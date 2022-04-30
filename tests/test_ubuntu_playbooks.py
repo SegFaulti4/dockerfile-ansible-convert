@@ -8,14 +8,19 @@ from cotea.arguments_maker import argument_maker
 
 
 def run_playbook_on_remote_host(path):
+    globalLog.info("Setting up remote host")
+    instance_utils.setup_instance()
+
     pb_path = path
-    inv_path = "config/inventory"
+    inv_path = "inventory"
 
     arg_maker = argument_maker()
     arg_maker.add_arg("-i", inv_path)
+    arg_maker.add_arg("--become-user", "root")
 
     r = runner(pb_path, arg_maker)
 
+    globalLog.debug("Running playbook with cotea")
     while r.has_next_play():
         while r.has_next_task():
             r.run_next_task()
@@ -30,8 +35,6 @@ def run_playbook_on_remote_host(path):
 
 
 def main():
-    instance_utils.setup_instance()
-
     globalLog.info('Preparing UBUNTU playbooks')
     playbook_utils.setup_ubuntu_playbooks_set()
     globalLog.info('Playbooks are prepared')
@@ -41,7 +44,7 @@ def main():
         run_playbook_on_remote_host(path)
         break
 
-    instance_utils.teardown_instance()
+    # instance_utils.destroy_instance()
 
 
 if __name__ == '__main__':
