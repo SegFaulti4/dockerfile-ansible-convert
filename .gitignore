@@ -129,5 +129,4 @@ dmypy.json
 .pyre/
 /data/dockerfiles/
 /data/playbooks/
-/tests/etc/dockerfile_sandbox.yml
-/tests/clouds.yaml
+/tests/config/clouds.yaml

@@ -49,7 +49,7 @@ def _create_instance(conn):
 
 
 def _update_inventory(server):
-    with open("./inventory", "w") as outF:
+    with open("config/inventory", "w") as outF:
         outF.writelines(["[dummy]\n", server.public_v4 + " ansible_ssh_user=ubuntu"])
 
 

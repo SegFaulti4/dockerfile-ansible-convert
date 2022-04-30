@@ -15,8 +15,8 @@ def fancy_print(ast):
 
 
 def main():
-    dockerfile_path = 'dockerfile_sandbox'
-    playbook_path = './dockerfile_sandbox.yml'
+    dockerfile_path = './data/dockerfile_sandbox'
+    playbook_path = './data/dockerfile_sandbox.yml'
     ast = docker2ansible.phase_1.phase_1.parse_dockerfile_from_path(dockerfile_path)
     ast = docker2ansible.phase_1.phase_1.phase_1_process(parsed_dockerfile=ast, meta_info=dockerfile_path)
     ast = docker2ansible.phase_2.phase_2.phase_2_process(obj=ast)

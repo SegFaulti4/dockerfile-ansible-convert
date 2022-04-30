@@ -7,7 +7,7 @@ from docker2ansible.log import globalLog
 
 
 def main():
-    with open('./bash_sandbox', 'r') as inF:
+    with open('./data/bash_sandbox', 'r') as inF:
 
         for bash_line in inF.readlines():
             print("bashlex:")

@@ -8,8 +8,8 @@ from cotea.arguments_maker import argument_maker
 
 def main():
     maker = argument_maker()
-    maker.add_arg("-i", "../inventory")
-    r = runner("dockerfile_sandbox.yml", maker)
+    maker.add_arg("-i", "../../tests/config/inventory")
+    r = runner("./data/dockerfile_sandbox.yml", maker)
 
     while r.has_next_play():
         while r.has_next_task():

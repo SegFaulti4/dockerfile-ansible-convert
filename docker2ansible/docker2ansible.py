@@ -28,8 +28,12 @@ def main(dockerfile_path, out_stream=sys.stdout):
     docker2ansible.ast2playbook.ast2playbook.dump_playbook(obj, out_stream)
 
 
-if __name__ == '__main__':
+def entrypoint():
     args = parse_arguments()
     dp = args.dockerfile
     out_s = open(args.output, 'w') if args.output else sys.stdout
     main(dockerfile_path=dp, out_stream=out_s)
+
+
+if __name__ == '__main__':
+    entrypoint()

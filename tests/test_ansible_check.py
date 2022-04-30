@@ -1,16 +1,33 @@
-import yaml
-import ansible_runner
+from cotea.runner import runner
+from cotea.arguments_maker import argument_maker
 
 import tests.playbook_utils as prepare_playbooks
 import tests.utils as utils
 from docker2ansible.log import globalLog
 
 
+def _is_ignored(task_res):
+    return False
+
+
 def run_ansible_check(path):
-    playbook = yaml.safe_load(open(path, 'r'))
-    inventory = yaml.safe_load(open('./inventory.yml', 'r'))
-    result = ansible_runner.run(playbook=playbook, cmdline='--check', inventory=inventory, quiet=True)
-    return result
+    maker = argument_maker()
+    maker.add_arg("-i", "./config/inventory")
+    maker.add_arg("--check")
+    r = runner(path, maker)
+
+    while r.has_next_play():
+        while r.has_next_task():
+            tmp = r.run_next_task()
+            if tmp:
+                task_res = tmp[0]
+                if task_res.is_failed and not _is_ignored(task_res):
+                    globalLog.debug(task_res.stdout)
+                    r.finish_ansible()
+                    return "FAILED"
+
+    r.finish_ansible()
+    return "OK"
 
 
 def main():
@@ -21,15 +38,7 @@ def main():
     for path in playbook_paths:
         globalLog.info("Running playbook: " + path)
         result = run_ansible_check(path)
-        stdout = result.stdout.read()
-        events = list(result.events)
-        stats = result.stats
-        if result.status == 'failed':
-            # TODO: add check for copy task failure - such failure doesn't count
-            globalLog.info("\tFAILED")
-            globalLog.info(stdout)
-        else:
-            globalLog.info("\tOK")
+        globalLog.info("\t" + result)
 
 
 if __name__ == '__main__':

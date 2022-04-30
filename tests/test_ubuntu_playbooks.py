@@ -9,7 +9,7 @@ from cotea.arguments_maker import argument_maker
 
 def run_playbook_on_remote_host(path):
     pb_path = path
-    inv_path = "./inventory"
+    inv_path = "config/inventory"
 
     arg_maker = argument_maker()
     arg_maker.add_arg("-i", inv_path)
