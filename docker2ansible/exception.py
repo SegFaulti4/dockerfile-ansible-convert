@@ -2,7 +2,7 @@ class ConvertException(Exception):
     pass
 
 
-class BashlexParsingException(ConvertException):
+class BashlexTransformException(ConvertException):
     pass
 
 

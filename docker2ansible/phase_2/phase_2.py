@@ -28,7 +28,7 @@ def phase_2_parse_bash_command(bash_line):
     try:
         parts = bashlex.parse(bash_line)
         res = parse_bashlex_node(parts[0], bash_line)
-    except exception.BashlexParsingException as exc:
+    except exception.BashlexTransformException as exc:
         globalLog.info(exc)
         globalLog.info('Bashlex AST parsing failed for AST: ' + str(parts))
     except (ParsingError, NotImplementedError) as exc:
