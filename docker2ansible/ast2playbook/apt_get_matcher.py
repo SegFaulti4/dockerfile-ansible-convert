@@ -26,7 +26,6 @@ class AptGetMatcher:
     def match_apt_get_dist_upgrade(self, command, task):
         task['upgrade'] = 'dist'
 
-
     def match_apt_get_install(self, command, task):
         last_flags = self._apt_get_pop_last_flags(command)
 
@@ -37,7 +36,6 @@ class AptGetMatcher:
         elif last_flags['no_upgrade']:
             task['state'] = 'present'
 
-
     def match_apt_get_remove(self, command, task):
         last_flags = self._apt_get_pop_last_flags(command)
         task['state'] = 'absent'
@@ -45,22 +43,17 @@ class AptGetMatcher:
         if last_flags['fix_broken']:
             task['state'] = 'fixed'
 
-
     def match_apt_get_build_dep(self, command, task):
         task['state'] = 'build-dep'
-
 
     def match_apt_get_check(self, command, task):
         self.match_apt_get_update(command, task)
 
-
     def match_apt_get_autoclean(self, command, task):
         task['autoclean'] = 'yes'
 
-
     def match_apt_get_autoremove(self, command, task):
         task['autoremove'] = 'yes'
-
 
     def match_apt_get(self, command):
         res = dict()

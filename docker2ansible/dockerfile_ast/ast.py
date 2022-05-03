@@ -1,9 +1,10 @@
 import json
-from typing import List
-
 import dockerfile
-from dataclasses import dataclass, field
-import docker2ansible.dockerfile_ast.docker
+from dataclasses import dataclass
+
+import docker2ansible.dockerfile_ast.docker as ast_docker
+import docker2ansible.dockerfile_ast.bash as ast_bash
+from docker2ansible.dockerfile_ast._meta import _MetaSingleton
 
 
 def create_dockerfile_ast(filepath):
@@ -13,13 +14,59 @@ def create_dockerfile_ast(filepath):
     for directive in parsed:
         cmd = str(directive.cmd).lower()
         cmd = cmd[0:1].upper() + cmd[1:]
-        ast['children'].append(getattr(docker2ansible.dockerfile_ast.docker, cmd + 'Node')(directive))
+        ast['children'].append(getattr(ast_docker, cmd + 'Node')(directive))
+
+
+class Stack(metaclass=_MetaSingleton):
+
+    _dockerfile_level = dict()
+    _directive_level = dict()
+
+    def add_global_var(self, name, value):
+        self._dockerfile_level[name] = value
+        self._resolve_var(name)
+
+    def add_local_var(self, name, value):
+        self._directive_level[name] = value
+        self._resolve_var(name)
+
+    def setup_local_stack(self):
+        self._directive_level.clear()
+
+    def contains(self, name):
+        return self._get(name) is not None
+
+    def _get(self, name):
+        res = self._directive_level.get(name, None)
+        if res is not None:
+            return res
+        return self._dockerfile_level.get(name, None)
+
+    def resolvable(self, name):
+        value = self._get(name)
+        if value is not None:
+            return isinstance(value, ast_bash.ConstantValueNode) or \
+                   isinstance(value, ast_bash.ParameterizedValueNode) and value.resolvable
+        return False
+
+    def _resolve_var(self, name):
+        # TODO
+        pass
+
+    def resolve_var(self, name):
+        # TODO
+        pass
+
+    def resolve_command(self, comm):
+        # TODO
+        pass
 
 
 @dataclass
 class Node:
 
-    children: List = field(default_factory=list)
+    stack = Stack()
+    children = []
 
     # def __init__(**kwargs):
     #     assert any(map(lambda x: not isinstance(x, Node), kwargs.get('children', [])))
@@ -31,19 +78,11 @@ class Node:
     def __repr__(self):
         return json.dumps(self.__dict__, indent=4, sort_keys=True)
 
-    def __eq__(self, other):
-        if not isinstance(other, Node):
-            return False
-        return self.__dict__ == other.__dict__
-
-    def __hash__(self):
-        return hash(tuple(sorted(self.__dict__)))
-
     def _process(self):
         raise NotImplementedError
 
-    def _visit(self):
-        self._process()
-        child: Node
-        for child in self.children:
-            child._visit()
+    # def _visit(self):
+    #     self._process()
+    #     child: Node
+    #     for child in self.children:
+    #        child._visit()

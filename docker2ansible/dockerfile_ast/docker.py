@@ -1,6 +1,6 @@
 from typing import List
 
-from docker2ansible.dockerfile_ast.bash import parse_bash, parse_bash_value
+import docker2ansible.dockerfile_ast.bash as ast_bash
 import docker2ansible.dockerfile_ast.ast as ast
 from dataclasses import dataclass, field
 
@@ -15,7 +15,7 @@ class Node(ast.Node):
 @dataclass
 class UnusedNode(ast.Node):
 
-    value: List = field(default_factory=list)
+    value = []
 
     def __init__(self, directive):
         self.value.extend(directive.value)
@@ -27,9 +27,9 @@ class UnusedNode(ast.Node):
 @dataclass
 class FromNode(Node):
 
-    image_name: str = ""
-    repo: str = ""
-    tag: str = ""
+    image_name = None
+    repo = None
+    tag = None
 
     def __init__(self, directive):
         value = directive.value[0]
@@ -51,72 +51,73 @@ class FromNode(Node):
 @dataclass
 class RunNode(Node):
 
-    line: str = ""
+    line = None
 
     def __init__(self, directive):
+        self.stack.setup_local_stack()
         self.line = directive.value[0]
-        self.children = parse_bash(self.line)
+        self.children = ast_bash.parse_bash(self.line)
 
     def _process(self):
         # TODO
+        # enrich command
         pass
 
 
 @dataclass
 class EnvNode(Node):
 
-    names: List = field(default_factory=list)
-    values: List = field(default_factory=list)
+    names = []
+    values = []
 
     def __init__(self, directive):
         self.names.extend(directive.value[::2])
         self.values.extend(directive.value[1::2])
-        self.children = [parse_bash_value(value) for value in self.values]
+        self.children = [ast_bash.parse_bash_value(value) for value in self.values]
+        for i in range(len(self.values)):
+            self.stack.add_global_var(self.names[i], self.values[i])
 
     def _process(self):
-        # TODO
         pass
 
 
 @dataclass
 class AddNode(Node):
 
-    sources: List = field(default_factory=list)
-    dst: str = ""
+    sources = []
+    dst = None
 
     def __init__(self, directive):
         self.dst = directive.value[0]
         self.sources.extend(directive.value[1:])
-        self.children = [parse_bash_value(self.dst)] + \
-                        [parse_bash_value(value) for value in self.sources]
+        self.children = [ast_bash.parse_bash_value(self.dst)] + \
+                        [ast_bash.parse_bash_value(value) for value in self.sources]
 
     def _process(self):
-        # TODO
         pass
 
 
 @dataclass
 class CopyNode(Node):
 
-    sources: List = field(default_factory=list)
-    dst: str = ""
+    sources = []
+    dst = None
 
     def __init__(self, directive):
         self.dst = directive.value[0]
         self.sources.extend(directive.value[1:])
-        self.children = [parse_bash_value(self.dst)] + \
-                        [parse_bash_value(value) for value in self.sources]
+        self.children = [ast_bash.parse_bash_value(self.dst)] + \
+                        [ast_bash.parse_bash_value(value) for value in self.sources]
 
     def _process(self):
-        # TODO
         pass
 
 
 @dataclass
 class ArgNode(Node):
 
-    name: str = ""
-    value: str = ""
+    name = None
+    value = None
 
     def __init__(self, directive):
         self.name = directive.value[0] \
@@ -127,7 +128,6 @@ class ArgNode(Node):
             else None
 
     def _process(self):
-        # TODO
         pass
 
 

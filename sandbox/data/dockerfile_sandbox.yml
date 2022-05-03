@@ -2,7 +2,8 @@
   name: Generated from dockerfile
   tasks:
   - set_fact:
-      PATH_fact: asd
-  - copy:
-      dest: /
-      src: ./abc
+      GCC_FLAGS_fact: '"-O2 -Wall"'
+  - environment:
+      GCC_FLAGS: '{{ GCC_FLAGS_fact }}'
+    shell:
+      cmd: gcc 1.c $GCC_FLAGS

@@ -1,4 +1,3 @@
-from typing import List
 import bashlex
 from bashlex.errors import ParsingError
 
@@ -139,7 +138,7 @@ class Node(ast.Node):
 @dataclass
 class CommandNode(Node):
 
-    line: str = None
+    line = None
 
     def __init__(self, bashlex_node, line):
         self.line = line[bashlex_node.pos[0]:bashlex_node.pos[1]]
@@ -147,9 +146,10 @@ class CommandNode(Node):
             self.children.extend(BashlexTransformer.transform_node(part, line))
 
     def _process(self):
-        # TODO
-        # matching command probably
         pass
+
+    def resolve(self):
+        return self.stack.resolve_command(self)
 
 
 @dataclass
@@ -183,41 +183,38 @@ class EOCNode(Node):
 @dataclass
 class AssignmentNode(Node):
 
-    name: str = None
-    value: str = None
+    name = None
+    value = None
 
     def __init__(self, bashlex_node, line):
         eq_pos = bashlex_node.word.find('=')
         name, value = bashlex_node.word[0:eq_pos], bashlex_node.word[eq_pos + 1:]
         self.name = name
         self.value = value
-        # TODO
-        # value
+        self.children.append(parse_bash_value(self.value))
 
     def _process(self):
-        # TODO
         pass
 
 
 @dataclass
 class ParameterNode(Node):
 
-    name: str = None
-    pos: str = None
+    name = None
+    pos = None
 
     def __init__(self, bashlex_node, line):
         self.name = bashlex_node.value
         self.pos = bashlex_node.pos
 
     def _process(self):
-        # TODO
         pass
 
 
 @dataclass
 class WordNode(Node):
 
-    value: str = None
+    value = None
 
     def __init__(self, bashlex_node, line):
         self.value = bashlex_node.word
@@ -239,7 +236,9 @@ class PlainWordNode(WordNode):
 @dataclass
 class ParameterizedWordNode(WordNode):
 
-    value: str = None
+    value = None
+    tracked = None
+    resolvable = None
 
     def __init__(self, bashlex_node, line):
         super().__init__(bashlex_node, line)
@@ -247,14 +246,13 @@ class ParameterizedWordNode(WordNode):
             self.children.extend(BashlexTransformer.transform_node(part, line))
 
     def _process(self):
-        # TODO
         pass
 
 
 @dataclass
 class WordSubstitutionNode(WordNode):
 
-    value: str = None
+    value = None
 
     def __init__(self, bashlex_node, line):
         super().__init__(bashlex_node, line)
@@ -262,14 +260,13 @@ class WordSubstitutionNode(WordNode):
             self.children.extend(BashlexTransformer.transform_node(part, line))
 
     def _process(self):
-        # TODO
         pass
 
 
 @dataclass
 class ValueNode(Node):
 
-    value: str = None
+    value = None
 
     def __init__(self, value):
         self.value = value
@@ -291,12 +288,18 @@ class ConstantValueNode(ValueNode):
 @dataclass
 class ParameterizedValueNode(ValueNode):
 
+    tracked = None
+    resolvable = None
+
     def __init__(self, value, parameters):
         super().__init__(value)
         self.children = parameters
+        self.tracked = all(self.stack.contains(x.name)
+                           for x in filter(lambda x: isinstance(x, ParameterNode), self.children))
+        self.resolvable = all(self.stack.contains(x.name)
+                              for x in filter(lambda x: isinstance(x, ParameterNode), self.children))
 
     def _process(self):
-        # TODO
         pass
 
 
@@ -307,5 +310,4 @@ class ComplexValueNode(ValueNode):
         super().__init__(value)
 
     def _process(self):
-        # TODO
         pass

@@ -1,10 +1,4 @@
 FROM ubuntu:bionic
 
-#RUN groupadd -r mongodb && useradd -r -g mongodb mongodb
-#ENV GOSU_VERSION 1.11
-#RUN mkdir /docker-entrypoint-initdb.d
-#ENV GPG_KEYS E162F504A20CDF15827F718D4B7C549A058F8B6B
-#ARG MONGO_PACKAGE=mongodb-org-unstable
-#ENV MONGO_VERSION 4.1.13
-ENV PATH asd
-COPY ./abc /
+ENV GCC_FLAGS "-O2 -Wall"
+RUN gcc 1.c $GCC_FLAGS
