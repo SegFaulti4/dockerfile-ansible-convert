@@ -243,6 +243,7 @@ class ParameterizedWordNode(WordNode):
     def __init__(self, bashlex_node, line):
         super().__init__(bashlex_node, line)
         for part in bashlex_node.parts:
+            part.pos = part.pos[0] - bashlex_node.pos[0], part.pos[1] - bashlex_node.pos[0]
             self.children.extend(BashlexTransformer.transform_node(part, line))
 
     def _process(self):
@@ -257,6 +258,7 @@ class WordSubstitutionNode(WordNode):
     def __init__(self, bashlex_node, line):
         super().__init__(bashlex_node, line)
         for part in bashlex_node.parts:
+            part.pos = part.pos[0] - bashlex_node.pos[0], part.pos[1] - bashlex_node.pos[0]
             self.children.extend(BashlexTransformer.transform_node(part, line))
 
     def _process(self):
@@ -296,7 +298,7 @@ class ParameterizedValueNode(ValueNode):
         self.children = parameters
         self.tracked = all(self.stack.contains(x.name)
                            for x in filter(lambda x: isinstance(x, ParameterNode), self.children))
-        self.resolvable = all(self.stack.contains(x.name)
+        self.resolvable = all(self.stack.resolvable(x.name)
                               for x in filter(lambda x: isinstance(x, ParameterNode), self.children))
 
     def _process(self):

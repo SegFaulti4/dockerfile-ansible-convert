@@ -24,11 +24,9 @@ class Stack(metaclass=_MetaSingleton):
 
     def add_global_var(self, name, value):
         self._dockerfile_level[name] = value
-        self._resolve_var(name)
 
     def add_local_var(self, name, value):
         self._directive_level[name] = value
-        self._resolve_var(name)
 
     def setup_local_stack(self):
         self._directive_level.clear()
