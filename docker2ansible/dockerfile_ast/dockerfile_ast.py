@@ -1,5 +1,7 @@
+import json
 from dataclasses import dataclass
 from typing import List
+from json import dumps
 import dockerfile
 
 import docker2ansible.dockerfile_ast.bash_parse as bash_parse
@@ -23,20 +25,31 @@ def create_from_path(path):
         return None
 
 
-@dataclass
+class NodeEncoder(json.JSONEncoder):
+    def default(self, o):
+        return o.__dict__
+
+
+@dataclass(repr=False)
 class Node:
     children: List
 
+    def __repr__(self):
+        return json.dumps(self, indent=4, sort_keys=True, cls=NodeEncoder)
 
-@dataclass
+
+@dataclass(repr=False)
 class DefaultNode(Node):
     values: List
 
 
-@dataclass
+@dataclass(repr=False)
 class AST:
     directives: List[Node]
     meta_info: str
+
+    def __repr__(self):
+        return json.dumps(self, indent=4, sort_keys=True, cls=NodeEncoder)
 
 
 class DirectiveTransformer:
@@ -44,7 +57,7 @@ class DirectiveTransformer:
     @staticmethod
     def transform(directive):
         try:
-            res = getattr(DirectiveTransformer, "_transform_" + directive.cmd)(directive)
+            res = getattr(DirectiveTransformer, "_transform_" + directive.cmd.lower())(directive)
             return res
         except AttributeError:
             raise exception.DockerfileASTException("Unknown directive " + directive.cmd)
@@ -147,19 +160,19 @@ class DirectiveTransformer:
         return [ShellNode(children=[], values=directive.value)]
 
 
-@dataclass
+@dataclass(repr=False)
 class FromNode(Node):
     image_name: str
     repo: str
     tag: str
 
 
-@dataclass
+@dataclass(repr=False)
 class RunNode(Node):
     line: str
 
 
-@dataclass
+@dataclass(repr=False)
 class EnvNode(Node):
     name: str
 
@@ -172,7 +185,7 @@ class CopyNode(Node):
     pass
 
 
-@dataclass
+@dataclass(repr=False)
 class ArgNode(Node):
     name: str
     value: str

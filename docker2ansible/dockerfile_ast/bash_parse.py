@@ -1,11 +1,13 @@
 from bashlex.errors import ParsingError
 
+import json
 from dataclasses import dataclass, field
 from enum import Enum
 from typing import List, Tuple, Dict
 import bashlex
 
 import docker2ansible.dockerfile_ast._meta as _meta
+import docker2ansible.dockerfile_ast.enrich_config
 from docker2ansible import exception
 from docker2ansible.log import globalLog
 
@@ -54,8 +56,9 @@ class BashlexTransformer:
         parts = []
         for part in nodes[0].parts:
             child = BashlexTransformer._transform_node(part, line)
-            if not child or not isinstance(child, WordNode) or child.type == WordNode.Type.COMPLEX:
+            if not child or not isinstance(child[0], WordNode) or child[0].type == WordNode.Type.COMPLEX:
                 return BashlexTransformer.bogus_value(line)
+            parts.extend(child)
 
         if all(x.type == WordNode.Type.CONST for x in parts):
             return WordNode(parts=[], type=WordNode.Type.CONST, value=line)
@@ -107,14 +110,14 @@ class BashlexTransformer:
         for part in node.parts:
             parts.extend(BashlexTransformer._transform_node(part, line))
 
-        if (len(parts) == 2 and isinstance(parts[0], WordNode) and parts[0].word == "export" or len(parts) == 1) \
+        if (len(parts) == 2 and isinstance(parts[0], WordNode) and parts[0].value == "export" or len(parts) == 1) \
                 and isinstance(parts[-1], AssignmentNode):
             return [parts[-1]]
 
         res = CommandNode(parts=parts, line=line)
         enriched = BashEnricher().enrich_command(res)
         if enriched is None:
-            del res.parts
+            res.parts.clear()
         else:
             res = enriched
         return [res]
@@ -174,10 +177,81 @@ class BashlexTransformer:
 
 class BashEnricher(metaclass=_meta.MetaSingleton):
     _scenarios = {}
+    _opts = []
+    _map_opts = {}
 
     def __init__(self):
-        # TODO
-        pass
+        """
+        {
+            command_name: {
+                "opts": {
+                    "name": {
+                        "arg_required": bool,
+                        "many_args": bool,
+                        "aliases": [
+                            str,
+                            ...
+                        ]
+                    },
+                    ...
+                },
+                "scenarios": {
+                    "name": {
+                        "aliases": [
+                            str,
+                            ...
+                        ]
+                    }
+                }
+            }
+            ...
+        }
+        """
+        config = docker2ansible.dockerfile_ast.enrich_config.commands
+        for command_name in config:
+            self._map_opts[command_name] = {}
+            for opt_name in config[command_name]["opts"]:
+                opt = config[command_name]["opts"][opt_name]
+                new_opt = BashEnricher._CommandScenario.Opt(
+                    name=opt_name,
+                    arg_required=opt["arg_required"],
+                    many_args=opt["many_args"]
+                )
+                for alias in opt["aliases"]:
+                    self._map_opts[command_name][alias] = new_opt
+                self._opts.append(new_opt)
+            self._scenarios[command_name] = []
+            for scenario_name in config[command_name]["scenarios"]:
+                scenario = config[command_name]["scenarios"][scenario_name]
+                for alias in scenario["aliases"]:
+                    requires = []
+                    for req_str in alias.split():
+                        if req_str.startswith('<') and req_str.endswith('>'):
+                            requires.append(BashEnricher._CommandScenario.Req(
+                                type=BashEnricher._CommandScenario.Req.Type.STRICT_ABSTRACT,
+                                value=req_str[1:-1]
+                            ))
+                        elif req_str.startswith('[') and req_str.endswith('...]'):
+                            requires.append(BashEnricher._CommandScenario.Req(
+                                type=BashEnricher._CommandScenario.Req.Type.OPTIONAL_ABSTRACT_LIST,
+                                value=req_str[1:-4]
+                            ))
+                        elif req_str.startswith('[') and req_str.endswith(']'):
+                            requires.append(BashEnricher._CommandScenario.Req(
+                                type=BashEnricher._CommandScenario.Req.Type.OPTIONAL_ABSTRACT,
+                                value=req_str[1:-1]
+                            ))
+                        else:
+                            requires.append(BashEnricher._CommandScenario.Req(
+                                type=BashEnricher._CommandScenario.Req.Type.STRICT_CONSTANT,
+                                value=req_str
+                            ))
+                    self._scenarios[command_name].append(BashEnricher._CommandScenario(
+                        command_name=command_name,
+                        scenario_name=scenario_name,
+                        requires=requires,
+                        map_opts=self._map_opts[command_name]
+                    ))
 
     @staticmethod
     def _is_allowed(comm):
@@ -192,10 +266,10 @@ class BashEnricher(metaclass=_meta.MetaSingleton):
                 res = scenario.probe(comm)
                 if res is not None:
                     return res
-            globalLog.warning("Suitable scenario not found for command " + comm.line)
+            globalLog.info("Suitable scenario not found for command " + comm.line)
         return None
 
-    @dataclass
+    @dataclass(repr=False)
     class _CommandScenario:
         command_name: str
         scenario_name: str
@@ -208,8 +282,8 @@ class BashEnricher(metaclass=_meta.MetaSingleton):
         _rt_skip_opts = False
         _rt_opts = []
 
-        @dataclass
-        class CommandRequirement:
+        @dataclass(repr=False)
+        class Req:
 
             class Type(Enum):
                 STRICT_CONSTANT = "strict_constant"
@@ -220,8 +294,8 @@ class BashEnricher(metaclass=_meta.MetaSingleton):
             type: Type
             value: str
 
-        @dataclass
-        class CommandOpt:
+        @dataclass(repr=False)
+        class Opt:
             arg_required: bool
             many_args: bool
             name: str
@@ -241,11 +315,11 @@ class BashEnricher(metaclass=_meta.MetaSingleton):
 
                 if self._rt_comm_list:
                     raise exception.EnrichCommandException('Excessive arguments provided')
-                return self._rt_result
+                return self._return()
 
             except AttributeError as exc:
                 globalLog.warning(exc)
-                globalLog.warning("Unknown requirement type for scenario " + self.scenario_name)
+                globalLog.warning("Unknown Req type for scenario " + self.scenario_name)
                 self._rt_result = None
                 return self._return()
             except ValueError as exc:
@@ -258,7 +332,7 @@ class BashEnricher(metaclass=_meta.MetaSingleton):
                 return self._return()
             except exception.EnrichCommandException as exc:
                 globalLog.info(exc)
-                globalLog.info(comm['line'])
+                globalLog.info(comm.line)
                 self._rt_result = None
                 return self._return()
 
@@ -284,7 +358,7 @@ class BashEnricher(metaclass=_meta.MetaSingleton):
                         and node.value == self._rt_require.value:
                     self._rt_comm_list.pop(0)
                     return
-            raise exception.EnrichCommandException("Strict constant requirement " + self._rt_require.value +
+            raise exception.EnrichCommandException("Strict constant Req " + self._rt_require.value +
                                                    " is not satisfied")
 
         def _probe_strict_abstract(self):
@@ -292,7 +366,7 @@ class BashEnricher(metaclass=_meta.MetaSingleton):
             if self._rt_comm_list:
                 self._rt_result.params[self._rt_require.value] = self._rt_comm_list.pop(0)
                 return
-            raise exception.EnrichCommandException("Strict abstract requirement " + self._rt_require.value +
+            raise exception.EnrichCommandException("Strict abstract Req " + self._rt_require.value +
                                                    " is not satisfied")
 
         def _probe_optional_abstract(self):
@@ -310,7 +384,7 @@ class BashEnricher(metaclass=_meta.MetaSingleton):
 
         def _probe_opts(self):
             while not self._rt_skip_opts and self._rt_comm_list and \
-                    self._rt_comm_list.value[0] == '-' and self._rt_comm_list.value != '-':
+                    self._rt_comm_list[0].value[0] == '-':
                 if self._rt_comm_list[0].value == '--':
                     self._rt_skip_opts = True
                     self._rt_comm_list.pop(0)
@@ -333,7 +407,7 @@ class BashEnricher(metaclass=_meta.MetaSingleton):
 
             if opt.arg_required:
                 if arg is None:
-                    if not self._rt_comm_list:
+                    if not self._rt_comm_list or self._rt_comm_list[0].value.startswith('-'):
                         exception.EnrichCommandException("Required arg is not provided for opt " + opt.name)
                     arg = self._rt_comm_list.pop(0)
             elif arg is not None:
@@ -377,12 +451,20 @@ class BashEnricher(metaclass=_meta.MetaSingleton):
             return self.map_opts[name_matches[0]]
 
 
-@dataclass
+class NodeEncoder(json.JSONEncoder):
+    def default(self, o):
+        return o.__dict__
+
+
+@dataclass(repr=False)
 class Node:
     parts: List
 
+    def __repr__(self):
+        return json.dumps(self, indent=4, sort_keys=True, cls=NodeEncoder)
 
-@dataclass
+
+@dataclass(repr=False)
 class CommandNode(Node):
     line: str
     name: str = None
@@ -399,18 +481,18 @@ class OperatorOrNode(Node):
     pass
 
 
-@dataclass
+@dataclass(repr=False)
 class AssignmentNode(Node):
     name: str
 
 
-@dataclass
+@dataclass(repr=False)
 class ParameterNode(Node):
     name: str
     pos: Tuple
 
 
-@dataclass
+@dataclass(repr=False)
 class WordNode(Node):
     class Type(Enum):
         CONST = "const"
@@ -419,6 +501,10 @@ class WordNode(Node):
 
     type: Type
     value: str
+
+    @property
+    def __dict__(self):
+        return {"type": self.type.value, "value": self.value}
 
 
 class _EOCNode(Node):
