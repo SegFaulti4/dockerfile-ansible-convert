@@ -4,7 +4,7 @@ from dataclasses import dataclass
 import docker2ansible.dockerfile_ast.enrich_config as enrich_config
 import docker2ansible.dockerfile_ast.ast as ast
 import docker2ansible.dockerfile_ast.bash as ast_bash
-from docker2ansible.dockerfile_ast._meta import _MetaSingleton
+from docker2ansible.dockerfile_ast._meta import MetaSingleton
 from docker2ansible import exception
 from docker2ansible.log import globalLog
 
@@ -213,24 +213,9 @@ class _CommandScenario:
             raise exception.EnrichCommandException("Too many matching opts for " + opt_name)
         return self._map_opts[name_matches[0]]
 
-    def _head_is_opt(self):
-        node = self._rt_comm_list[0]
-        if node.value[0] == '-':
-            if isinstance(node, ast_bash.PlainWordNode):
-                return True
-            elif isinstance(node, ast_bash.ParameterizedWordNode):
-                eq_pos = node.value.find('=')
-                min_param_pos = min(
-                    x['pos'][0]
-                    for x in filter(lambda x: isinstance(x, ast_bash.ParameterNode), node.children)
-                )
-                if min_param_pos > eq_pos > 1:
-                    return True
-                return False
-        return False
 
 
-class BashEnricher(metaclass=_MetaSingleton):
+class BashEnricher(metaclass=MetaSingleton):
     _scenarios = {}
 
     def __init__(self):

@@ -11,7 +11,8 @@ def main():
 
         for bash_line in inF.readlines():
             print("bashlex:")
-            print(bashlex.parse(bash_line)[0].dump())
+            for part in bashlex.parse(bash_line):
+                print(part.dump())
 
             if True:
                 parsed = phase_2_parse_bash_command(bash_line)

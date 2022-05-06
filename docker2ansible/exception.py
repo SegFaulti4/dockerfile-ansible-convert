@@ -2,6 +2,10 @@ class ConvertException(Exception):
     pass
 
 
+class DockerfileASTException(ConvertException):
+    pass
+
+
 class BashlexTransformException(ConvertException):
     pass
 

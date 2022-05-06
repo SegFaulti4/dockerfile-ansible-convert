@@ -4,7 +4,7 @@ from dataclasses import dataclass
 
 import docker2ansible.dockerfile_ast.docker as ast_docker
 import docker2ansible.dockerfile_ast.bash as ast_bash
-from docker2ansible.dockerfile_ast._meta import _MetaSingleton
+from docker2ansible.dockerfile_ast._meta import MetaSingleton
 
 
 def create_dockerfile_ast(filepath):
@@ -17,7 +17,7 @@ def create_dockerfile_ast(filepath):
         ast['children'].append(getattr(ast_docker, cmd + 'Node')(directive))
 
 
-class Stack(metaclass=_MetaSingleton):
+class Stack(metaclass=MetaSingleton):
 
     _dockerfile_level = dict()
     _directive_level = dict()
