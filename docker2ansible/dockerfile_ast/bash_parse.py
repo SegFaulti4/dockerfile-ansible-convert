@@ -78,7 +78,7 @@ class BashlexTransformer:
     def transform_commands(commands, line):
         res = []
         for node in commands:
-            res.append(BashlexTransformer._transform_node(node, line))
+            res.extend(BashlexTransformer._transform_node(node, line))
 
         # might check that output makes sense
         return res
@@ -150,14 +150,6 @@ class BashlexTransformer:
 
     @staticmethod
     def _transform_word(node, line):
-        if node.word[0] != '-':
-            eq_pos = node.word.find('=')
-            if eq_pos != -1 and all(x.pos[0] > eq_pos + node.pos[0] for x in node.parts):
-                return BashlexTransformer._transform_assignment(node, line)
-
-            if eq_pos != -1:
-                globalLog.info("Unexpected '=' symbol in word node " + node.dump())
-
         if len(node.parts):
             parts = []
             for part in node.parts:
@@ -504,7 +496,7 @@ class WordNode(Node):
 
     @property
     def __dict__(self):
-        return {"type": self.type.value, "value": self.value}
+        return {"type": self.type.value, "value": self.value, "parts": self.parts}
 
 
 class _EOCNode(Node):

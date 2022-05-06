@@ -21,7 +21,7 @@ def create_from_path(path):
     except Exception as exc:
         globalLog.error(type(exc))
         globalLog.error(exc)
-        globalLog.error("Failed to generate dockerfile AST")
+        globalLog.error("Failed to create dockerfile AST")
         return None
 
 
@@ -86,7 +86,7 @@ class DirectiveTransformer:
         values = directive.value[1::2]
         children = [bash_parse.parse_bash_value(v) for v in values]
 
-        return [EnvNode(name=name, children=child) for name, child in zip(names, children)]
+        return [EnvNode(name=name, children=[child]) for name, child in zip(names, children)]
 
     @staticmethod
     def _transform_add(directive):

@@ -6,6 +6,14 @@ class DockerfileASTException(ConvertException):
     pass
 
 
+class PlaybookGeneratorException(ConvertException):
+    pass
+
+
+class AnsibleContextException(PlaybookGeneratorException):
+    pass
+
+
 class BashlexTransformException(ConvertException):
     pass
 

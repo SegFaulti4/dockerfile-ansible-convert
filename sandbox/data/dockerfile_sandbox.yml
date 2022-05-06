@@ -2,8 +2,19 @@
   name: Generated from dockerfile
   tasks:
   - set_fact:
-      GCC_FLAGS_fact: '"-O2 -Wall"'
+      E1_fact: '1'
   - environment:
-      GCC_FLAGS: '{{ GCC_FLAGS_fact }}'
+      E1: '{{ E1_fact }}'
+    register: auto_generated_register_1
     shell:
-      cmd: gcc 1.c $GCC_FLAGS
+      cmd: echo "2$E1"
+  - set_fact:
+      E2_fact: '{{ auto_generated_register_1 }}'
+  - environment:
+      E1: '{{ E1_fact }}'
+      E2: '{{ E2_fact }}'
+    register: auto_generated_register_2
+    shell:
+      cmd: echo "$E2-$E1"
+  - set_fact:
+      E3_fact: '{{ auto_generated_register_2 }}'
