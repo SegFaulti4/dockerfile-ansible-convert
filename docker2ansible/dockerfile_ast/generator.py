@@ -7,8 +7,12 @@ from docker2ansible.log import globalLog
 
 
 class PlaybookContext:
-    _global_vars = dict()
-    _local_vars = dict()
+    _global_vars = None
+    _local_vars = None
+
+    def __init__(self):
+        self._global_vars = dict()
+        self._local_vars = dict()
 
     def _var_value(self, name):
         return self._local_vars.get(name, self._global_vars.get(name))
