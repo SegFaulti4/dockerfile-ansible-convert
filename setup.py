@@ -8,10 +8,10 @@ install_requires = (here / 'requirements.txt').read_text(encoding='utf-8').split
 
 setup(
     install_requires=install_requires,
-    name='docker2ansible',
+    name='dockerfile_ansible_convert',
     entry_points={
         'console_scripts': [
-            'docker2ansible = docker2ansible.dockerfile_ast.main:main'
+            'd2a-convert = dockerfile_ansible_convert.main:main'
         ],
     }
 )
