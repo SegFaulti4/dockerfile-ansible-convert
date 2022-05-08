@@ -1,10 +1,10 @@
 import sys
 import logging
-import stat_bashlex_node
+import bashlex_stat.stat_node
 import bashlex
 
 from bashlex.errors import ParsingError
-from docker2ansible.log import globalLog
+from log import globalLog
 globalLog.setLevel(logging.DEBUG)
 
 
@@ -22,7 +22,7 @@ stats = {'values': {kind: dict() for kind in BASHLEX_NODE_KINDS},
          'last_line_appearances': BLANK_BASHLEX_NODE_INDEX.copy()}
 examples = {}
 
-STAT_NODE = {kind: getattr(stat_bashlex_node, 'stat_' + kind) for kind in BASHLEX_NODE_KINDS}
+STAT_NODE = {kind: getattr(bashlex_stat.stat_node, 'stat_' + kind) for kind in BASHLEX_NODE_KINDS}
 
 
 def _stat_bashlex_node(node):
@@ -94,16 +94,16 @@ def mine_bash_line(line):
     stats['last_line_appearances'] = BLANK_BASHLEX_NODE_INDEX.copy()
 
 
-if __name__ == '__main__':
-    with open(sys.argv[1], 'r') as inF:
-        CUR_BASH_LINE_IDX = 0
+with open('./mined', 'r') as inF:
+    CUR_BASH_LINE_IDX = 0
 
-        for line in inF.readlines():
-            try:
-                mine_bash_line(line)
-            except ParsingError as er:
-                continue
-            except NotImplementedError as er:
-                continue
+    for line in inF.readlines():
+        try:
+            mine_bash_line(line)
+        except ParsingError as er:
+            continue
+        except NotImplementedError as er:
+            continue
 
-    dump_examples()
+    pass
+    # dump_examples()

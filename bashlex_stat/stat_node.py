@@ -2,7 +2,7 @@ import bashlex.ast
 
 import logging
 
-from docker2ansible.log import globalLog
+from log import globalLog
 globalLog.setLevel(logging.INFO)
 
 

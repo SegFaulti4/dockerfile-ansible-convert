@@ -1,31 +1,19 @@
 import bashlex
 import json
 import logging
-from docker2ansible.phase_2.phase_2 import phase_2_parse_bash_command
-from docker2ansible.phase_3.phase_3 import phase_3_process
-from docker2ansible.log import globalLog
+
+from dockerfile_ansible_convert.bash_parse import parse_bash_commands
+from log import globalLog
 
 
-def main():
-    with open('./data/bash_sandbox', 'r') as inF:
+globalLog.setLevel(logging.INFO)
+with open('./data/bash_sandbox', 'r') as inF:
 
-        for bash_line in inF.readlines():
-            print("bashlex:")
-            print(bashlex.parse(bash_line)[0].dump())
+    for bash_line in inF.readlines():
+        print("bashlex:")
+        for part in bashlex.parse(bash_line):
+            print(part.dump())
 
-            if True:
-                parsed = phase_2_parse_bash_command(bash_line)
-                print("\nphase_2:")
-                print(json.dumps(parsed, indent=4, sort_keys=True))
-                if parsed:
-                    parsed = phase_3_process({'type': 'DOCKERFILE', 'children': [
-                        {'type': 'DOCKER-ENV', 'name': 'E0'},
-                        {'type': 'DOCKER-RUN', 'children': parsed}
-                    ]})
-                    print("\nphase_3:")
-                    print(json.dumps(parsed, indent=4, sort_keys=True))
-
-
-if __name__ == '__main__':
-    globalLog.setLevel(logging.INFO)
-    main()
+        parsed = parse_bash_commands(bash_line)
+        print("\nbash_parse:")
+        print(json.dumps(parsed, indent=4, sort_keys=True, default=lambda o: o.__dict__))

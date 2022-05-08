@@ -4,9 +4,8 @@ import zipfile
 import shutil
 import dockerfile
 
-import docker2ansible.phase_1.process_directive
-import docker2ansible.docker2ansible
-from docker2ansible.log import globalLog
+import dockerfile_ansible_convert.main as main
+from log import globalLog
 
 
 from utils import DATA_PATH, DOCKERFILES_ARCHIVE_PATH, DOCKERFILES_DIR_PATH, PLAYBOOKS_DIR_PATH, \
@@ -29,8 +28,7 @@ def _copy_ubuntu_dockerfiles():
         for d in dockerfiles:
             src_path = os.path.join(DOCKERFILES_DIR_PATH, d)
             obj = dockerfile.parse_file(src_path.strip())
-            image_name = docker2ansible.phase_1.process_directive.process_from(obj[0])[0]['image_name']
-            if image_name == 'ubuntu':
+            if obj[0].value[0].find("ubuntu") != -1:
                 dst_path = os.path.join(UBUNTU_DOCKERFILES_DIR_PATH, d)
                 globalLog.info('Copying Ubuntu dockerfile ' + dst_path)
                 shutil.copyfile(src_path, dst_path)
@@ -41,10 +39,10 @@ def _setup_playbooks_set(dockerfiles_dir, playbooks_dir):
     for d in dockerfiles:
         src_path = os.path.join(dockerfiles_dir, d)
         dst_path = os.path.join(playbooks_dir, d[0:d.find('.Dockerfile')] + '.yml')
-        dst_stream = open(dst_path, 'a')
+        dst_stream = open(dst_path, 'w')
         globalLog.info('Converting dockerfile ' + src_path)
         globalLog.info('to ' + dst_path)
-        docker2ansible.docker2ansible.main(dockerfile_path=src_path, out_stream=dst_stream)
+        main.create_playbook_from_dockerfile(dockerfile_path=src_path, out_stream=dst_stream)
 
 
 def setup_main_playbooks_set():
@@ -68,7 +66,7 @@ def setup_ubuntu_playbooks_set():
 
 def setup_playbooks():
     setup_ubuntu_playbooks_set()
-    if not os.listdir(PLAYBOOKS_DIR_PATH):
+    if len(os.listdir(PLAYBOOKS_DIR_PATH)) <= 1:
         _setup_playbooks_set(DOCKERFILES_DIR_PATH, PLAYBOOKS_DIR_PATH)
 
 

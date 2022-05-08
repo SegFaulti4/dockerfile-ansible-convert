@@ -1,1 +1,1 @@
-rm -rf /var/$PATH/.
+rm -rf *

@@ -3,7 +3,7 @@ from cotea.arguments_maker import argument_maker
 
 import tests.playbook_utils as prepare_playbooks
 import tests.utils as utils
-from docker2ansible.log import globalLog
+from log import globalLog
 
 
 def _is_ignored(task_res):

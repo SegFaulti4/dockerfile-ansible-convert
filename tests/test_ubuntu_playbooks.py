@@ -1,7 +1,7 @@
 import tests.playbook_utils as playbook_utils
 import tests.utils as utils
 import tests.instance_utils as instance_utils
-from docker2ansible.log import globalLog
+from log import globalLog
 
 from cotea.runner import runner
 from cotea.arguments_maker import argument_maker
