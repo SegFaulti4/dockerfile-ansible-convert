@@ -4,8 +4,8 @@ import time
 import openstack
 import openstack.exceptions
 
-import docker2ansible.exception
-from docker2ansible.log import globalLog
+import exception
+from log import globalLog
 
 
 IMAGE_NAME = "Ubuntu Server 18.04 LTS (Bionic Beaver)"
@@ -28,7 +28,7 @@ def _server_attrs(conn):
 
     if image is None or flavor is None \
             or network is None or keypair is None:
-        raise docker2ansible.exception.CloudException('Could not find instance attrs in cloud')
+        raise exception.CloudException('Could not find instance attrs in cloud')
 
     return {
         "name": INSTANCE_NAME,
@@ -47,7 +47,7 @@ def _create_instance(conn):
         server = conn.create_server(**server_attrs)
     except openstack.exceptions.OpenStackCloudException as exc:
         globalLog.error(exc)
-        raise docker2ansible.exception.CloudException("Failed to create instance")
+        raise exception.CloudException("Failed to create instance")
     return server
 
 

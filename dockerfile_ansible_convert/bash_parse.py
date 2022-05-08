@@ -6,10 +6,10 @@ from enum import Enum
 from typing import List, Tuple, Dict
 import bashlex
 
-import docker2ansible.dockerfile_ast._meta as _meta
-import docker2ansible.dockerfile_ast.enrich_config
-from docker2ansible import exception
-from docker2ansible.log import globalLog
+import dockerfile_ansible_convert._meta as _meta
+import dockerfile_ansible_convert.enrich_config
+import exception
+from log import globalLog
 
 
 def parse_bash_commands(line):
@@ -199,7 +199,7 @@ class BashEnricher(metaclass=_meta.MetaSingleton):
             ...
         }
         """
-        config = docker2ansible.dockerfile_ast.enrich_config.commands
+        config = dockerfile_ansible_convert.enrich_config.commands
         for command_name in config:
             self._map_opts[command_name] = {}
             for opt_name in config[command_name]["opts"]:

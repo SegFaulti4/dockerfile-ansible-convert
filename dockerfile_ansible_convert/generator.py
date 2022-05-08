@@ -1,9 +1,9 @@
-import docker2ansible.dockerfile_ast.dockerfile_ast as dockerfile_ast
-import docker2ansible.dockerfile_ast.bash_parse as bash_ast
-import docker2ansible.dockerfile_ast.module_match as module_match
+import dockerfile_ansible_convert.dockerfile_ast as dockerfile_ast
+import dockerfile_ansible_convert.bash_parse as bash_ast
+import dockerfile_ansible_convert.module_match as module_match
 
-import docker2ansible.exception as exception
-from docker2ansible.log import globalLog
+import exception as exception
+from log import globalLog
 
 
 class PlaybookContext:
@@ -18,13 +18,18 @@ class PlaybookContext:
         return self._local_vars.get(name, self._global_vars.get(name))
 
     def resolve_parameterized_word(self, node):
-        assert all(isinstance(p, bash_ast.ParameterNode) for p in node.parts)
-        parts = sorted(node.parts, key=lambda x: x.pos[0], reverse=False)
-        res = node.value[0:parts[0].pos[0]] + self._var_value(parts[0].name)
-        for i in range(1, len(parts)):
-            res += node.value[parts[i - 1].pos[1]:parts[i].pos[0]] + \
-                self._var_value(parts[i].name)
-        return res
+        try:
+            assert all(isinstance(p, bash_ast.ParameterNode) for p in node.parts)
+            parts = sorted(node.parts, key=lambda x: x.pos[0], reverse=False)
+            res = node.value[0:parts[0].pos[0]] + self._var_value(parts[0].name)
+            for i in range(1, len(parts)):
+                res += node.value[parts[i - 1].pos[1]:parts[i].pos[0]] + \
+                    self._var_value(parts[i].name)
+            return res
+        except Exception as exc:
+            globalLog.info(type(exc))
+            globalLog.info(exc)
+            raise exception.AnsibleContextException("Failed to resolve parameterized word")
 
     def add_global_var(self, name, value):
         self._global_vars[name] = value
@@ -47,6 +52,8 @@ class PlaybookGenerator:
     _rt_result = None
     _rt_register_count = 0
 
+    _rt_directive = None
+
     def __init__(self, ast):
         assert ast is not None
         assert isinstance(ast, dockerfile_ast.AST)
@@ -63,6 +70,7 @@ class PlaybookGenerator:
             }
 
             for directive in self._ast.directives:
+                self._rt_directive = directive
                 self._handle_directive(directive)
 
             _context = None
@@ -70,7 +78,7 @@ class PlaybookGenerator:
         except Exception as exc:
             globalLog.error(type(exc))
             globalLog.error(exc)
-            globalLog.error("Failed to generate playbook from dockerfile AST")
+            globalLog.error("Failed to generate playbook from dockerfile AST on directive: " + str(self._rt_directive))
 
     def _last_task(self):
         return self._rt_result["tasks"][-1]

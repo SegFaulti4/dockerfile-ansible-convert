@@ -11,7 +11,7 @@ setup(
     name='docker2ansible',
     entry_points={
         'console_scripts': [
-            'docker2ansible = docker2ansible.docker2ansible:entrypoint'
+            'docker2ansible = docker2ansible.dockerfile_ast.main:main'
         ],
     }
 )

@@ -1,31 +1,19 @@
 import json
+import yaml
 import logging
 
-import docker2ansible.phase_1.phase_1
-import docker2ansible.phase_2.phase_2
-import docker2ansible.phase_3.phase_3
-import docker2ansible.phase_3.enrich
-import docker2ansible.ast2playbook.ast2playbook
-
-from docker2ansible.log import globalLog
+from dockerfile_ansible_convert.dockerfile_ast import create_from_path
+from dockerfile_ansible_convert.generator import PlaybookGenerator
+from log import globalLog
 
 
-def fancy_print(ast):
-    print(json.dumps(ast, indent=4, sort_keys=True))
+globalLog.setLevel(logging.INFO)
+dockerfile_path = './data/dockerfile_sandbox'
+playbook_path = './data/dockerfile_sandbox.yml'
 
+ast = create_from_path(dockerfile_path)
+generator = PlaybookGenerator(ast=ast)
+playbook = generator.generate()
 
-def main():
-    dockerfile_path = './data/dockerfile_sandbox'
-    playbook_path = './data/dockerfile_sandbox.yml'
-    ast = docker2ansible.phase_1.phase_1.parse_dockerfile_from_path(dockerfile_path)
-    ast = docker2ansible.phase_1.phase_1.phase_1_process(parsed_dockerfile=ast, meta_info=dockerfile_path)
-    ast = docker2ansible.phase_2.phase_2.phase_2_process(obj=ast)
-    ast = docker2ansible.phase_3.phase_3.phase_3_process(obj=ast)
-    ast = docker2ansible.ast2playbook.ast2playbook.ast2playbook_process(ast)
-    docker2ansible.ast2playbook.ast2playbook.dump_playbook(ast, open(playbook_path, 'w'))
-    fancy_print(ast)
-
-
-if __name__ == '__main__':
-    globalLog.setLevel(logging.INFO)
-    main()
+print(json.dumps(playbook, indent=4, sort_keys=True))
+yaml.dump(playbook, open(playbook_path, "w"))

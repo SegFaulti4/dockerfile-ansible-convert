@@ -4,9 +4,8 @@ import zipfile
 import shutil
 import dockerfile
 
-import docker2ansible.phase_1.process_directive
-import docker2ansible.dockerfile_ast.main as main
-from docker2ansible.log import globalLog
+import dockerfile_ansible_convert.main as main
+from log import globalLog
 
 
 from utils import DATA_PATH, DOCKERFILES_ARCHIVE_PATH, DOCKERFILES_DIR_PATH, PLAYBOOKS_DIR_PATH, \

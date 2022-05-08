@@ -1,4 +1,4 @@
-from docker2ansible.log import globalLog
+from log import globalLog
 
 
 class ModuleMatcher:

@@ -1,12 +1,11 @@
 import json
 from dataclasses import dataclass
 from typing import List
-from json import dumps
 import dockerfile
 
-import docker2ansible.dockerfile_ast.bash_parse as bash_parse
-import docker2ansible.exception as exception
-from docker2ansible.log import globalLog
+import dockerfile_ansible_convert.bash_parse as bash_parse
+import exception as exception
+from log import globalLog
 
 
 def create_from_path(path):

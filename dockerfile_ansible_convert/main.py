@@ -1,10 +1,9 @@
-import logging
 import argparse
 import sys
 import yaml
 
-import docker2ansible.dockerfile_ast.generator as generator
-from docker2ansible.log import globalLog
+import dockerfile_ansible_convert.generator as generator
+from log import globalLog
 
 
 def parse_arguments():

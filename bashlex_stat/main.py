@@ -4,7 +4,7 @@ import bashlex_stat.stat_node
 import bashlex
 
 from bashlex.errors import ParsingError
-from docker2ansible.log import globalLog
+from log import globalLog
 globalLog.setLevel(logging.DEBUG)
 
 
