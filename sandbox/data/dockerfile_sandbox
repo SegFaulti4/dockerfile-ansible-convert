@@ -1,4 +1,4 @@
-FROM ubuntu:bionic
+FROM adoptopenjdk:8-jdk-openj9
 
-ARG MONGO_PACKAGE=mongodb-org-unstable
-ENV MONGO_PACKAGE=${MONGO_PACKAGE}
+RUN set -eux; \
+	export GNUPGHOME="$(mktemp -d)";

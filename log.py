@@ -3,7 +3,7 @@ import logging
 
 def setup_custom_logger(name):
     fmt = "%(levelname)s - %(filename)s:%(lineno)d - %(message)s"
-    level = logging.WARNING
+    level = logging.DEBUG
 
     logger = logging.getLogger(name)
     logger.setLevel(level)

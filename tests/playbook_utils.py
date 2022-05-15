@@ -1,3 +1,4 @@
+import logging
 import os.path
 import os
 import zipfile
@@ -71,4 +72,5 @@ def setup_playbooks():
 
 
 if __name__ == '__main__':
+    globalLog.setLevel(logging.WARNING)
     setup_playbooks()

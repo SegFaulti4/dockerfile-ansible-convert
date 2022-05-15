@@ -16,7 +16,7 @@ def run_playbook_on_remote_host(path):
 
     arg_maker = argument_maker()
     arg_maker.add_arg("-i", inv_path)
-    arg_maker.add_arg("--become-user", "root")
+    arg_maker.add_arg("-b")
 
     r = runner(pb_path, arg_maker)
 
@@ -42,9 +42,8 @@ def main():
     for path in playbook_paths:
         globalLog.info("Running playbook: " + path + " on remote host")
         run_playbook_on_remote_host(path)
-        break
 
-    # instance_utils.destroy_instance()
+    instance_utils.destroy_instance()
 
 
 if __name__ == '__main__':

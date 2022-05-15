@@ -31,6 +31,8 @@ def parse_bash_commands(line):
 def parse_bash_value(value):
     res = None
     try:
+        if not value.startswith('"') or not value.endswith('"'):
+            value = '"' + value + '"'
         nodes = bashlex.parse(value)
         res = BashlexTransformer.transform_value(nodes, value)
     except Exception as exc:
@@ -80,7 +82,6 @@ class BashlexTransformer:
         for node in commands:
             res.extend(BashlexTransformer._transform_node(node, line))
 
-        # might check that output makes sense
         return res
 
     @staticmethod
@@ -98,7 +99,7 @@ class BashlexTransformer:
         for part in node.parts:
             child = BashlexTransformer._transform_node(part, line)
             if not child:
-                return []
+                child = [CommandNode(parts=[], line=line[part.pos[0]:part.pos[1]])]
             res.extend(filter(lambda x: not isinstance(x, _EOCNode), child))
 
         return res
@@ -110,9 +111,13 @@ class BashlexTransformer:
         for part in node.parts:
             parts.extend(BashlexTransformer._transform_node(part, line))
 
-        if (len(parts) == 2 and isinstance(parts[0], WordNode) and parts[0].value == "export" or len(parts) == 1) \
-                and isinstance(parts[-1], AssignmentNode):
-            return [parts[-1]]
+        if len(parts) == 2 and all(isinstance(p, WordNode) for p in parts) and parts[0].value == "export":
+            second_part = parse_bash_commands(node.parts[1].word)
+            if len(second_part) == 1 and isinstance(second_part[0], AssignmentNode):
+                return second_part
+
+        if len(parts) == 1 and isinstance(parts[0], AssignmentNode):
+            return [parts[0]]
 
         res = CommandNode(parts=parts, line=line)
         enriched = BashEnricher().enrich_command(res)
@@ -146,7 +151,7 @@ class BashlexTransformer:
 
     @staticmethod
     def _transform_parameter(node, line):
-        return [ParameterNode(parts=[], name=node.value, pos=node.pos)]
+        return [ParameterNode(parts=[], name=node.value, pos=(node.pos[0] - 1, node.pos[1]))]
 
     @staticmethod
     def _transform_word(node, line):
@@ -329,13 +334,14 @@ class BashEnricher(metaclass=_meta.MetaSingleton):
                 return self._return()
 
         def _return(self):
-            for opt, arg in self._rt_opts:
-                if opt.many_args:
-                    if opt.name not in self._rt_result.opts:
-                        self._rt_result.opts[opt.name] = []
-                    self._rt_result.opts[opt.name].append(arg)
-                else:
-                    self._rt_result.opts[opt.name] = arg
+            if self._rt_result is not None:
+                for opt, arg in self._rt_opts:
+                    if opt.many_args:
+                        if opt.name not in self._rt_result.opts:
+                            self._rt_result.opts[opt.name] = []
+                        self._rt_result.opts[opt.name].append(arg)
+                    else:
+                        self._rt_result.opts[opt.name] = arg
 
             self._rt_comm_list = []
             self._rt_require = None

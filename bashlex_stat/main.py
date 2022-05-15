@@ -5,7 +5,7 @@ import bashlex
 
 from bashlex.errors import ParsingError
 from log import globalLog
-globalLog.setLevel(logging.DEBUG)
+globalLog.setLevel(logging.ERROR)
 
 
 EXAMPLE_KIND_BLACKLIST = []

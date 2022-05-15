@@ -67,6 +67,15 @@ def stat_compound(node, stats):
 
 def stat_command(node, stats):
     stat_default(node, stats)
+    if stats['values'][node.kind].get('name', None) is None:
+        stats['values'][node.kind]['name'] = {}
+    try:
+        name = node.parts[0].word
+        if stats['values'][node.kind]['name'].get(name, None) is None:
+            stats['values'][node.kind]['name'][name] = 0
+        stats['values'][node.kind]['name'][name] += 1
+    except AttributeError:
+        pass
 
 
 def stat_list(node, stats):

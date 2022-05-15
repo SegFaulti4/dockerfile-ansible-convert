@@ -74,7 +74,7 @@ class PlaybookGenerator:
                 self._handle_directive(directive)
 
             _context = None
-            return self._rt_result
+            return [self._rt_result]
         except Exception as exc:
             globalLog.error(type(exc))
             globalLog.error(exc)
@@ -98,9 +98,11 @@ class PlaybookGenerator:
             task["environment"] = context
 
     def _resolve_complex_value(self, value):
+        if not value.startswith('"') or not value.endswith('"'):
+            value = '"' + value + '"'
         self._add_task({
             'shell': {
-                'cmd': 'echo "' + value + '"'
+                'cmd': 'echo ' + value
             }
         })
 

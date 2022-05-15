@@ -12,6 +12,7 @@ dockerfile_path = './data/dockerfile_sandbox'
 playbook_path = './data/dockerfile_sandbox.yml'
 
 ast = create_from_path(dockerfile_path)
+print(ast)
 generator = PlaybookGenerator(ast=ast)
 playbook = generator.generate()
 
