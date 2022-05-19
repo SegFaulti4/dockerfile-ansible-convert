@@ -10,7 +10,7 @@ class PlaybookGeneratorException(ConvertException):
     pass
 
 
-class AnsibleContextException(PlaybookGeneratorException):
+class PlaybookContextException(PlaybookGeneratorException):
     pass
 
 

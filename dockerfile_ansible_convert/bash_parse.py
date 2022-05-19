@@ -106,10 +106,13 @@ class BashlexTransformer:
 
     @staticmethod
     def _transform_command(node, line):
-        line = line[node.pos[0]:node.pos[1]]
+        comm_line = line[node.pos[0]:node.pos[1]]
         parts = []
         for part in node.parts:
-            parts.extend(BashlexTransformer._transform_node(part, line))
+            transformed = BashlexTransformer._transform_node(part, line)
+            if not transformed:
+                return [CommandNode(parts=[], line=comm_line)]
+            parts.extend(transformed)
 
         if len(parts) == 2 and all(isinstance(p, WordNode) for p in parts) and parts[0].value == "export":
             second_part = parse_bash_commands(node.parts[1].word)
@@ -119,7 +122,7 @@ class BashlexTransformer:
         if len(parts) == 1 and isinstance(parts[0], AssignmentNode):
             return [parts[0]]
 
-        res = CommandNode(parts=parts, line=line)
+        res = CommandNode(parts=parts, line=comm_line)
         enriched = BashEnricher().enrich_command(res)
         if enriched is None:
             res.parts.clear()
@@ -382,7 +385,7 @@ class BashEnricher(metaclass=_meta.MetaSingleton):
 
         def _probe_opts(self):
             while not self._rt_skip_opts and self._rt_comm_list and \
-                    self._rt_comm_list[0].value[0] == '-':
+                    self._rt_comm_list[0].value.startswith('-'):
                 if self._rt_comm_list[0].value == '--':
                     self._rt_skip_opts = True
                     self._rt_comm_list.pop(0)
@@ -408,8 +411,6 @@ class BashEnricher(metaclass=_meta.MetaSingleton):
                     if not self._rt_comm_list or self._rt_comm_list[0].value.startswith('-'):
                         exception.EnrichCommandException("Required arg is not provided for opt " + opt.name)
                     arg = self._rt_comm_list.pop(0)
-            elif arg is not None:
-                raise exception.EnrichCommandException("Excessive arg for opt " + opt.name)
             self._rt_opts.append((opt, arg))
 
         def _probe_short(self):

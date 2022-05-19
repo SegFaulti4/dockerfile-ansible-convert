@@ -2,7 +2,12 @@
   name: Generated from dockerfile
   tasks:
   - shell:
-      cmd: set -eux
-  - register: auto_generated_register_1
-    shell:
-      cmd: echo "$(mktemp -d)"
+      cmd: echo "deb http://shadowsocks.org/debian wheezy main" >> /etc/apt/sources.list
+  - apt-get:
+      force-apt-get: 'yes'
+      update_cache: 'no'
+  - apt-get:
+      force: 'yes'
+      force-apt-get: 'yes'
+      name:
+      - shadowsocks-libev

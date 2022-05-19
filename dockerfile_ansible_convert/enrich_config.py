@@ -353,7 +353,7 @@ commands = {
                 "aliases": ["apt-get build-dep [packages...]"]
             },
             "apt-get satisfy": {
-                "aliases": ["apt-get satisfy [dependencies...]"]
+                "aliases": ["apt-get satisfy [packages...]"]
             },
             "apt-get download": {
                 "aliases": ["apt-get download [packages...]"]
@@ -515,6 +515,170 @@ commands = {
             "rm": {
                 "aliases": [
                     "rm [paths...]"
+                ]
+            }
+        }
+    },
+    "mkdir": {
+        "opts": {
+            "mode": {
+                "arg_required": True,
+                "many_args": False,
+                "aliases": [
+                    "-m", "--mode"
+                ]
+            },
+            "parents": {
+                "arg_required": False,
+                "many_args": False,
+                "aliases": [
+                    "-p", "--parents"
+                ]
+            },
+            "verbose": {
+                "arg_required": False,
+                "many_args": False,
+                "aliases": [
+                    "-v", "--verbose"
+                ]
+            },
+            "Z": {
+               "arg_required": False,
+               "many_args": False,
+               "aliases": [
+                    "-Z"
+                ]
+            },
+            "context": {
+                "arg_required": False,
+                "many_args": False,
+                "aliases": [
+                    "--context"
+                ]
+            },
+            "help": {
+                "arg_required": False,
+                "many_args": False,
+                "aliases": [
+                    "--help"
+                ]
+            },
+            "version": {
+                "arg_required": False,
+                "many_args": False,
+                "aliases": [
+                    "--version"
+                ]
+            }
+        },
+        "scenarios": {
+            "mkdir": {
+                "aliases": [
+                    "mkdir [paths...]"
+                ]
+            }
+        }
+    },
+    "cd": {
+        "opts": {
+            "L": {
+               "arg_required": False,
+               "many_args": False,
+               "aliases": [
+                    "-L"
+                ]
+            },
+            "P": {
+                "arg_required": False,
+                "many_args": False,
+                "aliases": [
+                    "-P"
+                ]
+            }
+        },
+        "scenarios": {
+            "cd": {
+                "aliases": [
+                    "cd [directory]"
+                ]
+            }
+        }
+    },
+    "chmod": {
+        "opts": {
+            "changes": {
+               "arg_required": False,
+               "many_args": False,
+               "aliases": [
+                    "-c", "--changes"
+                ]
+            },
+            "quiet": {
+                "arg_required": False,
+                "many_args": False,
+                "aliases": [
+                    "-f", "--silent", "--quiet"
+                ]
+            },
+            "verbose": {
+                "arg_required": False,
+                "many_args": False,
+                "aliases": [
+                    "-v", "--verbose"
+                ]
+            },
+            "no-preserve-root": {
+                "arg_required": False,
+                "many_args": False,
+                "aliases": [
+                    "--no-preserve-root"
+                ]
+            },
+            "preserve-root": {
+                "arg_required": False,
+                "many_args": False,
+                "aliases": [
+                    "--preserve-root"
+                ]
+            },
+            "recursive": {
+                "arg_required": False,
+                "many_args": False,
+                "aliases": [
+                    "-R", "--recursive"
+                ]
+            },
+            "reference": {
+                "arg_required": True,
+                "many_args": False,
+                "aliases": [
+                    "--reference"
+                ]
+            },
+            "help": {
+                "arg_required": False,
+                "many_args": False,
+                "aliases": [
+                    "--help"
+                ]
+            },
+            "version": {
+                "arg_required": False,
+                "many_args": False,
+                "aliases": [
+                    "--version"
+                ]
+            }
+        },
+        "scenarios": {
+            "chmod mode": {
+                "aliases": [
+                    "chmod <mode> <file>",
+                ]
+            },
+            "chmod reference": {
+                "aliases": [
+                    "chmod <file>"
                 ]
             }
         }

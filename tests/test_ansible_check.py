@@ -1,3 +1,6 @@
+import logging
+import json
+
 from cotea.runner import runner
 from cotea.arguments_maker import argument_maker
 
@@ -12,7 +15,7 @@ def _is_ignored(task_res):
 
 def run_ansible_check(path):
     maker = argument_maker()
-    maker.add_arg("-i", "./config/inventory")
+    maker.add_arg("-i", "./localhost_inventory")
     maker.add_arg("--check")
     r = runner(path, maker)
 
@@ -31,14 +34,19 @@ def run_ansible_check(path):
 
 
 def main():
-    globalLog.info('Preparing playbooks')
+    globalLog.setLevel(logging.CRITICAL)
+    stats = {"OK": [], "FAILED": []}
+
+    print('Preparing playbooks')
     prepare_playbooks.setup_main_playbooks_set()
-    globalLog.info('Playbooks are prepared')
+    print('Playbooks are prepared')
     playbook_paths = utils.filepaths_from_dir(utils.PLAYBOOKS_DIR_PATH)
     for path in playbook_paths:
-        globalLog.info("Running playbook: " + path)
+        print("Running playbook: " + path)
         result = run_ansible_check(path)
-        globalLog.info("\t" + result)
+        stats[result].append(path)
+        print("\t" + result)
+    print(json.dumps(stats, indent=4))
 
 
 if __name__ == '__main__':

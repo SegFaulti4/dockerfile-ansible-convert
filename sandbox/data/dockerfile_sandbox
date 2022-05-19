@@ -1,4 +1,8 @@
-FROM adoptopenjdk:8-jdk-openj9
+FROM debian:latest
+MAINTAINER imlonghao <imlonghao@gmail.com>
 
-RUN set -eux; \
-	export GNUPGHOME="$(mktemp -d)";
+RUN echo "deb http://shadowsocks.org/debian wheezy main" >> /etc/apt/sources.list
+RUN apt-get update
+RUN apt-get install -y --force-yes shadowsocks-libev
+
+ENTRYPOINT ["/usr/bin/ss-server"]

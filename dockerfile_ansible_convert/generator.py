@@ -9,6 +9,10 @@ from log import globalLog
 class PlaybookContext:
     _global_vars = None
     _local_vars = None
+    _global_wd = None
+    _local_wd = None
+    _global_usr = None
+    _local_usr = None
 
     def __init__(self):
         self._global_vars = dict()
@@ -17,36 +21,112 @@ class PlaybookContext:
     def _var_value(self, name):
         return self._local_vars.get(name, self._global_vars.get(name))
 
-    def resolve_parameterized_word(self, node):
+    def _set_assert(self, value):
+        assert isinstance(value, str)
+
+    def _resolve_parameterized_word(self, node):
         try:
             assert all(isinstance(p, bash_ast.ParameterNode) for p in node.parts)
             parts = sorted(node.parts, key=lambda x: x.pos[0], reverse=False)
             res = node.value[0:parts[0].pos[0]] + self._var_value(parts[0].name)
             for i in range(1, len(parts)):
                 res += node.value[parts[i - 1].pos[1]:parts[i].pos[0]] + \
-                    self._var_value(parts[i].name)
+                       self._var_value(parts[i].name)
+            res.strip('"')
             return res
         except Exception as exc:
             globalLog.info(type(exc))
             globalLog.info(exc)
-            raise exception.AnsibleContextException("Failed to resolve parameterized word")
+            raise exception.PlaybookContextException("Failed to resolve parameterized word")
+
+    def resolve_value(self, node):
+        assert isinstance(node, bash_ast.WordNode)
+        if node.type == bash_ast.WordNode.Type.CONST:
+            res = node.value
+            return res.strip('"')
+        if node.type == bash_ast.WordNode.Type.PARAMETERIZED:
+            try:
+                return self._resolve_parameterized_word(node)
+            except exception.PlaybookContextException as exc:
+                globalLog.debug(exc)
+                globalLog.debug("Failed to resolve parameterized word, resolving as complex word")
+                return None
+        if node.type == bash_ast.WordNode.Type.COMPLEX:
+            return None
+        raise exception.PlaybookContextException("Unknown WordNode type: " + node.type.value)
+
+    def _concat_path_str(self, path_a, path_b):
+        path_a.strip('"')
+        path_b.strip('"')
+        if not path_a.endswith('/'):
+            path_a += '/'
+        return path_a + path_b
+
+    def resolve_path_str(self, path):
+        path.strip('"')
+        if path.startswith('/') or path.startswith('~'):
+            return path
+        if self._local_wd is not None:
+            return self._concat_path_str(self._local_wd, path)
+        if self._global_wd is not None:
+            return self._concat_path_str(self._global_wd, path)
+        return path
+
+    def resolve_path_value(self, node):
+        value = self.resolve_value(node)
+        if value is None:
+            return None
+        return self.resolve_path_str(value)
+
+    def set_global_wd(self, value):
+        self._set_assert(value)
+        value.strip('"')
+        self._global_wd = self.resolve_path_str(value)
+
+    def set_local_wd(self, value):
+        self._set_assert(value)
+        value.strip('"')
+        self._local_wd = self.resolve_path_str(value)
+
+    def set_global_usr(self, value):
+        self._set_assert(value)
+        value.strip('"')
+        self._global_usr = value
+
+    def set_local_usr(self, value):
+        self._set_assert(value)
+        value.strip('"')
+        self._local_usr = value
 
     def add_global_var(self, name, value):
+        self._set_assert(value)
         self._global_vars[name] = value
 
     def add_local_var(self, name, value):
+        self._set_assert(value)
         self._local_vars[name] = value
 
-    def clear_local_vars(self):
+    def clear_local_context(self):
         self._local_vars.clear()
+        self._local_wd = None
+        self._local_usr = None
 
-    def get_context(self):
+    def get_user(self):
+        if self._local_usr is not None:
+            return self._local_usr
+        return self._global_usr
+
+    def get_wd(self):
+        if self._local_wd is not None:
+            return self._local_wd
+        return self._global_wd
+
+    def get_vars(self):
         var_names = set(list(self._global_vars.keys()) + list(self._local_vars.keys()))
         return {name: self._var_value(name) for name in var_names}
 
 
 class PlaybookGenerator:
-
     _ast = None
     _context = None
     _rt_result = None
@@ -87,15 +167,30 @@ class PlaybookGenerator:
         self._rt_register_count += 1
         return 'auto_generated_register_' + str(self._rt_register_count)
 
-    def _add_task(self, task, environment=True):
+    def _add_task(self, task, context=True):
         self._rt_result["tasks"].append(task)
-        if environment:
-            self._add_environment_to_task(self._last_task())
-
-    def _add_environment_to_task(self, task):
-        context = self._context.get_context()
         if context:
-            task["environment"] = context
+            self._add_context_to_task(self._last_task())
+
+    def _add_default_task(self, line):
+        task = {
+            'shell': {
+                'cmd': line
+            }
+        }
+        wd = self._context.get_wd()
+        if wd is not None:
+            task["shell"]["chdir"] = wd
+        self._add_task(task)
+
+    def _add_context_to_task(self, task):
+        env_vars = self._context.get_vars()
+        user = self._context.get_user()
+        if env_vars:
+            task["environment"] = env_vars
+        if user is not None:
+            task["become"] = True
+            task["become_user"] = user
 
     def _resolve_complex_value(self, value):
         if not value.startswith('"') or not value.endswith('"'):
@@ -110,19 +205,10 @@ class PlaybookGenerator:
         return '{{ ' + self._last_task()["register"] + ' }}'
 
     def _resolve_value(self, node):
-        assert isinstance(node, bash_ast.WordNode)
-        if node.type == bash_ast.WordNode.Type.CONST:
-            return node.value
-        if node.type == bash_ast.WordNode.Type.PARAMETERIZED:
-            try:
-                return self._context.resolve_parameterized_word(node)
-            except exception.AnsibleContextException as exc:
-                globalLog.debug(exc)
-                globalLog.debug("Failed to resolve parameterized word, resolving as complex word")
-                return self._resolve_complex_value(node.value)
-        if node.type == bash_ast.WordNode.Type.COMPLEX:
+        value = self._context.resolve_value(node)
+        if value is None:
             return self._resolve_complex_value(node.value)
-        raise exception.PlaybookGeneratorException("Unknown WordNode type: " + node.type.value)
+        return value
 
     def _handle_directive(self, directive):
         getattr(self, "_handle_" + type(directive).__name__.replace('Node', '').lower())(directive)
@@ -146,64 +232,88 @@ class PlaybookGenerator:
             "set_fact": {
                 directive.name + "_fact": value
             }
-        }, environment=False)
+        }, context=False)
         self._context.add_global_var(name=directive.name, value="{{ " + directive.name + "_fact }}")
 
-    def _add_default_task(self, line):
+    def _handle_arg(self, directive):
+        value = self._resolve_value(directive.children[0])
         self._add_task({
-            'shell': {
-                'cmd': line
+            "set_fact": {
+                directive.name + "_fact": "{{ " + directive.name + " | default(" + value + ") }}"
             }
-        })
+        }, context=False)
+        self._context.add_global_var(name=directive.name, value="{{ " + directive.name + "_fact }}")
+
+    def _handle_workdir(self, directive):
+        value = self._resolve_value(directive.children[0])
+        self._context.set_global_wd(value)
+
+    def _handle_user(self, directive):
+        value = self._resolve_value(directive.children[0])
+        self._context.set_global_usr(value)
 
     def _handle_run(self, directive):
-        self._context.clear_local_vars()
         if not directive.children:
             self._add_default_task(directive.line)
         else:
             _prev_type = ""
             for node in directive.children:
-                _prev_type = getattr(self, "_handle_run_" + type(node).__name__.replace('Node', '').lower())\
+                _prev_type = getattr(self, "_handle_run_" + type(node).__name__.replace('Node', '').lower()) \
                     (node, _prev_type)
+        self._context.clear_local_context()
 
     def _add_operator_condition_for_last_task(self, operator_type):
         if operator_type == "operatorand":
             self._last_task()["when"] = self._rt_result["tasks"][-2]["register"] + " is succeeded"
         elif operator_type == "operatoror":
             self._last_task()["when"] = self._rt_result["tasks"][-2]["register"] + " is not succeeded"
+        elif operator_type == "true":
+            pass
+        elif operator_type == "false":
+            self._last_task()["when"] = False
 
     def _handle_run_command(self, node, _prev_type):
-        match = module_match.ModuleMatcher.match(self._resolve_value, node)
+        prev_len = len(self._rt_result["tasks"])
+
+        match = module_match.ModuleMatcher.match(self._context, node)
         if match is None:
             self._add_default_task(node.line)
         else:
             self._add_task(match)
-        self._add_operator_condition_for_last_task(_prev_type)
-        return "command"
 
-    def _handle_run_assignment(self, node, _prev_type):
-        prev_len = len(self._rt_result["tasks"])
-        value = self._resolve_value(node.parts[0])
-        self._context.add_local_var(name=node.name, value=value)
         if len(self._rt_result["tasks"]) > prev_len:
             self._add_operator_condition_for_last_task(_prev_type)
             return "command"
-        return "assigmnent"
+        return "idle"
+
+    def _handle_run_assignment(self, node, _prev_type):
+        prev_len = len(self._rt_result["tasks"])
+
+        value = self._resolve_value(node.parts[0])
+        self._context.add_local_var(name=node.name, value=value)
+
+        if len(self._rt_result["tasks"]) > prev_len:
+            self._add_operator_condition_for_last_task(_prev_type)
+            return "command"
+        return "idle"
 
     def _handle_run_operatorand(self, node, _prev_type):
         if _prev_type == "command":
             self._last_task()["register"] = self._new_register()
-        return "operatorand"
+            return "operatorand"
+        elif _prev_type == "idle":
+            return "true"
+        raise exception.PlaybookGeneratorException("Unknown type of previous command " + _prev_type)
 
     def _handle_run_operatoror(self, node, _prev_type):
         if _prev_type == "command":
             self._last_task()["register"] = self._new_register()
-        return "operatoror"
+            return "operatoror"
+        elif _prev_type == "idle":
+            return "false"
+        raise exception.PlaybookGeneratorException("Unknown type of previous command " + _prev_type)
 
     def _handle_add(self, directive):
-        self._handle_default(directive)
-
-    def _handle_arg(self, directive):
         self._handle_default(directive)
 
     def _handle_cmd(self, directive):
@@ -236,13 +346,7 @@ class PlaybookGenerator:
     def _handle_stopsignal(self, directive):
         self._handle_default(directive)
 
-    def _handle_user(self, directive):
-        self._handle_default(directive)
-
     def _handle_volume(self, directive):
-        self._handle_default(directive)
-
-    def _handle_workdir(self, directive):
         self._handle_default(directive)
 
 

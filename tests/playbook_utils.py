@@ -4,8 +4,12 @@ import os
 import zipfile
 import shutil
 import dockerfile
+import time
+import yaml
+import json
 
 import dockerfile_ansible_convert.main as main
+from dockerfile_ansible_convert.generator import generate_from_dockerfile
 from log import globalLog
 
 
@@ -13,12 +17,30 @@ from utils import DATA_PATH, DOCKERFILES_ARCHIVE_PATH, DOCKERFILES_DIR_PATH, PLA
     UBUNTU_DOCKERFILES_DIR_PATH, UBUNTU_PLAYBOOKS_DIR_PATH, filenames_from_dir
 
 
+stats = {"OK": 0, "ERROR": []}
+
+
+def _create_playbook(src_path, dst_path):
+    try:
+        print('Converting dockerfile ' + src_path + ' to ' + dst_path)
+        dst_stream = open(dst_path, 'w')
+        playbook = generate_from_dockerfile(src_path)
+        yaml.dump(playbook, dst_stream)
+        time.sleep(0.05)
+    except Exception:
+        stats["ERROR"].append(src_path)
+        print("ERROR")
+    else:
+        stats["OK"] += 1
+        print("OK")
+
+
 def _extract_dockerfiles():
     if not os.path.exists(DOCKERFILES_DIR_PATH) or not os.listdir(DOCKERFILES_DIR_PATH):
-        globalLog.info('Extracting dockerfiles archive')
+        print('Extracting dockerfiles archive')
         with zipfile.ZipFile(DOCKERFILES_ARCHIVE_PATH, 'r') as zip_ref:
             zip_ref.extractall(DATA_PATH)
-        globalLog.info('Dockerfiles archive extracted')
+        print('Dockerfiles archive extracted')
 
 
 def _copy_ubuntu_dockerfiles():
@@ -29,9 +51,9 @@ def _copy_ubuntu_dockerfiles():
         for d in dockerfiles:
             src_path = os.path.join(DOCKERFILES_DIR_PATH, d)
             obj = dockerfile.parse_file(src_path.strip())
-            if obj[0].value[0].find("ubuntu") != -1:
+            if obj[0].value[0].find("ubuntu") != -1 or obj[0].value[0].find("centos") != -1:
                 dst_path = os.path.join(UBUNTU_DOCKERFILES_DIR_PATH, d)
-                globalLog.info('Copying Ubuntu dockerfile ' + dst_path)
+                print('Copying Ubuntu dockerfile ' + dst_path)
                 shutil.copyfile(src_path, dst_path)
 
 
@@ -40,10 +62,7 @@ def _setup_playbooks_set(dockerfiles_dir, playbooks_dir):
     for d in dockerfiles:
         src_path = os.path.join(dockerfiles_dir, d)
         dst_path = os.path.join(playbooks_dir, d[0:d.find('.Dockerfile')] + '.yml')
-        dst_stream = open(dst_path, 'w')
-        globalLog.info('Converting dockerfile ' + src_path)
-        globalLog.info('to ' + dst_path)
-        main.create_playbook_from_dockerfile(dockerfile_path=src_path, out_stream=dst_stream)
+        _create_playbook(src_path, dst_path)
 
 
 def setup_main_playbooks_set():
@@ -74,3 +93,4 @@ def setup_playbooks():
 if __name__ == '__main__':
     globalLog.setLevel(logging.WARNING)
     setup_playbooks()
+    print(json.dumps(stats, indent=4))

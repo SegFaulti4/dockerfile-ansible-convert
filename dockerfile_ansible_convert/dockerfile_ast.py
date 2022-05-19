@@ -101,14 +101,29 @@ class DirectiveTransformer:
 
     @staticmethod
     def _transform_arg(directive):
-        name = directive.value[0] \
-            if '=' not in directive.value[0] \
-            else directive.value[0].split('=')[0].strip()
-        value = directive.value[0].split('=')[-1].strip() \
-            if '=' in directive.value[0] \
-            else ""
+        value = [v.strip('"') for v in directive.value]
+        if len(directive.value) == 1:
+            value.append('""')
 
-        return [ArgNode(children=[], name=name, value=value)]
+        names = value[::2]
+        values = value[1::2]
+        children = [bash_parse.parse_bash_value(v) for v in values]
+
+        return [ArgNode(name=name, children=[child]) for name, child in zip(names, children)]
+
+    @staticmethod
+    def _transform_user(directive):
+        value = directive.value[0].strip('"')
+        name = value[:value.find(':')] if ':' in value else value
+        group = value[value.find(':'):] if ':' in value else '""'
+
+        return [UserNode(children=[bash_parse.parse_bash_value(name), bash_parse.parse_bash_value(group)])]
+
+    @staticmethod
+    def _transform_workdir(directive):
+        value = directive.value[0].strip('"')
+
+        return [WorkdirNode(children=[bash_parse.parse_bash_value(value)])]
 
     @staticmethod
     def _transform_cmd(directive):
@@ -133,14 +148,6 @@ class DirectiveTransformer:
     @staticmethod
     def _transform_volume(directive):
         return [VolumeNode(children=[], values=directive.value)]
-
-    @staticmethod
-    def _transform_user(directive):
-        return [UserNode(children=[], values=directive.value)]
-
-    @staticmethod
-    def _transform_workdir(directive):
-        return [WorkdirNode(children=[], values=directive.value)]
 
     @staticmethod
     def _transform_onbuild(directive):
@@ -176,18 +183,27 @@ class EnvNode(Node):
     name: str
 
 
+@dataclass(repr=False)
+class ArgNode(Node):
+    name: str
+
+
+@dataclass(repr=False)
+class UserNode(Node):
+    pass
+
+
+@dataclass(repr=False)
+class WorkdirNode(Node):
+    pass
+
+
 class AddNode(Node):
     pass
 
 
 class CopyNode(Node):
     pass
-
-
-@dataclass(repr=False)
-class ArgNode(Node):
-    name: str
-    value: str
 
 
 class CmdNode(DefaultNode):
@@ -211,14 +227,6 @@ class EntrypointNode(DefaultNode):
 
 
 class VolumeNode(DefaultNode):
-    pass
-
-
-class UserNode(DefaultNode):
-    pass
-
-
-class WorkdirNode(DefaultNode):
     pass
 
 
