@@ -14,6 +14,6 @@ with open('./data/bash_sandbox', 'r') as inF:
         for part in bashlex.parse(bash_line):
             print(part.dump())
 
-        parsed = parse_bash_commands(bash_line)
+        parsed = parse_bash_value(bash_line)
         print("\nbash_parse:")
         print(json.dumps(parsed, indent=4, sort_keys=True, default=lambda o: o.__dict__))

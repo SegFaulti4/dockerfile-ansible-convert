@@ -22,7 +22,7 @@ class AptGetMatcher:
         return {'no_upgrade': no_upgrade, 'reinstall': reinstall, 'fix_broken': fix_broken}
 
     def match_apt_get_update(self, command, task):
-        task['update_cache'] = 'no'
+        task['update_cache'] = 'yes'
 
     def match_apt_get_upgrade(self, command, task):
         task['upgrade'] = 'yes'
@@ -141,14 +141,16 @@ class AptGetMatcher:
             self.match_apt_get_check(comm, res)
         elif comm.fullname == 'apt-get autoclean':
             self.match_apt_get_autoclean(comm, res)
+        elif comm.fullname == 'apt-get clean':
+            self.match_apt_get_autoclean(comm, res)
         elif comm.fullname == 'apt-get autoremove':
             self.match_apt_get_autoclean(comm, res)
         else:
             raise MatchAnsibleModuleException('Unsupported command ' + comm.fullname)
 
         # check for remaining flags
-        if bool(comm.opts):
-            raise MatchAnsibleModuleException('Unsupported ' + comm.name + ' options:\n' +
-                                              dumps(comm.opts, sort_keys=True, indent=4))
+        # if bool(comm.opts):
+        #     raise MatchAnsibleModuleException('Unsupported ' + comm.name + ' options:\n' +
+        #                                       dumps(comm.opts, sort_keys=True, indent=4))
 
         return {comm.name: res}

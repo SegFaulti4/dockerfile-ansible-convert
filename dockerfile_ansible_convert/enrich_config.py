@@ -43,6 +43,13 @@ commands = {
                     "--no-download"
                 ]
             },
+            "quiet": {
+                "arg_required": False,
+                "many_args": False,
+                "aliases": [
+                    "-q", "--quiet"
+                ]
+            },
             "simulate": {
                 "arg_required": False,
                 "many_args": False,

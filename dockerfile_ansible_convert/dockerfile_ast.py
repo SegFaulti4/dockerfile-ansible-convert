@@ -62,19 +62,8 @@ class DirectiveTransformer:
             raise exception.DockerfileASTException("Unknown directive " + directive.cmd)
 
     @staticmethod
-    def _transform_from(directive):
-        value = directive.value[0]
-        name = value.split('/')[-1].strip() if '/' in value else value
-        name = name.split(':')[0].strip() if ':' in name else name
-
-        repo = value.split('/')[0].strip() if '/' in value else ''
-        tag = value.split(':')[-1].strip() if ':' in value else ''
-
-        return [FromNode(children=[], image_name=name, repo=repo, tag=tag)]
-
-    @staticmethod
     def _transform_run(directive):
-        line = directive.value[0]
+        line = " ".join(directive.value)
         commands = bash_parse.parse_bash_commands(line)
 
         return [RunNode(children=commands, line=line)]
@@ -85,7 +74,7 @@ class DirectiveTransformer:
         values = directive.value[1::2]
         children = [bash_parse.parse_bash_value(v) for v in values]
 
-        return [EnvNode(name=name, children=[child]) for name, child in zip(names, children)]
+        return [EnvNode(names=names, children=children)]
 
     @staticmethod
     def _transform_add(directive):
@@ -105,11 +94,10 @@ class DirectiveTransformer:
         if len(directive.value) == 1:
             value.append('""')
 
-        names = value[::2]
-        values = value[1::2]
-        children = [bash_parse.parse_bash_value(v) for v in values]
+        name = value[0]
+        child = bash_parse.parse_bash_value(value[1])
 
-        return [ArgNode(name=name, children=[child]) for name, child in zip(names, children)]
+        return [ArgNode(name=name, children=[child])]
 
     @staticmethod
     def _transform_user(directive):
@@ -124,6 +112,10 @@ class DirectiveTransformer:
         value = directive.value[0].strip('"')
 
         return [WorkdirNode(children=[bash_parse.parse_bash_value(value)])]
+
+    @staticmethod
+    def _transform_from(directive):
+        return [FromNode(children=[], values=directive.value)]
 
     @staticmethod
     def _transform_cmd(directive):
@@ -167,20 +159,13 @@ class DirectiveTransformer:
 
 
 @dataclass(repr=False)
-class FromNode(Node):
-    image_name: str
-    repo: str
-    tag: str
-
-
-@dataclass(repr=False)
 class RunNode(Node):
     line: str
 
 
 @dataclass(repr=False)
 class EnvNode(Node):
-    name: str
+    names: List
 
 
 @dataclass(repr=False)
@@ -203,6 +188,10 @@ class AddNode(Node):
 
 
 class CopyNode(Node):
+    pass
+
+
+class FromNode(DefaultNode):
     pass
 
 

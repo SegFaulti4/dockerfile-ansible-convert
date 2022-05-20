@@ -9,10 +9,6 @@ import tests.utils as utils
 from log import globalLog
 
 
-def _is_ignored(task_res):
-    return False
-
-
 def run_ansible_check(path):
     maker = argument_maker()
     maker.add_arg("-i", "./localhost_inventory")
@@ -22,23 +18,27 @@ def run_ansible_check(path):
     while r.has_next_play():
         while r.has_next_task():
             tmp = r.run_next_task()
-            if tmp:
+            """if tmp:
                 task_res = tmp[0]
-                if task_res.is_failed and not _is_ignored(task_res):
-                    globalLog.debug(task_res.stdout)
+                if task_res.is_failed:
+                    globalLog.error(task_res.stdout)
                     r.finish_ansible()
-                    return "FAILED"
+                    return "FAILED"""""
 
     r.finish_ansible()
+
+    if r.was_error():
+        print(r.get_error_msg())
+        return "FAILED"
     return "OK"
 
 
 def main():
-    globalLog.setLevel(logging.CRITICAL)
+    globalLog.setLevel(logging.WARNING)
     stats = {"OK": [], "FAILED": []}
 
     print('Preparing playbooks')
-    prepare_playbooks.setup_main_playbooks_set()
+    prepare_playbooks.setup_playbooks()
     print('Playbooks are prepared')
     playbook_paths = utils.filepaths_from_dir(utils.PLAYBOOKS_DIR_PATH)
     for path in playbook_paths:

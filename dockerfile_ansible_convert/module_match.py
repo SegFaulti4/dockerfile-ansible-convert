@@ -9,7 +9,6 @@ class ModuleMatcher:
         try:
             name = "_match_" + comm.name
             name = name.replace("-", "_")
-            print(name)
             return getattr(ModuleMatcher, name)(context, comm)
         except Exception as exc:
             globalLog.info(type(exc))
@@ -48,6 +47,7 @@ class ModuleMatcher:
         paths = [context.resolve_path_value(w) for w in comm.params["paths"]]
         if any(p is None for p in paths):
             return None
+        res["file"]["path"] = paths
         if "mode" in comm.opts:
             mode = context.resolve_value(comm.opts["mode"])
             if mode is None:

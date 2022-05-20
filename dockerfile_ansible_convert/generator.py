@@ -140,25 +140,20 @@ class PlaybookGenerator:
         self._ast = ast
 
     def generate(self):
-        try:
-            self._context = PlaybookContext()
-            self._rt_register_count = 0
-            self._rt_result = {
-                "hosts": "all",
-                "name": "Generated from dockerfile",
-                "tasks": list()
-            }
+        self._context = PlaybookContext()
+        self._rt_register_count = 0
+        self._rt_result = {
+            "hosts": "all",
+            "name": "Generated from dockerfile",
+            "tasks": list()
+        }
 
-            for directive in self._ast.directives:
-                self._rt_directive = directive
-                self._handle_directive(directive)
+        for directive in self._ast.directives:
+            self._rt_directive = directive
+            self._handle_directive(directive)
 
-            _context = None
-            return [self._rt_result]
-        except Exception as exc:
-            globalLog.error(type(exc))
-            globalLog.error(exc)
-            globalLog.error("Failed to generate playbook from dockerfile AST on directive: " + str(self._rt_directive))
+        _context = None
+        return [self._rt_result]
 
     def _last_task(self):
         return self._rt_result["tasks"][-1]
@@ -227,13 +222,18 @@ class PlaybookGenerator:
             })
 
     def _handle_env(self, directive):
-        value = self._resolve_value(directive.children[0])
-        self._add_task({
-            "set_fact": {
-                directive.name + "_fact": value
-            }
-        }, context=False)
-        self._context.add_global_var(name=directive.name, value="{{ " + directive.name + "_fact }}")
+        new_glob_vars = []
+        for name, value in zip(directive.names, directive.children):
+            value = self._resolve_value(value)
+            self._add_task({
+                "set_fact": {
+                    name + "_fact": value
+                }
+            }, context=False)
+            new_glob_vars.append((name, "{{ " + name + "_fact }}"))
+
+        for glob_var in new_glob_vars:
+            self._context.add_global_var(name=glob_var[0], value=glob_var[1])
 
     def _handle_arg(self, directive):
         value = self._resolve_value(directive.children[0])
@@ -314,7 +314,7 @@ class PlaybookGenerator:
         raise exception.PlaybookGeneratorException("Unknown type of previous command " + _prev_type)
 
     def _handle_add(self, directive):
-        self._handle_default(directive)
+        self._handle_copy(directive)
 
     def _handle_cmd(self, directive):
         self._handle_default(directive)
@@ -351,5 +351,9 @@ class PlaybookGenerator:
 
 
 def generate_from_dockerfile(path):
-    ast = dockerfile_ast.create_from_path(path)
-    return PlaybookGenerator(ast=ast).generate()
+    try:
+        ast = dockerfile_ast.create_from_path(path)
+        return PlaybookGenerator(ast=ast).generate()
+    except Exception as exc:
+        globalLog.error(type(exc))
+        globalLog.error(exc)

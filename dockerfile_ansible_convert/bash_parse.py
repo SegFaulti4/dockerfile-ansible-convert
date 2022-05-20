@@ -58,7 +58,7 @@ class BashlexTransformer:
         parts = []
         for part in nodes[0].parts:
             child = BashlexTransformer._transform_node(part, line)
-            if not child or not isinstance(child[0], WordNode) or child[0].type == WordNode.Type.COMPLEX:
+            if isinstance(child[0], UnsupportedNode) or not isinstance(child[0], WordNode) or child[0].type == WordNode.Type.COMPLEX:
                 return BashlexTransformer.bogus_value(line)
             parts.extend(child)
 
@@ -80,7 +80,9 @@ class BashlexTransformer:
     def transform_commands(commands, line):
         res = []
         for node in commands:
-            res.extend(BashlexTransformer._transform_node(node, line))
+            tmp = BashlexTransformer._transform_node(node, line)
+            if not isinstance(tmp[0], UnsupportedNode):
+                res.extend(tmp)
 
         return res
 
@@ -91,14 +93,14 @@ class BashlexTransformer:
             globalLog.info('Bashlex node kind "' + node.kind + '" is not supported')
         else:
             return attr(node, line)
-        return []
+        return [UnsupportedNode()]
 
     @staticmethod
     def _transform_list(node, line):
         res = []
         for part in node.parts:
             child = BashlexTransformer._transform_node(part, line)
-            if not child:
+            if isinstance(child[0], UnsupportedNode):
                 child = [CommandNode(parts=[], line=line[part.pos[0]:part.pos[1]])]
             res.extend(filter(lambda x: not isinstance(x, _EOCNode), child))
 
@@ -110,7 +112,7 @@ class BashlexTransformer:
         parts = []
         for part in node.parts:
             transformed = BashlexTransformer._transform_node(part, line)
-            if not transformed:
+            if isinstance(transformed[0], UnsupportedNode):
                 return [CommandNode(parts=[], line=comm_line)]
             parts.extend(transformed)
 
@@ -161,18 +163,31 @@ class BashlexTransformer:
         if len(node.parts):
             parts = []
             for part in node.parts:
+                parts.extend(BashlexTransformer._transform_node(part, line))
+            parts = [p for p in parts if not isinstance(p, TildeNode)]
+            if not parts:
+                return [WordNode(parts=[], type=WordNode.Type.CONST, value=node.word)]
+            if all(isinstance(p, ParameterNode) for p in parts):
+                for p in parts:
+                    p.pos = p.pos[0] - node.pos[0], p.pos[1] - node.pos[0]
+                return [WordNode(parts=parts, type=WordNode.Type.PARAMETERIZED, value=node.word)]
+            return [WordNode(parts=[], type=WordNode.Type.COMPLEX, value=node.word)]
+
+            """for part in node.parts:
                 res = BashlexTransformer._transform_node(part, line)
-                if not res:
-                    return [WordNode(parts=[], type=WordNode.Type.COMPLEX, value=node.word)]
                 for r in res:
                     if not isinstance(r, ParameterNode):
                         return [WordNode(parts=[], type=WordNode.Type.COMPLEX, value=node.word)]
                     r.pos = r.pos[0] - node.pos[0], r.pos[1] - node.pos[0]
                 parts.extend(res)
 
-            return [WordNode(parts=parts, type=WordNode.Type.PARAMETERIZED, value=node.word)]
+            return [WordNode(parts=parts, type=WordNode.Type.PARAMETERIZED, value=node.word)]"""
         else:
             return [WordNode(parts=[], type=WordNode.Type.CONST, value=node.word)]
+
+    @staticmethod
+    def _transform_tilde(node, line):
+        return [TildeNode(parts=[])]
 
 
 class BashEnricher(metaclass=_meta.MetaSingleton):
@@ -277,10 +292,10 @@ class BashEnricher(metaclass=_meta.MetaSingleton):
         map_opts: Dict
 
         _rt_result = None
-        _rt_comm_list = []
+        _rt_comm_list = None
         _rt_require = None
-        _rt_skip_opts = False
-        _rt_opts = []
+        _rt_skip_opts = None
+        _rt_opts = None
 
         @dataclass(repr=False)
         class Req:
@@ -306,6 +321,7 @@ class BashEnricher(metaclass=_meta.MetaSingleton):
                                               fullname=self.scenario_name)
                 self._rt_comm_list = comm.parts.copy()
                 self._rt_skip_opts = False
+                self._rt_opts = []
 
                 for require in self.requires:
                     self._rt_require = require
@@ -313,8 +329,8 @@ class BashEnricher(metaclass=_meta.MetaSingleton):
 
                 self._probe_opts()
 
-                if self._rt_comm_list:
-                    raise exception.EnrichCommandException('Excessive arguments provided')
+                # if self._rt_comm_list:
+                #     raise exception.EnrichCommandException('Excessive arguments provided')
                 return self._return()
 
             except AttributeError as exc:
@@ -353,6 +369,7 @@ class BashEnricher(metaclass=_meta.MetaSingleton):
             return self._rt_result
 
         def _probe_strict_constant(self):
+            self._probe_opts()
             if self._rt_comm_list:
                 node = self._rt_comm_list[0]
                 if isinstance(node, WordNode) and node.type == WordNode.Type.CONST \
@@ -463,6 +480,11 @@ class Node:
         return json.dumps(self, indent=4, sort_keys=True, cls=NodeEncoder)
 
 
+class UnsupportedNode(Node):
+    def __init__(self):
+        pass
+
+
 @dataclass(repr=False)
 class CommandNode(Node):
     line: str
@@ -477,6 +499,10 @@ class OperatorAndNode(Node):
 
 
 class OperatorOrNode(Node):
+    pass
+
+
+class TildeNode(Node):
     pass
 
 
