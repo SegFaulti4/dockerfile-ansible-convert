@@ -94,7 +94,7 @@ def mine_bash_line(line):
     stats['last_line_appearances'] = BLANK_BASHLEX_NODE_INDEX.copy()
 
 
-with open('./mined', 'r') as inF:
+with open('../../data/mined', 'r') as inF:
     CUR_BASH_LINE_IDX = 0
 
     for line in inF.readlines():
