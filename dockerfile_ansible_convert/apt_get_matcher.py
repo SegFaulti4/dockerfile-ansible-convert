@@ -76,8 +76,8 @@ class AptGetMatcher:
         if self._pop_bool_opt("force-yes", comm) or \
                 self._pop_bool_opt("allow-unauthenticated", comm) and \
                 self._pop_bool_opt("allow-downgrades", comm) and \
-                self._pop_bool_opt("--allow-remove-essential", comm) and \
-                self._pop_bool_opt("--allow-change-held-packages", comm):
+                self._pop_bool_opt("allow-remove-essential", comm) and \
+                self._pop_bool_opt("allow-change-held-packages", comm):
             res['force'] = 'yes'
         if self._pop_bool_opt("allow-unauthenticated", comm):
             res['allow_unauthenticated'] = 'yes'

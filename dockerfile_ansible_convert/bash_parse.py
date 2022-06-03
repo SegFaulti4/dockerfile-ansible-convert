@@ -172,16 +172,6 @@ class BashlexTransformer:
                     p.pos = p.pos[0] - node.pos[0], p.pos[1] - node.pos[0]
                 return [WordNode(parts=parts, type=WordNode.Type.PARAMETERIZED, value=node.word)]
             return [WordNode(parts=[], type=WordNode.Type.COMPLEX, value=node.word)]
-
-            """for part in node.parts:
-                res = BashlexTransformer._transform_node(part, line)
-                for r in res:
-                    if not isinstance(r, ParameterNode):
-                        return [WordNode(parts=[], type=WordNode.Type.COMPLEX, value=node.word)]
-                    r.pos = r.pos[0] - node.pos[0], r.pos[1] - node.pos[0]
-                parts.extend(res)
-
-            return [WordNode(parts=parts, type=WordNode.Type.PARAMETERIZED, value=node.word)]"""
         else:
             return [WordNode(parts=[], type=WordNode.Type.CONST, value=node.word)]
 
