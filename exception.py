@@ -14,6 +14,14 @@ class PlaybookContextException(PlaybookGeneratorException):
     pass
 
 
+class CommandMatchException(PlaybookGeneratorException):
+    pass
+
+
+class CommandParseException(CommandMatchException):
+    pass
+
+
 class BashlexTransformException(ConvertException):
     pass
 
