@@ -1,5 +1,6 @@
 from dataclasses import dataclass, field
-from typing import List, Tuple, Dict
+from typing import List, Tuple, Dict, Union
+from copy import deepcopy
 import re
 
 import dockerfile_ansible_convert.bash_parse as bash_parse
@@ -9,19 +10,25 @@ import exception
 from log import globalLog
 
 
-class TokenMatchResult(dict):
-    pass
-
-
 class PatternToken:
 
-    def match(self, node: bash_parse.WordNode):
+    def match_word_node(self, node: bash_parse.WordNode):
         raise NotImplementedError
+
+    def match_pattern_token(self, token):
+        raise NotImplementedError
+
+    def match(self, node):
+        if isinstance(node, bash_parse.WordNode):
+            return self.match_word_node(node)
+        elif isinstance(node, PatternToken):
+            return self.match_pattern_token(node)
+        return None
 
     @staticmethod
     def from_str(s: str):
         if re.fullmatch(r'\[[^\[<\]>]+\.\.\.]', s):
-            return AbstractionListToken(value=s[1:-4])
+            return AnyToken(value=s[1:-4])
         if re.fullmatch(r'[^\[<\]>]*<[^\[<\]>]+>', s):
             child = RequiredChildToken(value=re.search(r'<[^\[<\]>]+>', s)[1:-1])
             prefix = s[:s.find('<')]
@@ -33,28 +40,33 @@ class PatternToken:
         return ConstantToken(value=s)
 
 
+@dataclass
 class ChildToken:
-    pass
+    value: str
 
 
 @dataclass
 class OptionalChildToken(ChildToken):
-    value: str
+    pass
 
 
 @dataclass
 class RequiredChildToken(ChildToken):
-    value: str
+    pass
 
 
 @dataclass
 class ConstantToken(PatternToken):
     value: str
 
-    def match(self, node: bash_parse.WordNode):
+    def match_word_node(self, node: bash_parse.WordNode):
         if node.value == self.value:
-            return TokenMatchResult()
+            return dict()
         return None
+
+    def match_pattern_token(self, token: PatternToken):
+        # TODO
+        pass
 
 
 @dataclass
@@ -62,16 +74,32 @@ class AbstractedToken(PatternToken):
     prefix: str
     child: ChildToken
 
-    def match(self, node: bash_parse.WordNode):
+    def match_word_node(self, node: bash_parse.WordNode):
+        if node.value.startswith(self.prefix):
+            if node.value == self.prefix:
+                if isinstance(self.child, OptionalChildToken):
+                    return dict()
+                return None
+            cut_node = deepcopy(node)
+            cut_node = cut_bash_word(cut_node, len(self.prefix))
+            if cut_node is None:
+                return None
+            return {self.child.value: cut_node}
+        return None
+
+    def match_pattern_token(self, token: PatternToken):
         # TODO
         pass
 
 
 @dataclass
-class AbstractionListToken(PatternToken):
+class AnyToken(PatternToken):
     value: str
 
-    def match(self, node: bash_parse.WordNode):
+    def match_word_node(self, node: bash_parse.WordNode):
+        return {self.value: deepcopy(node)}
+
+    def match_pattern_token(self, token: PatternToken):
         # TODO
         pass
 
@@ -139,20 +167,53 @@ class ShellCommandParser:
         self.opts_map = opts_map
         self._rt = None
 
-    def parse(self, comm: List[bash_parse.WordNode]):
+    def parse(self, comm: List[Union[bash_parse.WordNode, PatternToken]]):
         self._rt = ShellCommandParser.RT(words=comm)
 
         for token in self.pattern.tokens:
-            if not self._probe_opts():
+            if not getattr(self, "_probe_" + type(token).__name__.lower(),
+                           ShellCommandParser._unknown_token_type)(token):
                 return self._return_none()
-            if self._rt.words:
-                match_res = token.match(self._rt.words[0])
-                if match_res is None:
-                    return self._return_none()
-                self._rt.params = {**self._rt.params, **match_res}
         if not self._probe_opts():
             return self._return_none()
         return self._return()
+
+    @staticmethod
+    def _unknown_token_type(token: PatternToken):
+        globalLog.debug("Unknown token type " + type(token).__name__)
+        return False
+
+    def _probe_constanttoken(self, token: ConstantToken):
+        if not self._probe_opts():
+            return False
+        if self._rt.words:
+            match_res = token.match(self._rt.words[0])
+            if match_res is None:
+                return False
+            return True
+        return True
+
+    def _probe_abstractedtoken(self, token: AbstractedToken):
+        if not self._probe_opts():
+            return False
+        if self._rt.words:
+            match_res = token.match(self._rt.words[0])
+            if match_res is None:
+                return False
+            self._rt.params = {**self._rt.params, **match_res}
+            return True
+        return True
+
+    def _probe_anytoken(self, token: AnyToken):
+        while self._rt.words:
+            if not self._probe_opts():
+                return False
+            if self._rt.words:
+                match_res = token.match(self._rt.words.pop(0))
+                if match_res is None:
+                    return False
+                self._rt.params = {**self._rt.params, **match_res}
+        return True
 
     def _probe_long(self):
         node = self._rt.words.pop(0)
@@ -282,6 +343,8 @@ class ExampleBasedMatcher:
             res = ExampleBasedMatcher.match_command_call_by_example(example, comm_call)
             if res is not None:
                 break
+
+        # TODO: opts postprocess
         return res
 
     @staticmethod
@@ -336,5 +399,3 @@ class CommandsConfigLoader(metaclass=_meta.MetaSingleton):
     def get_examples_by_pattern_name(self, comm_name):
         # TODO
         return []
-
-
