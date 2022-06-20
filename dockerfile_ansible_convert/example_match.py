@@ -10,7 +10,9 @@ import exception
 from log import globalLog
 
 
+@dataclass
 class PatternToken:
+    value: str
 
     def match_word_node(self, node: bash_parse.WordNode):
         raise NotImplementedError
@@ -32,11 +34,11 @@ class PatternToken:
         if re.fullmatch(r'[^\[<\]>]*<[^\[<\]>]+>', s):
             child = RequiredChildToken(value=re.search(r'<[^\[<\]>]+>', s)[1:-1])
             prefix = s[:s.find('<')]
-            return AbstractedToken(prefix=prefix, child=child)
+            return AbstractedToken(prefix=prefix, value=s, child=child)
         if re.fullmatch(r'[^\[<\]>]*\[[^\[<\]>]+]', s):
             child = OptionalChildToken(value=re.search(r'\[[^\[<\]>]+]', s)[1:-1])
             prefix = s[:s.find('[')]
-            return AbstractedToken(prefix=prefix, child=child)
+            return AbstractedToken(prefix=prefix, value=s, child=child)
         return ConstantToken(value=s)
 
 
@@ -57,7 +59,6 @@ class RequiredChildToken(ChildToken):
 
 @dataclass
 class ConstantToken(PatternToken):
-    value: str
 
     def _match_value(self, value: str):
         if value == self.value:
@@ -76,6 +77,7 @@ class ConstantToken(PatternToken):
 @dataclass
 class AbstractedToken(PatternToken):
     prefix: str
+    value: str
     child: ChildToken
 
     def match_word_node(self, node: bash_parse.WordNode):
@@ -84,28 +86,24 @@ class AbstractedToken(PatternToken):
                 if isinstance(self.child, OptionalChildToken):
                     return dict()
                 return None
-            cut_node = deepcopy(node)
-            cut_node = cut_bash_word(cut_node, len(self.prefix))
+            cut_node = cut_bash_word(node, len(self.prefix))
             if cut_node is None:
                 return None
             return {self.child.value: cut_node}
         return None
 
     def match_pattern_token(self, token: PatternToken):
-        if isinstance(token, ConstantToken):
-            if token.value.startswith(self.prefix):
-                if token.value == self.prefix:
-                    if isinstance(self.child, OptionalChildToken):
-                        return dict()
-                    return None
-                return {self.child.value: ConstantToken(value=token.value[len(self.prefix):])}
+        if isinstance(token, AnyToken):
             return None
-        elif isinstance(token, AbstractedToken):
-            if token.prefix.startswith(self.prefix):
-                cut_token = deepcopy(token)
-                cut_token.prefix = cut_token.prefix[len(self.prefix):]
-                return {self.child.value: cut_token}
-            return None
+        if token.value.startswith(self.prefix):
+            if token.value == self.prefix:
+                if isinstance(self.child, OptionalChildToken):
+                    return dict()
+                return None
+            cut_token = cut_pattern_token(token, len(self.prefix))
+            if cut_token is None:
+                return None
+            return {self.child.value: cut_pattern_token(token, len(self.prefix))}
         return None
 
 
@@ -155,7 +153,9 @@ class CommandPattern(CommandCallMixin):
         return CommandPattern(pattern_name=pattern_name, tokens=tokens, command_name=command_name)
 
 
-def cut_bash_word(node: bash_parse.WordNode, start_pos: int):
+def cut_bash_word(word: bash_parse.WordNode, start_pos: int):
+    node = deepcopy(word)
+
     node.value = node.value[start_pos:]
     for child in filter(lambda x: isinstance(x, bash_parse.ParameterNode), node.parts):
         if child.pos[0] < start_pos:
@@ -165,6 +165,27 @@ def cut_bash_word(node: bash_parse.WordNode, start_pos: int):
     return node
 
 
+def cut_pattern_token(token: PatternToken, start_pos: int):
+    word = deepcopy(token)
+
+    word.value = word.value[start_pos:]
+    if isinstance(word, AbstractedToken):
+        if len(word.prefix) < start_pos:
+            return None
+        word.prefix = word.prefix[start_pos:]
+    elif isinstance(word, AnyToken):
+        return None
+    return word
+
+
+def cut_general_word(word: Union[bash_parse.WordNode, PatternToken], start_pos: int):
+    if isinstance(word, bash_parse.WordNode):
+        return cut_bash_word(word, start_pos)
+    elif isinstance(word, PatternToken):
+        return cut_pattern_token(word, start_pos)
+    return None
+
+
 class ShellCommandParser:
     pattern: CommandPattern
     opts_map: Dict[str, CommandOpt]
@@ -172,7 +193,7 @@ class ShellCommandParser:
     @dataclass
     class RT:
         opts: List = field(default_factory=list)
-        params: Dict = field(default_factory=list)
+        params: Dict = field(default_factory=dict)
         skip_opts: bool = False
         words: List = field(default_factory=list)
 
@@ -183,16 +204,37 @@ class ShellCommandParser:
         self.opts_map = opts_map
         self._rt = None
 
-    def parse(self, comm: List[Union[bash_parse.WordNode, PatternToken]]):
+    def _parse(self, comm: List[Union[bash_parse.WordNode, PatternToken]]):
         self._rt = ShellCommandParser.RT(words=comm)
 
         for token in self.pattern.tokens:
             if not getattr(self, "_probe_" + type(token).__name__.lower(),
                            ShellCommandParser._unknown_token_type)(token):
-                return self._return_none()
+                self._rt = None
+                return
         if not self._probe_opts():
-            return self._return_none()
-        return self._return()
+            self._rt = None
+
+    def parse(self, comm: List[Union[bash_parse.WordNode, PatternToken]]):
+        self._parse(comm.copy())
+        res = None
+        if self._rt is not None:
+            if all(isinstance(word, bash_parse.WordNode) for word in comm):
+                opts = self._group_opt_args()
+
+                res = ShellCommandCall(command_name=self.pattern.command_name,
+                                       pattern_name=self.pattern.pattern_name,
+                                       params=self._rt.params,
+                                       opts=opts)
+            elif all(isinstance(token, PatternToken) for token in comm):
+                opts = self._group_opt_args()
+
+                res = ShellExampleCall(command_name=self.pattern.command_name,
+                                       pattern_name=self.pattern.pattern_name,
+                                       params=self._rt.params,
+                                       opts=opts)
+        self._rt = None
+        return res
 
     @staticmethod
     def _unknown_token_type(token: PatternToken):
@@ -203,7 +245,7 @@ class ShellCommandParser:
         if not self._probe_opts():
             return False
         if self._rt.words:
-            match_res = token.match(self._rt.words[0])
+            match_res = token.match(self._rt.words.pop(0))
             if match_res is None:
                 return False
             return True
@@ -213,7 +255,7 @@ class ShellCommandParser:
         if not self._probe_opts():
             return False
         if self._rt.words:
-            match_res = token.match(self._rt.words[0])
+            match_res = token.match(self._rt.words.pop(0))
             if match_res is None:
                 return False
             self._rt.params = {**self._rt.params, **match_res}
@@ -232,14 +274,17 @@ class ShellCommandParser:
         return True
 
     def _probe_long(self):
-        node = self._rt.words.pop(0)
-        eq_pos = node.value.find('=')
+        word = self._rt.words.pop(0)
+        eq_pos = word.value.find('=')
         if eq_pos != -1:
-            opt_name = node.value[:eq_pos]
-            arg = cut_bash_word(node, eq_pos + 1)
+            opt_name = word.value[:eq_pos]
+            arg = cut_general_word(word, eq_pos + 1)
+            if arg is None:
+                return False
         else:
-            opt_name = node.value
+            opt_name = word.value
             arg = None
+
         opt = self._opt_match(opt_name)
         if opt is None:
             return False
@@ -252,17 +297,17 @@ class ShellCommandParser:
         return True
 
     def _probe_short(self):
-        node = self._rt.words.pop(0)
+        word = self._rt.words.pop(0)
 
-        for i in range(1, len(node.value)):
-            opt_name = node.value[i]
+        for i in range(1, len(word.value)):
+            opt_name = word.value[i]
             opt = self._opt_match("-" + opt_name)
             if opt is None:
                 return False
 
             if opt.arg_required:
-                if node.value[i + 1:] != '':
-                    arg = cut_bash_word(node, i + 1)
+                if word.value[i + 1:] != '':
+                    arg = cut_general_word(word, i + 1)
                     if arg is None:
                         return False
                 else:
@@ -303,7 +348,7 @@ class ShellCommandParser:
             return None
         return self.opts_map[name_matches[0]]
 
-    def _return(self):
+    def _group_opt_args(self):
         opts = dict()
         for opt, arg in self._rt.opts:
             if opt.many_args:
@@ -312,17 +357,7 @@ class ShellCommandParser:
                 opts[opt.name].append(arg)
             else:
                 opts[opt.name] = arg
-
-        res = ShellCommandCall(command_name=self.pattern.command_name,
-                               pattern_name=self.pattern.pattern_name,
-                               params=self._rt.params,
-                               opts=opts)
-        self._rt = None
-        return res
-
-    def _return_none(self):
-        self._rt = None
-        return None
+        return opts
 
 
 class ExampleBasedMatcher:
@@ -375,8 +410,8 @@ class ExampleBasedMatcher:
 
 
 class CommandsConfigLoader(metaclass=_meta.MetaSingleton):
-    command_patterns_map: Dict[str, List[CommandPattern]]
-    command_opts_map: Dict[str, Dict[str, CommandOpt]]
+    command_patterns_map: Dict[str, List[CommandPattern]] = dict()
+    command_opts_map: Dict[str, Dict[str, CommandOpt]] = dict()
 
     def __init__(self):
         # TODO: use first word from pattern as a key for pattern mapping
