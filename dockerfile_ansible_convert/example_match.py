@@ -59,14 +59,18 @@ class RequiredChildToken(ChildToken):
 class ConstantToken(PatternToken):
     value: str
 
-    def match_word_node(self, node: bash_parse.WordNode):
-        if node.value == self.value:
+    def _match_value(self, value: str):
+        if value == self.value:
             return dict()
         return None
 
+    def match_word_node(self, node: bash_parse.WordNode):
+        return self._match_value(node.value)
+
     def match_pattern_token(self, token: PatternToken):
-        # TODO
-        pass
+        if isinstance(token, ConstantToken):
+            return self._match_value(token.value)
+        return None
 
 
 @dataclass
@@ -88,8 +92,21 @@ class AbstractedToken(PatternToken):
         return None
 
     def match_pattern_token(self, token: PatternToken):
-        # TODO
-        pass
+        if isinstance(token, ConstantToken):
+            if token.value.startswith(self.prefix):
+                if token.value == self.prefix:
+                    if isinstance(self.child, OptionalChildToken):
+                        return dict()
+                    return None
+                return {self.child.value: ConstantToken(value=token.value[len(self.prefix):])}
+            return None
+        elif isinstance(token, AbstractedToken):
+            if token.prefix.startswith(self.prefix):
+                cut_token = deepcopy(token)
+                cut_token.prefix = cut_token.prefix[len(self.prefix):]
+                return {self.child.value: cut_token}
+            return None
+        return None
 
 
 @dataclass
@@ -100,8 +117,7 @@ class AnyToken(PatternToken):
         return {self.value: deepcopy(node)}
 
     def match_pattern_token(self, token: PatternToken):
-        # TODO
-        pass
+        return {self.value: deepcopy(token)}
 
 
 @dataclass
