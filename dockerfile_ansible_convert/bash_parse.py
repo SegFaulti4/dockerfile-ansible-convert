@@ -125,11 +125,11 @@ class BashlexTransformer:
             return [parts[0]]
 
         res = CommandNode(parts=parts, line=comm_line)
-        enriched = BashEnricher().enrich_command(res)
-        if enriched is None:
-            res.parts.clear()
-        else:
-            res = enriched
+        #enriched = BashEnricher().enrich_command(res)
+        #if enriched is None:
+        #    res.parts.clear()
+        #else:
+        #    res = enriched
         return [res]
 
     @staticmethod
@@ -462,12 +462,12 @@ class NodeEncoder(json.JSONEncoder):
         return o.__dict__
 
 
-@dataclass(repr=False)
+@dataclass
 class Node:
     parts: List
 
-    def __repr__(self):
-        return json.dumps(self, indent=4, sort_keys=True, cls=NodeEncoder)
+    #def __repr__(self):
+    #    return json.dumps(self, indent=4, sort_keys=True, cls=NodeEncoder)
 
 
 class UnsupportedNode(Node):
@@ -517,10 +517,9 @@ class WordNode(Node):
     type: Type
     value: str
 
-    @property
-    def __dict__(self):
-        return {"type": self.type.value, "value": self.value, "parts": self.parts}
-
+    #@property
+    #def __dict__(self):
+    #    return {"type": self.type.value, "value": self.value, "parts": self.parts}
 
 class _EOCNode(Node):
     pass

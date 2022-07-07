@@ -32,11 +32,11 @@ class PatternToken:
         if re.fullmatch(r'\[[^\[<\]>]+\.\.\.]', s):
             return AnyToken(value=s[1:-4])
         if re.fullmatch(r'[^\[<\]>]*<[^\[<\]>]+>', s):
-            child = RequiredChildToken(value=re.search(r'<[^\[<\]>]+>', s)[1:-1])
+            child = RequiredChildToken(value=re.search(r'<[^\[<\]>]+>', s).string[1:-1])
             prefix = s[:s.find('<')]
             return AbstractedToken(prefix=prefix, value=s, child=child)
         if re.fullmatch(r'[^\[<\]>]*\[[^\[<\]>]+]', s):
-            child = OptionalChildToken(value=re.search(r'\[[^\[<\]>]+]', s)[1:-1])
+            child = OptionalChildToken(value=re.search(r'\[[^\[<\]>]+]', s).string[1:-1])
             prefix = s[:s.find('[')]
             return AbstractedToken(prefix=prefix, value=s, child=child)
         return ConstantToken(value=s)
@@ -189,8 +189,8 @@ def merge_list_dicts(d1: Dict[str, List], d2: Dict[str, List]):
         d1[k].extend(v)
 
 
-def visit_dict(d: Dict, target: Type, target_func: Callable):
-    queue = list((k, v, d) for k, v in d.items())
+def visit_dict(d_dict: Dict, target: Type, target_func: Callable):
+    queue = list((k, v, d_dict) for k, v in d_dict.items())
     visited = set()
 
     while queue:
@@ -202,7 +202,7 @@ def visit_dict(d: Dict, target: Type, target_func: Callable):
                 queue.extend((_k, _v, v) for _k, _v in v.items())
         visited.add((id(k), id(d)))
 
-    return d
+    return d_dict
 
 
 def match_token_list(tokens: List[PatternToken], words: List[Union[bash_parse.WordNode, PatternToken]], strict=False):
@@ -468,6 +468,7 @@ class CommandsConfigLoader(metaclass=_meta.MetaSingleton):
     command_patterns_map: Dict[str, List[CommandPattern]] = dict()
     command_opts_map: Dict[str, Dict[str, CommandOpt]] = dict()
     command_example_map: Dict[str, Dict[str, List[Tuple[ShellExampleCall, Dict]]]] = dict()
+    command_opts_postprocess_map: Dict[str, List[Tuple[ShellExampleCall, Dict]]] = dict()
 
     def __init__(self):
         for command_name in commands_config.match_config:
@@ -475,6 +476,7 @@ class CommandsConfigLoader(metaclass=_meta.MetaSingleton):
             self.command_patterns_map[command_name] = list()
             self.command_opts_map[command_name] = dict()
             self.command_example_map[command_name] = dict()
+            self.command_opts_postprocess_map[command_name] = list()
 
             for opt_name in command_config["opts"]:
                 opt_config = command_config["opts"][opt_name]
@@ -511,7 +513,20 @@ class CommandsConfigLoader(metaclass=_meta.MetaSingleton):
                 else:
                     self.command_example_map[command_name][parsed.pattern_name].append((parsed, module_call_pattern))
 
-        # TODO: opts_postprocess_map
+            for opts_str in command_config["opts_postprocess_map"]:
+                pattern = CommandPattern.from_string("[TRASH...]", command_name=command_name, pattern_name='opts postprocess')
+                opts_map = self.command_opts_map[command_name]
+                example = CommandPattern.from_string(opts_str, command_name=command_name, pattern_name='')
+                module_call_pattern = visit_dict(deepcopy(command_config["opts_postprocess_map"][opts_str]),
+                                                 str, PatternToken.from_str)
+                parsed = ShellCommandParser(pattern=pattern, opts_map=opts_map).parse(example.tokens)
+
+                if parsed is None:
+                    globalLog.warning("Failed to parse postprocessing opts: " + opts_str)
+                else:
+                    self.command_opts_postprocess_map[command_name].append(
+                        (parsed, module_call_pattern)
+                    )
 
     def get_patterns_by_command_name(self, comm_name):
         return self.command_patterns_map[comm_name]
@@ -521,3 +536,6 @@ class CommandsConfigLoader(metaclass=_meta.MetaSingleton):
 
     def get_examples_by_pattern_name(self, command_name, pattern_name):
         return self.command_example_map[command_name][pattern_name]
+
+    def get_opts_postprocess_by_command_name(self, command_name):
+        return  self.command_opts_postprocess_map[command_name]
