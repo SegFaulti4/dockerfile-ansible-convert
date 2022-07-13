@@ -414,18 +414,40 @@ class ExampleBasedMatcher:
                and comm and comm[0].type == bash_parse.WordNode.Type.CONST
 
     @staticmethod
-    def match_command_call_by_example(example: ShellExampleCall, comm_call: ShellCommandCall):
+    def _match_command_field_by_example_field(example_field: Dict[str, List[PatternToken]],
+                                              command_field: Dict[str, List[PatternToken]],
+                                              strict: bool):
         res = {}
-
-        for param, val in example.params.items():
-            if param not in comm_call.params:
+        for key, val in example_field.items():
+            if key not in command_field:
                 return None
 
-            comm_val = comm_call.params[param]
-            match_res = match_token_list(val, comm_val, strict=True)
+            comm_val = command_field[key]
+            match_res = match_token_list(val, comm_val, strict=strict)
             if match_res is None:
                 return None
             merge_list_dicts(res, match_res)
+        return res
+
+    @staticmethod
+    def match_command_call_by_example(example: ShellExampleCall, comm_call: ShellCommandCall):
+        res = {}
+        match_res = ExampleBasedMatcher._match_command_field_by_example_field(example.params, comm_call.params, True)
+        if match_res is None:
+            return None
+        merge_list_dicts(res, match_res)
+
+        match_res = ExampleBasedMatcher._match_command_field_by_example_field(example.opts, comm_call.opts, False)
+        if match_res is None:
+            return None
+        merge_list_dicts(res, match_res)
+
+        return res
+
+    @staticmethod
+    def match_command_call_opts_by_example(example: ShellExampleCall, comm_call: ShellCommandCall):
+        res = {}
+        match_res = ExampleBasedMatcher._match_command_field_by_example_field(example.opts, comm_call.opts, False)
 
         for opt, val in example.opts.items():
             if opt not in comm_call.opts:
@@ -437,7 +459,20 @@ class ExampleBasedMatcher:
                 return None
             merge_list_dicts(res, match_res)
 
-        return res
+    @staticmethod
+    def postprocess_command_call_opts(comm_call: ShellCommandCall):
+        conf_loader = CommandsConfigLoader()
+        opts_postprocess = conf_loader.get_opts_postprocess_by_command_name(comm_call.command_name)
+        opts_postprocess.sort(key=lambda x: len(x[0].opts), reverse=True)
+
+        res = {}
+        for opts_call, module_call_pattern in opts_postprocess:
+            match_res = ExampleBasedMatcher._match_command_field_by_example_field(opts_call.opts,
+                                                                                  comm_call.opts, False)
+            if match_res is not
+
+
+        pass
 
     # TODO
     @staticmethod
@@ -446,8 +481,10 @@ class ExampleBasedMatcher:
         res = None
 
         for example, module_call_pattern in examples:
-            res = ExampleBasedMatcher.match_command_call_by_example(example, comm_call)
+            matching_call = deepcopy(comm_call)
+            res = ExampleBasedMatcher.match_command_call_by_example(example, matching_call)
             if res is not None:
+                ExampleBasedMatcher.postprocess_command_call_opts(matching_call)
                 # TODO
                 break
 
