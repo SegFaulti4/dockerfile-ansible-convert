@@ -58,7 +58,8 @@ class BashlexTransformer:
         parts = []
         for part in nodes[0].parts:
             child = BashlexTransformer._transform_node(part, line)
-            if isinstance(child[0], UnsupportedNode) or not isinstance(child[0], WordNode) or child[0].type == WordNode.Type.COMPLEX:
+            if isinstance(child[0], UnsupportedNode) or not isinstance(child[0], WordNode) or child[
+                0].type == WordNode.Type.COMPLEX:
                 return BashlexTransformer.bogus_value(line)
             parts.extend(child)
 
@@ -125,10 +126,10 @@ class BashlexTransformer:
             return [parts[0]]
 
         res = CommandNode(parts=parts, line=comm_line)
-        #enriched = BashEnricher().enrich_command(res)
-        #if enriched is None:
+        # enriched = BashEnricher().enrich_command(res)
+        # if enriched is None:
         #    res.parts.clear()
-        #else:
+        # else:
         #    res = enriched
         return [res]
 
@@ -457,17 +458,9 @@ class BashEnricher(metaclass=_meta.MetaSingleton):
             return self.map_opts[name_matches[0]]
 
 
-class NodeEncoder(json.JSONEncoder):
-    def default(self, o):
-        return o.__dict__
-
-
 @dataclass
 class Node:
     parts: List
-
-    #def __repr__(self):
-    #    return json.dumps(self, indent=4, sort_keys=True, cls=NodeEncoder)
 
 
 class UnsupportedNode(Node):
@@ -475,7 +468,7 @@ class UnsupportedNode(Node):
         pass
 
 
-@dataclass(repr=False)
+@dataclass
 class CommandNode(Node):
     line: str
     name: str = None
@@ -496,18 +489,18 @@ class TildeNode(Node):
     pass
 
 
-@dataclass(repr=False)
+@dataclass
 class AssignmentNode(Node):
     name: str
 
 
-@dataclass(repr=False)
+@dataclass
 class ParameterNode(Node):
     name: str
     pos: Tuple
 
 
-@dataclass(repr=False)
+@dataclass
 class WordNode(Node):
     class Type(Enum):
         CONST = "const"
@@ -517,9 +510,10 @@ class WordNode(Node):
     type: Type
     value: str
 
-    #@property
-    #def __dict__(self):
+    # @property
+    # def __dict__(self):
     #    return {"type": self.type.value, "value": self.value, "parts": self.parts}
+
 
 class _EOCNode(Node):
     pass

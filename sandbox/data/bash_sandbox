@@ -1,1 +1,1 @@
-apt-get install --only-upgrade python3
+apt-get install -y --no-install-recommends $fetchDeps

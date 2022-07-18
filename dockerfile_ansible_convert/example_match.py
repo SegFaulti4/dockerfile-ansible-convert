@@ -14,7 +14,7 @@ from log import globalLog
 class PatternToken:
     value: str
 
-    def resolve(self, context: Dict[str, bash_parse.WordNode]):
+    def resolve(self, context: Dict[str, List[bash_parse.WordNode]]):
         raise NotImplementedError
 
     def match_word_node(self, node: bash_parse.WordNode):
@@ -63,8 +63,8 @@ class RequiredChildToken(ChildToken):
 @dataclass
 class ConstantToken(PatternToken):
 
-    def resolve(self, context: Dict[str, bash_parse.WordNode]):
-        return bash_parse.WordNode(type=bash_parse.WordNode.Type.CONST, value=self.value)
+    def resolve(self, context: Dict[str, List[bash_parse.WordNode]]):
+        return bash_parse.WordNode(type=bash_parse.WordNode.Type.CONST, value=self.value, parts=list())
 
     def _match_value(self, value: str):
         if value == self.value:
@@ -85,8 +85,10 @@ class AbstractedToken(PatternToken):
     prefix: str
     child: ChildToken
 
-    def resolve(self, context: Dict[str, bash_parse.WordNode]):
-        return bash_parse.WordNode(type=bash_parse.WordNode.Type.CONST, value=self.value, parts=[])
+    def resolve(self, context: Dict[str, List[bash_parse.WordNode]]):
+        if self.value not in context or not context[self.value]:
+            return None
+        return concat_bash_word(prefix=self.prefix, word=context[self.value][0])
 
     def match_word_node(self, node: bash_parse.WordNode):
         if node.value.startswith(self.prefix):
@@ -118,8 +120,10 @@ class AbstractedToken(PatternToken):
 @dataclass
 class AnyToken(PatternToken):
 
-    def resolve(self, context: Dict[str, bash_parse.WordNode]):
-        return bash_parse.WordNode(type=bash_parse.WordNode.Type.CONST, value=self.value, parts=[])
+    def resolve(self, context: Dict[str, List[bash_parse.WordNode]]):
+        if self.value not in context:
+            return None
+        return context[self.value]
 
     def match_word_node(self, node: bash_parse.WordNode):
         return {self.value: [deepcopy(node)]}
@@ -162,7 +166,12 @@ class CommandPattern(CommandCallMixin):
         tokens = [PatternToken.from_str(p) for p in s.split()]
         return CommandPattern(pattern_name=pattern_name, tokens=tokens, command_name=command_name)
 
+
 def concat_bash_word(prefix: str, word: bash_parse.WordNode):
+    word.value = prefix + word.value
+    for child in filter(lambda x: isinstance(x, bash_parse.ParameterNode), word.parts):
+        child.pos = child.pos[0] + len(prefix), child.pos[1] + len(prefix)
+    return word
 
 
 def cut_bash_word(word: bash_parse.WordNode, start_pos: int):
@@ -199,6 +208,25 @@ def merge_list_dicts(d1: Dict[str, List], d2: Dict[str, List]):
         if k not in d1:
             d1[k] = []
         d1[k].extend(v)
+
+
+def merge_dicts(into_dict: Dict, from_dict: Dict):
+    for k, v in from_dict.items():
+        if k not in into_dict:
+            into_dict[k] = deepcopy(v)
+        else:
+            if isinstance(v, Dict):
+                if not isinstance(into_dict[k], Dict):
+                    return None
+                merge_dicts(into_dict[k], v)
+            elif isinstance(v, List):
+                if isinstance(into_dict[k], List):
+                    into_dict[k].extend(deepcopy(v))
+                else:
+                    into_dict[k] = [into_dict[k]] + deepcopy(v)
+            else:
+                into_dict[k] = [into_dict[k]] + [deepcopy(v)]
+    return into_dict
 
 
 def visit_dict(d_dict: Dict, target: Type, target_func: Callable):
@@ -426,15 +454,27 @@ class ExampleBasedMatcher:
                and comm and comm[0].type == bash_parse.WordNode.Type.CONST
 
     @staticmethod
-    def _match_command_field_by_example_field(example_field: Dict[str, List[PatternToken]],
-                                              command_field: Dict[str, List[bash_parse.WordNode]],
+    def _match_command_field_by_example_field(example_field: Dict[str, Union[None, PatternToken, List[PatternToken]]],
+                                              command_field: Dict[str, Union[None,
+                                                                             bash_parse.WordNode,
+                                                                             List[bash_parse.WordNode]]],
                                               strict: bool):
         res = {}
         for key, val in example_field.items():
             if key not in command_field:
                 return None
 
+            def listify_value(val):
+                if val is None:
+                    return []
+                if not isinstance(val, List):
+                    return [val]
+                return val
+
+            command_field[key] = listify_value(command_field[key])
+            val = listify_value(val)
             comm_val = command_field[key]
+
             match_res = match_token_list(val, comm_val, strict=strict)
             if match_res is None:
                 return None
@@ -457,14 +497,16 @@ class ExampleBasedMatcher:
         return res
 
     @staticmethod
-    def _resolve_module_call_pattern(module_call_pattern: Dict, context: Dict[str, bash_parse.WordNode]):
+    def _resolve_module_call_pattern(module_call_pattern: Dict, context: Dict[str, List[bash_parse.WordNode]]):
 
-        @dataclass
         class Resolver:
-            context: Dict
+            def __init__(self, context: Dict):
+                self.context = context
 
             def __call__(self, token: PatternToken):
-                pass
+                return token.resolve(self.context)
+
+        return visit_dict(module_call_pattern, PatternToken, Resolver(context))
 
     @staticmethod
     def postprocess_command_call_opts(comm_call: ShellCommandCall):
@@ -478,37 +520,42 @@ class ExampleBasedMatcher:
             match_res = ExampleBasedMatcher._match_command_field_by_example_field(opts_call.opts,
                                                                                   matching_call.opts, False)
             if match_res is not None:
-                merge_list_dicts(res, match_res)
+                module_call = ExampleBasedMatcher._resolve_module_call_pattern(module_call_pattern, match_res)
+                merge_dicts(res, module_call)
                 comm_call = matching_call
 
-        return res
+        return comm_call, res
 
     @staticmethod
     def _empty_command_call_field(command_field: Dict[str, List[bash_parse.WordNode]]):
-        return sum(len(v) for v in command_field.items()) == 0
+        res = 0
+        for v in command_field.values():
+            if isinstance(v, list):
+                res += len(v)
+            else:
+                res += 1
+
+        return res == 0
 
     @staticmethod
     def _empty_command_call(comm_call: ShellCommandCall):
         return ExampleBasedMatcher._empty_command_call_field(comm_call.params) and \
                ExampleBasedMatcher._empty_command_call_field(comm_call.opts)
 
-    # TODO
     @staticmethod
     def match_command_call(comm_call: ShellCommandCall):
         examples = CommandsConfigLoader().get_examples_by_pattern_name(comm_call.command_name, comm_call.pattern_name)
-        res = None
 
         for example, module_call_pattern in examples:
             matching_call = deepcopy(comm_call)
-            res = ExampleBasedMatcher.match_command_call_by_example(example, matching_call)
-            if res is not None:
-                match_res = ExampleBasedMatcher.postprocess_command_call_opts(matching_call)
+            match_res = ExampleBasedMatcher.match_command_call_by_example(example, matching_call)
+            if match_res is not None:
+                matching_call, opts_module_call = ExampleBasedMatcher.postprocess_command_call_opts(matching_call)
                 if ExampleBasedMatcher._empty_command_call(matching_call):
-                    pass
-                # TODO
-                break
-
-        return res
+                    main_module_call = ExampleBasedMatcher._resolve_module_call_pattern(module_call_pattern, match_res)
+                    main_module_call = merge_dicts(main_module_call, opts_module_call)
+                    return main_module_call
+        return None
 
     @staticmethod
     def match_command(comm: List[bash_parse.WordNode]):
@@ -586,13 +633,13 @@ class CommandsConfigLoader(metaclass=_meta.MetaSingleton):
                     )
 
     def get_patterns_by_command_name(self, comm_name):
-        return self.command_patterns_map[comm_name]
+        return deepcopy(self.command_patterns_map[comm_name])
 
     def get_opts_map_by_command_name(self, comm_name):
-        return self.command_opts_map[comm_name]
+        return deepcopy(self.command_opts_map[comm_name])
 
     def get_examples_by_pattern_name(self, command_name, pattern_name):
-        return self.command_example_map[command_name][pattern_name]
+        return deepcopy(self.command_example_map[command_name][pattern_name])
 
     def get_opts_postprocess_by_command_name(self, command_name):
-        return  self.command_opts_postprocess_map[command_name]
+        return deepcopy(self.command_opts_postprocess_map[command_name])
