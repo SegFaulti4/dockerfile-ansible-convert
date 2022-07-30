@@ -58,8 +58,8 @@ class BashlexTransformer:
         parts = []
         for part in nodes[0].parts:
             child = BashlexTransformer._transform_node(part, line)
-            if isinstance(child[0], UnsupportedNode) or not isinstance(child[0], WordNode) or child[
-                0].type == WordNode.Type.COMPLEX:
+            if isinstance(child[0], UnsupportedNode) or not isinstance(child[0], WordNode) or \
+                    child[0].type == WordNode.Type.COMPLEX:
                 return BashlexTransformer.bogus_value(line)
             parts.extend(child)
 
