@@ -1,6 +1,6 @@
 import sys
 import logging
-import bashlex_stat.stat_node
+import stats.bashlex.stat_node as stat_node
 import bashlex
 
 from bashlex.errors import ParsingError
@@ -22,7 +22,7 @@ stats = {'values': {kind: dict() for kind in BASHLEX_NODE_KINDS},
          'last_line_appearances': BLANK_BASHLEX_NODE_INDEX.copy()}
 examples = {}
 
-STAT_NODE = {kind: getattr(bashlex_stat.stat_node, 'stat_' + kind) for kind in BASHLEX_NODE_KINDS}
+STAT_NODE = {kind: getattr(stat_node, 'stat_' + kind) for kind in BASHLEX_NODE_KINDS}
 
 
 def _stat_bashlex_node(node):
