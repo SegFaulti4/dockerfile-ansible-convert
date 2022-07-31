@@ -6,6 +6,10 @@ class ShellParserException(ConvertException):
     pass
 
 
+class BashlexShellParserException(ShellParserException):
+    pass
+
+
 class DockerfileGeneratorException(ConvertException):
     pass
 
