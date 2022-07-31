@@ -10,4 +10,8 @@ class DockerfileGeneratorException(ConvertException):
     pass
 
 
+class TPDockerfileGeneratorException(DockerfileGeneratorException):
+    pass
+
+
 

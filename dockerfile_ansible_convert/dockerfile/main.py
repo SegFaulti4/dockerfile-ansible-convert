@@ -1,6 +1,6 @@
 from typing import List, Tuple, Type, Dict
 from dataclasses import dataclass
-from dockerfile_ansible_convert.draft_shell import ShellExpression, ShellScript, ShellParser
+from dockerfile_ansible_convert.shell.main import ShellExpression, ShellScript, ShellParser
 
 
 class DockerfileDirective:
@@ -25,8 +25,8 @@ class EnvDirective(DockerfileDirective):
 
 @dataclass
 class ArgDirective(DockerfileDirective):
-    names: List[str]
-    values: List[ShellExpression]
+    name: str
+    value: ShellExpression
 
 
 @dataclass
@@ -157,9 +157,9 @@ class DockerfileContentGenerator:
         expressions = [self.shell_parser.parse_as_expression(val) for val in values]
         return EnvDirective(names=names, values=expressions)
 
-    def _generate_arg(self, names: List[str], values: List[str]) -> ArgDirective:
-        expressions = [self.shell_parser.parse_as_expression(val) for val in values]
-        return ArgDirective(names=names, values=expressions)
+    def _generate_arg(self, name: str, value: str) -> ArgDirective:
+        expression = self.shell_parser.parse_as_expression(value)
+        return ArgDirective(name=name, value=expression)
 
     def _generate_user(self, name: str, group: str) -> UserDirective:
         name_expr = self.shell_parser.parse_as_expression(name)
