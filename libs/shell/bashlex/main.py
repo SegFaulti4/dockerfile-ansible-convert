@@ -1,7 +1,7 @@
 import bashlex
 import bashlex.ast
 
-from dockerfile_ansible_convert.shell.main import *
+from lib.shell.main import *
 from log import globalLog
 
 from typing import List, Union

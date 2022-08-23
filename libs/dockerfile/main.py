@@ -1,6 +1,6 @@
 from typing import List, Tuple, Type, Dict
 from dataclasses import dataclass
-from dockerfile_ansible_convert.shell.main import ShellExpression, ShellScript, ShellParser
+from lib.shell.main import ShellExpression, ShellScript, ShellParser
 
 
 class DockerfileDirective:

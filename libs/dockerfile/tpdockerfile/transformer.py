@@ -1,6 +1,6 @@
 import dockerfile
 
-from dockerfile_ansible_convert.dockerfile.main import *
+from lib.dockerfile.main import *
 from draft_exception import TPDockerfileGeneratorException
 
 from typing import Tuple, Type, Dict
