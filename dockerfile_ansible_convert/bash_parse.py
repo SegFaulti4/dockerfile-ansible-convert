@@ -1,12 +1,11 @@
 from bashlex.errors import ParsingError
 
-import json
 from dataclasses import dataclass, field
 from enum import Enum
 from typing import List, Tuple, Dict
 import bashlex
 
-import dockerfile_ansible_convert._meta as _meta
+import libs.utils.meta as _meta
 import dockerfile_ansible_convert.enrich_config
 import exception
 from log import globalLog
@@ -58,7 +57,8 @@ class BashlexTransformer:
         parts = []
         for part in nodes[0].parts:
             child = BashlexTransformer._transform_node(part, line)
-            if isinstance(child[0], UnsupportedNode) or not isinstance(child[0], WordNode) or child[0].type == WordNode.Type.COMPLEX:
+            if isinstance(child[0], UnsupportedNode) or not isinstance(child[0], WordNode) or \
+                    child[0].type == WordNode.Type.COMPLEX:
                 return BashlexTransformer.bogus_value(line)
             parts.extend(child)
 
@@ -125,11 +125,11 @@ class BashlexTransformer:
             return [parts[0]]
 
         res = CommandNode(parts=parts, line=comm_line)
-        enriched = BashEnricher().enrich_command(res)
-        if enriched is None:
-            res.parts.clear()
-        else:
-            res = enriched
+        # enriched = BashEnricher().enrich_command(res)
+        # if enriched is None:
+        #    res.parts.clear()
+        # else:
+        #    res = enriched
         return [res]
 
     @staticmethod
@@ -172,16 +172,6 @@ class BashlexTransformer:
                     p.pos = p.pos[0] - node.pos[0], p.pos[1] - node.pos[0]
                 return [WordNode(parts=parts, type=WordNode.Type.PARAMETERIZED, value=node.word)]
             return [WordNode(parts=[], type=WordNode.Type.COMPLEX, value=node.word)]
-
-            """for part in node.parts:
-                res = BashlexTransformer._transform_node(part, line)
-                for r in res:
-                    if not isinstance(r, ParameterNode):
-                        return [WordNode(parts=[], type=WordNode.Type.COMPLEX, value=node.word)]
-                    r.pos = r.pos[0] - node.pos[0], r.pos[1] - node.pos[0]
-                parts.extend(res)
-
-            return [WordNode(parts=parts, type=WordNode.Type.PARAMETERIZED, value=node.word)]"""
         else:
             return [WordNode(parts=[], type=WordNode.Type.CONST, value=node.word)]
 
@@ -467,17 +457,9 @@ class BashEnricher(metaclass=_meta.MetaSingleton):
             return self.map_opts[name_matches[0]]
 
 
-class NodeEncoder(json.JSONEncoder):
-    def default(self, o):
-        return o.__dict__
-
-
-@dataclass(repr=False)
+@dataclass
 class Node:
     parts: List
-
-    def __repr__(self):
-        return json.dumps(self, indent=4, sort_keys=True, cls=NodeEncoder)
 
 
 class UnsupportedNode(Node):
@@ -485,7 +467,7 @@ class UnsupportedNode(Node):
         pass
 
 
-@dataclass(repr=False)
+@dataclass
 class CommandNode(Node):
     line: str
     name: str = None
@@ -506,18 +488,18 @@ class TildeNode(Node):
     pass
 
 
-@dataclass(repr=False)
+@dataclass
 class AssignmentNode(Node):
     name: str
 
 
-@dataclass(repr=False)
+@dataclass
 class ParameterNode(Node):
     name: str
     pos: Tuple
 
 
-@dataclass(repr=False)
+@dataclass
 class WordNode(Node):
     class Type(Enum):
         CONST = "const"
@@ -527,9 +509,9 @@ class WordNode(Node):
     type: Type
     value: str
 
-    @property
-    def __dict__(self):
-        return {"type": self.type.value, "value": self.value, "parts": self.parts}
+    # @property
+    # def __dict__(self):
+    #    return {"type": self.type.value, "value": self.value, "parts": self.parts}
 
 
 class _EOCNode(Node):

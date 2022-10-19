@@ -1,5 +1,5 @@
 dockerfile==3.2.0
-
+openstacksdk==0.40.0
 bashlex~=0.16
 PyYAML~=6.0
-ansible==5.6.0
+ansible==2.9.4

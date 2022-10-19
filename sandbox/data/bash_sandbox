@@ -1,1 +1,1 @@
-$(find /root/.meteor/ -path '*bin/node' | grep '/root/.meteor/packages/meteor-tool/' | sort | head -n 1)
+fetchDeps=exe apt-get install $fetchDeps
