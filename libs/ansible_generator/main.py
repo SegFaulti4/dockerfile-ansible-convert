@@ -74,12 +74,14 @@ class RoleGenerator:
         for directive in self._df_content.directives:
             handle_map[type(directive)](directive)
 
-        # TODO
         return self._return()
 
     ###################
     # GENERAL METHODS #
     ###################
+
+    def _return(self):
+        raise NotImplementedError
 
     def _add_task(self, task: Dict,
                   set_user: bool,
@@ -126,6 +128,57 @@ class RoleGenerator:
             self._runtime.local.prev_part_value = part_value
 
         self._clear_local_context()
+
+    def _handle_env(self, directive) -> None:
+        raise NotImplementedError
+
+    def _handle_arg(self, directive) -> None:
+        raise NotImplementedError
+
+    def _handle_user(self, directive) -> None:
+        raise NotImplementedError
+
+    def _handle_workdir(self, directive) -> None:
+        raise NotImplementedError
+
+    def _handle_add(self, directive) -> None:
+        raise NotImplementedError
+
+    def _handle_copy(self, directive) -> None:
+        raise NotImplementedError
+
+    def _handle_from(self, directive) -> None:
+        raise NotImplementedError
+
+    def _handle_cmd(self, directive) -> None:
+        raise NotImplementedError
+
+    def _handle_label(self, directive) -> None:
+        raise NotImplementedError
+
+    def _handle_maintainer(self, directive) -> None:
+        raise NotImplementedError
+
+    def _handle_expose(self, directive) -> None:
+        raise NotImplementedError
+
+    def _handle_entrypoint(self, directive) -> None:
+        raise NotImplementedError
+
+    def _handle_volume(self, directive) -> None:
+        raise NotImplementedError
+
+    def _handle_onbuild(self, directive) -> None:
+        raise NotImplementedError
+
+    def _handle_stopsignal(self, directive) -> None:
+        raise NotImplementedError
+
+    def _handle_healthcheck(self, directive) -> None:
+        raise NotImplementedError
+
+    def _handle_shell(self, directive) -> None:
+        raise NotImplementedError
 
     #########################
     # RUN DIRECTIVE METHODS #

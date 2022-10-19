@@ -89,19 +89,17 @@ class AnsiblePlayContext:
 
     # used
     def get_local_vars(self) -> Union[Dict[str, str], None]:
-        # TODO
-        pass
+        raise NotImplementedError
 
     def resolve_shell_word(self, word: ShellWordObject) -> Union[ShellWordObject, None]:
-        pass
+        raise NotImplementedError
 
     # used
     def resolve_shell_command(self, command: ShellCommandObject) -> Union[ShellCommandObject, None]:
-        # TODO
         # every ParameterNode should be renamed
         # as a local var from current Ansible Context
-        pass
+        raise NotImplementedError
 
     # used
     def resolve_shell_expression(self, expr: ShellExpression):
-        pass
+        raise NotImplementedError
