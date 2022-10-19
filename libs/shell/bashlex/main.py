@@ -1,7 +1,7 @@
 import bashlex
 import bashlex.ast
 
-from lib.shell.main import *
+from libs.shell.main import *
 from log import globalLog
 
 from typing import List, Union

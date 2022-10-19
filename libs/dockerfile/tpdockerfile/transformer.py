@@ -1,6 +1,6 @@
 import dockerfile
 
-from lib.dockerfile.main import *
+from libs.dockerfile.main import *
 from draft_exception import TPDockerfileGeneratorException
 
 from typing import Tuple, Type, Dict

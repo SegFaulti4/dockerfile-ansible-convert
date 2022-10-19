@@ -18,4 +18,5 @@ class TPDockerfileGeneratorException(DockerfileGeneratorException):
     pass
 
 
-
+class RoleGeneratorException(ConvertException):
+    pass

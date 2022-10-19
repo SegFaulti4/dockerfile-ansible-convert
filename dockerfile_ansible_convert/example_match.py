@@ -1,12 +1,11 @@
 from dataclasses import dataclass, field
-from typing import List, Tuple, Dict, Union, Any, Type, Callable
+from typing import List, Tuple, Dict, Union, Type, Callable
 from copy import deepcopy
 import re
 
 import dockerfile_ansible_convert.bash_parse as bash_parse
 import dockerfile_ansible_convert._meta as _meta
 import dockerfile_ansible_convert.commands_config as commands_config
-import exception
 from log import globalLog
 
 
@@ -464,12 +463,12 @@ class ExampleBasedMatcher:
             if key not in command_field:
                 return None
 
-            def listify_value(val):
-                if val is None:
+            def listify_value(v):
+                if v is None:
                     return []
-                if not isinstance(val, List):
-                    return [val]
-                return val
+                if not isinstance(v, list):
+                    return [v]
+                return v
 
             command_field[key] = listify_value(command_field[key])
             val = listify_value(val)

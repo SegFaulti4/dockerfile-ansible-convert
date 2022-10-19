@@ -1,4 +1,4 @@
-from lib.shell.main import *
+from libs.shell.main import *
 
 import re
 from typing import Union, Dict
@@ -36,53 +36,72 @@ class AnsiblePlayContext:
     def set_global_var(self, name: str, value: str) -> None:
         self.global_vars[name] = value
 
+    # used
     def set_local_var(self, name: str, value: str) -> None:
         self.local_vars[name] = value
 
-    def clear_local_context(self) -> None:
+    # used
+    def clear_local(self) -> None:
         self.local_vars.clear()
 
+    # used
     def get_global_workdir(self) -> Union[str, None]:
         return self.global_workdir
 
+    # used
     def get_local_workdir(self) -> Union[str, None]:
         return self.local_workdir
 
+    # used
     def get_workdir(self) -> Union[str, None]:
         local_wd = self.get_local_workdir()
         if local_wd is None:
             return self.get_global_workdir()
         return local_wd
 
+    # used
     def get_global_user(self) -> Union[str, None]:
         return self.global_user
 
+    # used
     def get_local_user(self) -> Union[str, None]:
         return self.local_user
 
+    # used
     def get_user(self) -> Union[str, None]:
         local_usr = self.get_local_user()
         if local_usr is None:
             return self.get_global_user()
         return local_usr
 
-    def get_global_var(self, name):
+    def get_global_var(self, name) -> Union[str, None]:
         return self.global_vars.get(name, None)
 
-    def get_local_var(self, name):
+    # used
+    def get_local_var(self, name) -> Union[str, None]:
         return self.local_vars.get(name, None)
 
-    def get_var(self, name):
+    def get_var(self, name) -> Union[str, None]:
         local_var = self.get_local_var(name)
         if local_var is None:
             return self.get_global_var(name)
         return local_var
 
-    def get_vars(self):
+    # used
+    def get_local_vars(self) -> Union[Dict[str, str], None]:
+        # TODO
         pass
 
-    def resolve_shell_word(self, word: ShellWordObject):
+    def resolve_shell_word(self, word: ShellWordObject) -> Union[ShellWordObject, None]:
         pass
 
+    # used
+    def resolve_shell_command(self, command: ShellCommandObject) -> Union[ShellCommandObject, None]:
+        # TODO
+        # every ParameterNode should be renamed
+        # as a local var from current Ansible Context
+        pass
+
+    # used
     def resolve_shell_expression(self, expr: ShellExpression):
         pass

@@ -1,12 +1,13 @@
 from typing import List, Tuple, Type, Dict
 from dataclasses import dataclass
-from lib.shell.main import ShellExpression, ShellScript, ShellParser
+from libs.shell.main import ShellExpression, ShellScript, ShellParser
 
 
 class DockerfileDirective:
     pass
 
 
+@dataclass
 class DockerfileContent:
     directives: List[DockerfileDirective]
 
@@ -112,6 +113,7 @@ class ShellDirective(UselessDirective):
     pass
 
 
+@dataclass
 class DockerfileContentGenerator:
     shell_parser: ShellParser
 
@@ -125,7 +127,7 @@ class DockerfileContentGenerator:
         return self.from_str(file.read())
 
     def from_str(self, val: str) -> DockerfileContent:
-        generate_type_map = {
+        generate_map = {
             RunDirective: self._generate_run,
             EnvDirective: self._generate_env,
             ArgDirective: self._generate_arg,
@@ -146,7 +148,7 @@ class DockerfileContentGenerator:
             ShellDirective: self._generate_shell
         }
         parsed = self.parse_str(val)
-        directives = [generate_type_map[t](*a) for t, a in parsed]
+        directives = [generate_map[t](*a) for t, a in parsed]
         return DockerfileContent(directives=directives)
 
     def _generate_run(self, line: str) -> RunDirective:

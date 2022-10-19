@@ -16,18 +16,6 @@ class ShellExpressionPart:
     pass
 
 
-class ShellAssignmentPart:
-    pass
-
-
-class ShellCommandPart:
-    pass
-
-
-class ShellWordPart:
-    pass
-
-
 @dataclass
 class ShellScript(ShellObject):
     parts: List[ShellScriptPart]
@@ -38,7 +26,8 @@ class ShellScript(ShellObject):
 
 
 @dataclass
-class ShellExpression(ShellObject, ShellAssignmentPart):
+class ShellExpression(ShellObject):
+    line: str
     parts: List[ShellExpressionPart]
 
     @staticmethod
@@ -52,23 +41,9 @@ class ShellRawObject(ShellObject, ShellExpressionPart, ShellScriptPart):
 
 
 @dataclass
-class ShellCommandObject(ShellObject, ShellScriptPart):
-    parts: List[ShellCommandPart]
-    line: str
-
-    @staticmethod
-    def allowed_parts(parts: List[ShellObject]):
-        return all(isinstance(part, ShellCommandPart) for part in parts)
-
-
-@dataclass
 class ShellAssignmentObject(ShellObject, ShellScriptPart):
     name: str
-    value: ShellAssignmentPart
-
-    @staticmethod
-    def allowed_parts(parts: List[ShellObject]):
-        return all(isinstance(part, ShellAssignmentPart) for part in parts)
+    value: ShellExpression
 
 
 class ShellOperatorObject(ShellObject, ShellScriptPart):
@@ -88,19 +63,29 @@ class ShellOperatorEndObject(ShellOperatorObject):
 
 
 @dataclass
-class ShellWordObject(ShellObject, ShellAssignmentPart, ShellCommandPart):
-    value: str
-    parts: List[ShellWordPart]
-
-    @staticmethod
-    def allowed_parts(parts: List[ShellObject]):
-        return all(isinstance(part, ShellWordPart) for part in parts)
+class ShellParameterObject(ShellObject):
+    name: str
+    pos: Tuple[int, int]
 
 
 @dataclass
-class ShellParameterObject(ShellObject, ShellWordPart):
-    name: str
-    pos: Tuple[int, int]
+class ShellWordObject(ShellObject, ShellExpressionPart):
+    value: str
+    parts: List[ShellParameterObject]
+
+    @staticmethod
+    def allowed_parts(parts: List[ShellObject]):
+        return all(isinstance(part, ShellParameterObject) for part in parts)
+
+
+@dataclass
+class ShellCommandObject(ShellObject, ShellScriptPart):
+    line: str
+    parts: List[ShellWordObject]
+
+    @staticmethod
+    def allowed_parts(parts: List[ShellObject]):
+        return all(isinstance(part, ShellWordObject) for part in parts)
 
 
 # class ShellRedirectObject(ShellObject):
@@ -130,8 +115,8 @@ class ShellParser:
             return ShellScript(parts=parts)
         raise ShellParserException("Found unallowed script parts")
 
-    def parse_as_expression(self, val: str) -> ShellExpression:
-        parts = self.parse(val)
+    def parse_as_expression(self, line: str) -> ShellExpression:
+        parts = self.parse(line)
         if self.allowed_expression_parts(parts):
-            return ShellExpression(parts=parts)
+            return ShellExpression(parts=parts, line=line)
         raise ShellParserException("Found unallowed expression parts")
