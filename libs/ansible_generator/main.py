@@ -2,6 +2,7 @@ from dataclasses import field
 from typing import Any
 from enum import Enum
 
+from libs.ansible_matcher.main import *
 from libs.dockerfile.main import *
 from libs.ansible_generator.context import *
 
@@ -39,8 +40,7 @@ class RoleGenerator:
     _df_content: DockerfileContent = None
     _context: AnsiblePlayContext = None
     _runtime: _Runtime = None
-    # TODO: create class TaskMatcher
-    _task_matcher = None
+    _task_matcher: TaskMatcher = None
 
     def __init__(self, dc: DockerfileContent, tm):
         self._df_content = dc

@@ -1,9 +1,7 @@
-import bashlex
-import json
 import logging
 
-from dockerfile_ansible_convert.bash_parse import parse_bash_commands, parse_bash_value
-from dockerfile_ansible_convert.example_match import ExampleBasedMatcher
+from dockerfile_ansible_convert.bash_parse import parse_bash_commands
+from libs.ansible_matcher.example_based.main import ExampleBasedMatcher
 from log import globalLog
 
 

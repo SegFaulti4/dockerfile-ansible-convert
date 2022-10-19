@@ -1,12 +1,11 @@
 from bashlex.errors import ParsingError
 
-import json
 from dataclasses import dataclass, field
 from enum import Enum
 from typing import List, Tuple, Dict
 import bashlex
 
-import dockerfile_ansible_convert._meta as _meta
+import libs.utils.meta as _meta
 import dockerfile_ansible_convert.enrich_config
 import exception
 from log import globalLog
