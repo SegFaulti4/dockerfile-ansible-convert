@@ -42,7 +42,7 @@ class RoleGenerator:
     _runtime: _Runtime = None
     _task_matcher: TaskMatcher = None
 
-    def __init__(self, dc: DockerfileContent, tm):
+    def __init__(self, dc: DockerfileContent, tm: TaskMatcher):
         self._df_content = dc
         self._task_matcher = tm
 
@@ -81,7 +81,11 @@ class RoleGenerator:
     ###################
 
     def _return(self):
-        raise NotImplementedError
+        self._runtime.general.result_registers_num = 0
+        self._runtime.general.echo_registers_num = 0
+        self._runtime.local = _LocalRuntime()
+
+        return self._runtime.general.role_tasks
 
     def _add_task(self, task: Dict,
                   set_user: bool,
@@ -129,56 +133,104 @@ class RoleGenerator:
 
         self._clear_local_context()
 
-    def _handle_env(self, directive) -> None:
-        raise NotImplementedError
+    def _handle_env(self, directive: EnvDirective) -> None:
+        for name, value in zip(directive.names, directive.values):
+            val = self._context.resolve_shell_expression(value)
+            if val is None:
+                task = self._create_echo_task(value.line)
+                register = self._add_echo_register(task)
+                self._add_task(task, set_user=False, set_vars=False, set_condition=False)
+                self._context.set_global_var(name=name, value="{{ " + register + " }}")
+            else:
+                self._context.set_global_var(name=name, value=val)
 
-    def _handle_arg(self, directive) -> None:
-        raise NotImplementedError
+    def _handle_arg(self, directive: ArgDirective) -> None:
+        val = self._context.resolve_shell_expression(directive.value)
+        if val is None:
+            task = self._create_echo_task(directive.value.line)
+            register = self._add_echo_register(task)
+            self._add_task(task, set_user=True, set_vars=False, set_condition=False)
+            self._context.set_global_var(name=directive.name, value="{{ " + register + " }}")
+        else:
+            self._context.set_global_var(name=directive.name, value=val)
 
-    def _handle_user(self, directive) -> None:
-        raise NotImplementedError
+    def _handle_user(self, directive: UserDirective) -> None:
+        val = self._context.resolve_shell_expression(directive.name)
+        if val is None:
+            task = self._create_echo_task(directive.name.line)
+            register = self._add_echo_register(task)
+            self._add_task(task, set_user=True, set_vars=False, set_condition=False)
+            self._context.set_global_user("{{ " + register + " }}")
+        else:
+            self._context.set_global_user(name=val)
 
-    def _handle_workdir(self, directive) -> None:
-        raise NotImplementedError
+    def _handle_workdir(self, directive: WorkdirDirective) -> None:
+        val = self._context.resolve_shell_expression(directive.path)
+        if val is None:
+            task = self._create_echo_task(directive.path.line)
+            register = self._add_echo_register(task)
+            self._add_task(task, set_user=True, set_vars=False, set_condition=False)
+            self._context.set_global_workdir("{{ " + register + " }}")
+        else:
+            self._context.set_global_workdir(path=val)
 
-    def _handle_add(self, directive) -> None:
-        raise NotImplementedError
+    def _handle_add(self, directive: AddDirective) -> None:
+        paths = [directive.source] + [dest for dest in directive.destinations]
+        vals = []
+        for path in paths:
+            val = self._context.resolve_shell_expression(path)
+            if val is None:
+                task = self._create_echo_task(path.line)
+                register = self._add_echo_register(task)
+                self._add_task(task, set_user=True, set_vars=False, set_condition=False)
+                val = "{{ " + register + " }}"
+            vals.append(val)
 
-    def _handle_copy(self, directive) -> None:
-        raise NotImplementedError
+        for dest in vals[1:]:
+            task = {
+                "copy": {
+                    "src": vals[0],
+                    "dest": dest
+                }
+            }
+            self._add_task(task, set_user=True, set_vars=False, set_condition=False)
+
+    def _handle_copy(self, directive: CopyDirective) -> None:
+        return self._handle_add(directive=AddDirective(source=directive.source,
+                                                       destinations=directive.destinations))
 
     def _handle_from(self, directive) -> None:
-        raise NotImplementedError
+        return self._handle_default(directive)
 
     def _handle_cmd(self, directive) -> None:
-        raise NotImplementedError
+        return self._handle_default(directive)
 
     def _handle_label(self, directive) -> None:
-        raise NotImplementedError
+        return self._handle_default(directive)
 
     def _handle_maintainer(self, directive) -> None:
-        raise NotImplementedError
+        return self._handle_default(directive)
 
     def _handle_expose(self, directive) -> None:
-        raise NotImplementedError
+        return self._handle_default(directive)
 
     def _handle_entrypoint(self, directive) -> None:
-        raise NotImplementedError
+        return self._handle_default(directive)
 
     def _handle_volume(self, directive) -> None:
-        raise NotImplementedError
+        return self._handle_default(directive)
 
     def _handle_onbuild(self, directive) -> None:
-        raise NotImplementedError
+        return self._handle_default(directive)
 
     def _handle_stopsignal(self, directive) -> None:
-        raise NotImplementedError
+        return self._handle_default(directive)
 
     def _handle_healthcheck(self, directive) -> None:
-        raise NotImplementedError
+        return self._handle_default(directive)
 
     def _handle_shell(self, directive) -> None:
-        raise NotImplementedError
+        return self._handle_default(directive)
 
     #########################
     # RUN DIRECTIVE METHODS #
@@ -285,7 +337,6 @@ class RoleGenerator:
             task = self._create_echo_task(obj.value.line)
             register = self._add_echo_register(task)
             task = self._add_task(task, set_user=True, set_vars=True, set_condition=True)
-            # might need another method for that
             self._context.set_local_var(name=obj.name, value="{{ " + register + " }}")
 
             return _ScriptPartType.COMMAND, task
