@@ -1,7 +1,7 @@
 import logging
 
 from dockerfile_ansible_convert.bash_parse import parse_bash_commands
-from libs.ansible_matcher.example_based.main import ExampleBasedMatcher
+from src.ansible_matcher.example_based.main import ExampleBasedMatcher
 from log import globalLog
 
 

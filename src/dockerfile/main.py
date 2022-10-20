@@ -1,6 +1,6 @@
 from typing import List, Tuple, Type, Dict
 from dataclasses import dataclass
-from libs.shell.main import ShellExpression, ShellScript, ShellParser
+from src.shell.main import ShellExpression, ShellScript, ShellParser
 
 
 class DockerfileDirective:

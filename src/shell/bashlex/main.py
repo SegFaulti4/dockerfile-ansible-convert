@@ -1,7 +1,7 @@
 import bashlex
 import bashlex.ast
 
-from libs.shell.main import *
+from src.shell.main import *
 from log import globalLog
 
 from typing import List, Union
@@ -83,7 +83,7 @@ class BashlexNodeTransformer:
         return [ShellParameterObject(name=node.value, pos=(node.pos[0] - 1, node.pos[1]))]
 
     @staticmethod
-    def transform_word(node, line):
+    def transform_word(node, line) -> Union[ShellWordObject, ShellRawObject]:
         parts = []
         word_line = line[node.pos[0]:node.pos[1]]
         for part in node.parts:

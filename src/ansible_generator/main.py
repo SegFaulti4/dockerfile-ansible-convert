@@ -2,9 +2,9 @@ from dataclasses import field
 from typing import Any
 from enum import Enum
 
-from libs.ansible_matcher.main import *
-from libs.dockerfile.main import *
-from libs.ansible_generator.context import *
+from src.ansible_matcher.main import *
+from src.dockerfile.main import *
+from src.ansible_generator.context import *
 
 from log import globalLog
 
@@ -37,10 +37,10 @@ class _Runtime:
 
 
 class RoleGenerator:
-    _df_content: DockerfileContent = None
-    _context: AnsiblePlayContext = None
-    _runtime: _Runtime = None
-    _task_matcher: TaskMatcher = None
+    _df_content: DockerfileContent
+    _task_matcher: TaskMatcher
+    _context: Union[AnsiblePlayContext, None] = None
+    _runtime: Union[_Runtime, None] = None
 
     def __init__(self, dc: DockerfileContent, tm: TaskMatcher):
         self._df_content = dc
@@ -135,24 +135,10 @@ class RoleGenerator:
 
     def _handle_env(self, directive: EnvDirective) -> None:
         for name, value in zip(directive.names, directive.values):
-            val = self._context.resolve_shell_expression(value)
-            if val is None:
-                task = self._create_echo_task(value.line)
-                register = self._add_echo_register(task)
-                self._add_task(task, set_user=False, set_vars=False, set_condition=False)
-                self._context.set_global_var(name=name, value="{{ " + register + " }}")
-            else:
-                self._context.set_global_var(name=name, value=val)
+            self._add_global_assignment(name, value)
 
     def _handle_arg(self, directive: ArgDirective) -> None:
-        val = self._context.resolve_shell_expression(directive.value)
-        if val is None:
-            task = self._create_echo_task(directive.value.line)
-            register = self._add_echo_register(task)
-            self._add_task(task, set_user=True, set_vars=False, set_condition=False)
-            self._context.set_global_var(name=directive.name, value="{{ " + register + " }}")
-        else:
-            self._context.set_global_var(name=directive.name, value=val)
+        self._add_global_assignment(directive.name, directive.value)
 
     def _handle_user(self, directive: UserDirective) -> None:
         val = self._context.resolve_shell_expression(directive.name)
@@ -232,6 +218,33 @@ class RoleGenerator:
     def _handle_shell(self, directive) -> None:
         return self._handle_default(directive)
 
+    #################################
+    # ENV and ARG DIRECTIVE METHODS #
+    #################################
+
+    @staticmethod
+    def _create_set_fact_task(fact_name: str, value: str) -> Dict[str, Any]:
+        task = {
+            "set_fact": {
+                fact_name: value
+            }
+        }
+        return task
+
+    def _add_global_assignment(self, name: str, value: ShellExpression) -> None:
+        val = self._context.resolve_shell_expression(value)
+        if val is None:
+            task = self._create_echo_task(value.line)
+            register = self._add_echo_register(task)
+            self._add_task(task, set_user=False, set_vars=False, set_condition=False)
+            val = "{{ " + register + " }}"
+
+        fact_name = self._context.global_var_name_wrapper(name)
+        task = self._create_set_fact_task(fact_name=fact_name, value=val)
+
+        self._add_task(task, set_user=False, set_vars=False, set_condition=False)
+        self._context.set_global_var(name=name, value="{{ " + fact_name + " }}")
+
     #########################
     # RUN DIRECTIVE METHODS #
     #########################
@@ -273,18 +286,18 @@ class RoleGenerator:
         else:
             return True
 
-    def _add_task_user(self, task: Dict):
+    def _add_task_user(self, task: Dict) -> None:
         user = self._context.get_user()
         if user is not None:
             task["become"] = True
             task["become_user"] = user
 
-    def _add_task_vars(self, task: Dict):
+    def _add_task_vars(self, task: Dict) -> None:
         local_vars = self._context.get_local_vars()
         if local_vars:
             task["vars"] = local_vars
 
-    def _create_shell_task(self, line: str):
+    def _create_shell_task(self, line: str) -> Dict[str, Any]:
         task = {
             "shell": {
                 "cmd": line
@@ -296,7 +309,8 @@ class RoleGenerator:
 
         return task
 
-    def _create_echo_task(self, line: str):
+    @staticmethod
+    def _create_echo_task(line: str) -> Dict[str, Any]:
         if not line.startswith('"') or not line.endswith('"'):
             line = '"' + line + '"'
         task = {
@@ -307,7 +321,7 @@ class RoleGenerator:
 
         return task
 
-    def _clear_local_context(self):
+    def _clear_local_context(self) -> None:
         self._context.clear_local()
         self._runtime.local = _LocalRuntime()
 
@@ -320,11 +334,11 @@ class RoleGenerator:
         return self._handle_run_shell(obj.value)
 
     def _handle_run_command(self, obj: ShellCommandObject) -> (_ScriptPartType, Any):
-        command = self._context.resolve_shell_command(obj)
-        if command is None:
+        words = self._context.resolve_shell_command(obj)
+        if words is None:
             return self._handle_run_shell(obj.line)
 
-        task = self._task_matcher.match_command(command.parts)
+        task = self._task_matcher.match_command(words)
         if task is None:
             return self._handle_run_shell(obj.line)
 

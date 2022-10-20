@@ -3,10 +3,10 @@ from typing import Type, Callable
 from copy import deepcopy
 import re
 
-from libs.ansible_matcher.main import *
-from libs.shell.main import *
-from libs.ansible_matcher.example_based.commands_config import match_config
-from libs.utils.meta import MetaSingleton
+from src.ansible_matcher.main import *
+from src.shell.main import *
+from src.ansible_matcher.example_based.commands_config import match_config
+from src.utils.meta import MetaSingleton
 
 from log import globalLog
 

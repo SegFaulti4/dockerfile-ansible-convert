@@ -1,6 +1,6 @@
 from typing import Union, Dict
 
-from libs.shell.main import *
+from src.shell.main import *
 
 
 class TaskMatcher:

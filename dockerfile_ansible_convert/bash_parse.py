@@ -5,7 +5,7 @@ from enum import Enum
 from typing import List, Tuple, Dict
 import bashlex
 
-import libs.utils.meta as _meta
+import src.utils.meta as _meta
 import dockerfile_ansible_convert.enrich_config
 import exception
 from log import globalLog
