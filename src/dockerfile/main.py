@@ -148,7 +148,7 @@ class DockerfileContentGenerator:
             ShellDirective: self._generate_shell
         }
         parsed = self.parse_str(val)
-        directives = [generate_map[t](*a) for t, a in parsed]
+        directives = [generate_map[t](**a) for t, a in parsed]
         return DockerfileContent(directives=directives)
 
     def _generate_run(self, line: str) -> RunDirective:

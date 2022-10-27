@@ -1,5 +1,5 @@
 from dataclasses import dataclass, field
-from typing import Type, Callable
+from typing import Type, Callable, Any
 from copy import deepcopy
 import re
 
@@ -304,7 +304,7 @@ class ShellCommandParser:
         if not self._probe_opts():
             self._rt = None
 
-    def parse(self, comm: List[Union[ShellWordObject, PatternToken]]):
+    def parse(self, comm: List[Union[ShellWordObject, PatternToken]]) -> Union[None, ShellCommandCall, ShellExampleCall]:
         self._parse(deepcopy(comm))
         res = None
         if self._rt is not None:
@@ -440,7 +440,7 @@ class ExampleBasedMatcher(TaskMatcher):
         pass
 
     @staticmethod
-    def transform_to_command_call(comm: List[ShellWordObject]):
+    def transform_to_command_call(comm: List[ShellWordObject]) -> Union[None, ShellCommandCall]:
         patterns = CommandsConfigLoader().get_patterns_by_command_name(comm[0].value)
         opts_map = CommandsConfigLoader().get_opts_map_by_command_name(comm[0].value)
         res = None
@@ -549,7 +549,7 @@ class ExampleBasedMatcher(TaskMatcher):
                ExampleBasedMatcher._empty_command_call_field(comm_call.opts)
 
     @staticmethod
-    def match_command_call(comm_call: ShellCommandCall):
+    def match_command_call(comm_call: ShellCommandCall) -> Union[Dict[str, Any], None]:
         examples = CommandsConfigLoader().get_examples_by_pattern_name(comm_call.command_name, comm_call.pattern_name)
 
         for example, module_call_pattern in examples:
@@ -563,14 +563,33 @@ class ExampleBasedMatcher(TaskMatcher):
                     return main_module_call
         return None
 
-    def match_command(self, comm: List[ShellWordObject]):
+    def match_command(self, comm: List[ShellWordObject]) -> Union[Dict[str, Any], None]:
         if not ExampleBasedMatcher.is_allowed(comm):
             return None
 
         command_call = ExampleBasedMatcher.transform_to_command_call(comm)
         if command_call is None:
             return None
-        return ExampleBasedMatcher.match_command_call(command_call)
+        matched_call = ExampleBasedMatcher.match_command_call(command_call)
+
+        def replace_word_object(word: ShellWordObject):
+            return word.value
+
+        def replace_word_list(l: List[Union[ShellWordObject, Any]]):
+            if any(isinstance(x, ShellWordObject) for x in l):
+                res = []
+                for x in l:
+                    if isinstance(x, ShellWordObject):
+                        res.append(replace_word_object(x))
+                    else:
+                        res.append(x)
+                return res
+
+        task = visit_dict(matched_call, target=ShellWordObject,
+                          target_func=replace_word_object)
+        task = visit_dict(task, target=list,
+                          target_func=replace_word_list)
+        return task
 
 
 class CommandsConfigLoader(metaclass=MetaSingleton):

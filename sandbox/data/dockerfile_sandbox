@@ -1,3 +1,0 @@
-FROM confluentinc/cp-kafka-connect-base:4.1.2
-
-RUN mkdir -p ~/.rbenv/plugins

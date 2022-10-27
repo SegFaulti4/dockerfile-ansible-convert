@@ -1,4 +1,4 @@
-from transformer import *
+from src.dockerfile.tpdockerfile.transformer import *
 
 
 class TPDockerfileContentGenerator(DockerfileContentGenerator):

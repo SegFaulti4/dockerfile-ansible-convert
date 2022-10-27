@@ -1,5 +1,0 @@
-- hosts: all
-  name: Generated from dockerfile
-  tasks:
-  - file:
-      state: directory

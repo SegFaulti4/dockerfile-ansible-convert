@@ -71,6 +71,8 @@ class BashlexNodeTransformer:
         name, value = node.word[0:eq_pos], node.word[eq_pos + 1:]
 
         # Circular dependency
+        if not value.startswith('"') or not value.endswith('"'):
+            value = '"' + value + '"'
         part = BashlexShellParser().parse_as_expression(value)
         return [ShellAssignmentObject(name=name, value=part)]
 
@@ -83,15 +85,15 @@ class BashlexNodeTransformer:
         return [ShellParameterObject(name=node.value, pos=(node.pos[0] - 1, node.pos[1]))]
 
     @staticmethod
-    def transform_word(node, line) -> Union[ShellWordObject, ShellRawObject]:
+    def transform_word(node, line) -> List[Union[ShellWordObject, ShellRawObject]]:
         parts = []
         word_line = line[node.pos[0]:node.pos[1]]
         for part in node.parts:
             part.pos = part.pos[0] - node.pos[0], part.pos[1] - node.pos[0]
             parts.extend(BashlexNodeTransformer.transform_node(part, line))
         if ShellWordObject.allowed_parts(parts):
-            return ShellWordObject(value=word_line, parts=parts)
-        return ShellRawObject(value=word_line)
+            return [ShellWordObject(value=word_line, parts=parts)]
+        return [ShellRawObject(value=word_line)]
 
     @staticmethod
     def transform_tilde(node, line):

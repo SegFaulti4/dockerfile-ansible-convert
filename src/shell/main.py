@@ -18,6 +18,7 @@ class ShellExpressionPart:
 
 @dataclass
 class ShellScript(ShellObject):
+    line: str
     parts: List[ShellScriptPart]
 
     @staticmethod
@@ -32,7 +33,11 @@ class ShellExpression(ShellObject):
 
     @staticmethod
     def allowed_parts(parts: List[ShellObject]):
-        return all(isinstance(part, ShellExpressionPart) for part in parts)
+        return all(isinstance(part, ShellExpressionPart) for part in parts) and \
+               all(
+                   all(isinstance(comm_part, ShellWordObject) for comm_part in part.parts)
+                   for part in filter(lambda x: isinstance(x, ShellCommandObject), parts)
+               )
 
 
 @dataclass
@@ -50,14 +55,17 @@ class ShellOperatorObject(ShellObject, ShellScriptPart):
     pass
 
 
+@dataclass
 class ShellOperatorOrObject(ShellOperatorObject):
     pass
 
 
+@dataclass
 class ShellOperatorAndObject(ShellOperatorObject):
     pass
 
 
+@dataclass
 class ShellOperatorEndObject(ShellOperatorObject):
     pass
 
@@ -69,7 +77,7 @@ class ShellParameterObject(ShellObject):
 
 
 @dataclass
-class ShellWordObject(ShellObject, ShellExpressionPart):
+class ShellWordObject(ShellObject):
     value: str
     parts: List[ShellParameterObject]
 
@@ -79,7 +87,7 @@ class ShellWordObject(ShellObject, ShellExpressionPart):
 
 
 @dataclass
-class ShellCommandObject(ShellObject, ShellScriptPart):
+class ShellCommandObject(ShellObject, ShellScriptPart, ShellExpressionPart):
     line: str
     parts: List[ShellWordObject]
 
@@ -109,10 +117,10 @@ class ShellParser:
     def allowed_expression_parts(parts: List[ShellObject]) -> bool:
         return ShellExpression.allowed_parts(parts)
 
-    def parse_as_script(self, val: str) -> ShellScript:
-        parts = self.parse(val)
+    def parse_as_script(self, line: str) -> ShellScript:
+        parts = self.parse(line)
         if self.allowed_script_parts(parts):
-            return ShellScript(parts=parts)
+            return ShellScript(parts=parts, line=line)
         raise ShellParserException("Found unallowed script parts")
 
     def parse_as_expression(self, line: str) -> ShellExpression:
