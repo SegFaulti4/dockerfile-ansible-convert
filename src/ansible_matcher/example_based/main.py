@@ -304,8 +304,8 @@ class ShellCommandParser:
         if not self._probe_opts():
             self._rt = None
 
-    def parse(self, comm: List[Union[ShellWordObject, PatternToken]]) -> Union[
-        None, ShellCommandCall, ShellExampleCall]:
+    def parse(self, comm: List[Union[ShellWordObject, PatternToken]]) \
+            -> Union[None, ShellCommandCall, ShellExampleCall]:
         self._parse(deepcopy(comm))
         res = None
         if self._rt is not None:

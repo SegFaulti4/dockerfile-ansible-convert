@@ -476,5 +476,131 @@ match_config = {
                 }
             },
         }
+    },
+    "rm": {
+        "opts": {
+            "force": {
+                "arg_required": False,
+                "many_args": False,
+                "aliases": [
+                    "-f", "--force"
+                ]
+            },
+            "interactive once": {
+                "arg_required": False,
+                "many_args": False,
+                "aliases": [
+                    "-I"
+                ]
+            },
+            "interactive always": {
+                "arg_required": False,
+                "many_args": False,
+                "aliases": [
+                    "-i"
+                ]
+            },
+            "recursive": {
+                "arg_required": False,
+                "many_args": False,
+                "aliases": [
+                    "-r", "-R", "--recursive"
+                ]
+            },
+            "directive": {
+                "arg_required": False,
+                "many_args": False,
+                "aliases": [
+                    "-d", "--dir"
+                ]
+            },
+            "verbose": {
+                "arg_required": False,
+                "many_args": False,
+                "aliases": [
+                    "-v", "--verbose"
+                ]
+            }
+        },
+        "patterns": {
+            "rm": [
+                "rm [files...]"
+            ],
+        },
+        "opts_postprocess_map": {
+            "-f": {},
+            "-I": {},
+            "-i": {},
+            "-d": {},
+            "-v": {}
+        },
+        "examples": {
+            # weak
+            "rm [files...]": {
+                "file": {
+                    "state": "absent",
+                    "path": "[files...]"
+                }
+            },
+            "rm -r [files...]": {
+                "file": {
+                    "state": "absent",
+                    "path": "[files...]"
+                }
+            }
+        }
+    },
+    "mkdir": {
+        "opts": {
+            "mode": {
+                "arg_required": False,
+                "many_args": False,
+                "aliases": [
+                    "-m", "--mode"
+                ]
+            },
+            "parents": {
+                "arg_required": False,
+                "many_args": False,
+                "aliases": [
+                    "-p", "--parents"
+                ]
+            },
+            "verbose": {
+                "arg_required": False,
+                "many_args": False,
+                "aliases": [
+                    "-v", "--verbose"
+                ]
+            }
+        },
+        "patterns": {
+            "mkdir ": {
+                "mkdir [directories...]"
+            }
+        },
+        "opts_postprocess_map": {
+            "-m <mode>": {
+                "file": {
+                    "mode": "<mode>"
+                }
+            },
+            "-v": {}
+        },
+        "examples": {
+            # weak
+            "mkdir [directories...]": {
+                "file": {
+                    "path": "[directories...]",
+                    "state": "directory"
+                }
+            },
+            "mkdir -p [directories...]": {
+                "file": {
+                    "path": "[directories...]",
+                    "state": "directory"
+                }
+            }
+        }
     }
 }
