@@ -304,7 +304,8 @@ class ShellCommandParser:
         if not self._probe_opts():
             self._rt = None
 
-    def parse(self, comm: List[Union[ShellWordObject, PatternToken]]) -> Union[None, ShellCommandCall, ShellExampleCall]:
+    def parse(self, comm: List[Union[ShellWordObject, PatternToken]]) -> Union[
+        None, ShellCommandCall, ShellExampleCall]:
         self._parse(deepcopy(comm))
         res = None
         if self._rt is not None:
@@ -460,11 +461,25 @@ class ExampleBasedMatcher(TaskMatcher):
                and comm and not comm[0].parts
 
     @staticmethod
-    def _match_command_field_by_example_field(example_field: Dict[str, Union[None, PatternToken, List[PatternToken]]],
-                                              command_field: Dict[str, Union[None,
-                                                                             ShellWordObject,
-                                                                             List[ShellWordObject]]],
-                                              strict: bool):
+    def _match_command_field_by_example_field(
+            example_field: Dict[
+                str,
+                Union[
+                    None,
+                    PatternToken,
+                    List[PatternToken]
+                ]
+            ],
+            command_field: Dict[
+                str,
+                Union[
+                    None,
+                    ShellWordObject,
+                    List[ShellWordObject]
+                ]
+            ],
+            strict: bool):
+
         res = {}
         for key, val in example_field.items():
             if key not in command_field:
@@ -642,7 +657,8 @@ class CommandsConfigLoader(metaclass=MetaSingleton):
                     self.command_example_map[command_name][parsed.pattern_name].append((parsed, module_call_pattern))
 
             for opts_str in command_config["opts_postprocess_map"]:
-                pattern = CommandPattern.from_string("[TRASH...]", command_name=command_name, pattern_name='opts postprocess')
+                pattern = CommandPattern.from_string("[TRASH...]", command_name=command_name,
+                                                     pattern_name='opts postprocess')
                 opts_map = self.command_opts_map[command_name]
                 example = CommandPattern.from_string(opts_str, command_name=command_name, pattern_name='')
                 module_call_pattern = visit_dict(deepcopy(command_config["opts_postprocess_map"][opts_str]),
@@ -656,14 +672,24 @@ class CommandsConfigLoader(metaclass=MetaSingleton):
                         (parsed, module_call_pattern)
                     )
 
-    def get_patterns_by_command_name(self, comm_name):
+    def get_patterns_by_command_name(self, comm_name: str) -> List[CommandPattern]:
+        if comm_name not in self.command_patterns_map:
+            return list()
         return deepcopy(self.command_patterns_map[comm_name])
 
-    def get_opts_map_by_command_name(self, comm_name):
+    def get_opts_map_by_command_name(self, comm_name: str) -> Dict[str, CommandOpt]:
+        if comm_name not in self.command_opts_map:
+            return dict()
         return deepcopy(self.command_opts_map[comm_name])
 
-    def get_examples_by_pattern_name(self, command_name, pattern_name):
+    def get_examples_by_pattern_name(self, command_name: str, pattern_name: str) -> List[Tuple[ShellExampleCall, Dict]]:
+        if command_name not in self.command_example_map:
+            return list()
+        if pattern_name not in self.command_example_map[command_name]:
+            return list()
         return deepcopy(self.command_example_map[command_name][pattern_name])
 
-    def get_opts_postprocess_by_command_name(self, command_name):
+    def get_opts_postprocess_by_command_name(self, command_name: str) -> List[Tuple[ShellExampleCall, Dict]]:
+        if command_name not in self.command_opts_postprocess_map:
+            return list()
         return deepcopy(self.command_opts_postprocess_map[command_name])

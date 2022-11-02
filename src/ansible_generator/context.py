@@ -64,11 +64,11 @@ class AnsiblePlayContext:
 
     @staticmethod
     def local_var_name_wrapper(name: str) -> str:
-        return name.strip().lower()
+        return name.strip().lower().replace('-', '_')
 
     @staticmethod
     def global_var_name_wrapper(name: str) -> str:
-        return name.strip().lower() + "_fact"
+        return name.strip().lower().replace('-', '_') + "_fact"
 
     def get_local_vars(self) -> Union[Dict[str, str], None]:
         # all local_vars values are strings parameterised by global_vars

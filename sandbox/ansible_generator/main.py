@@ -22,45 +22,40 @@ if __name__ == "__main__":
 
     with open("./data", "r") as inF:
         for line in inF.readlines():
-            try:
-                if PRINT_PATH:
-                    print('########')
-                    print("# PATH #")
-                    print('########')
-                    print()
-                    print(line.strip())
-                    print()
+            if PRINT_PATH:
+                print('########')
+                print("# PATH #")
+                print('########')
+                print()
+                print(line.strip())
+                print()
 
-                with open(line.strip(), "r") as df:
-                    source = "".join(df.readlines())
+            with open(line.strip(), "r") as df:
+                source = "".join(df.readlines())
 
-                if PRINT_SOURCE:
-                    print('##########')
-                    print("# SOURCE #")
-                    print('##########')
-                    print()
-                    print(source)
+            if PRINT_SOURCE:
+                print('##########')
+                print("# SOURCE #")
+                print('##########')
+                print()
+                print(source)
 
-                content = content_generator.from_str(source)
-                if PRINT_CONTENT_GENERATOR:
-                    print('#####################')
-                    print("# CONTENT GENERATOR #")
-                    print('#####################')
-                    print()
-                    for obj in content.directives:
-                        print(f"{obj}")
-                    print()
+            content = content_generator.from_str(source)
+            if PRINT_CONTENT_GENERATOR:
+                print('#####################')
+                print("# CONTENT GENERATOR #")
+                print('#####################')
+                print()
+                for obj in content.directives:
+                    print(f"{obj}")
+                print()
 
-                role_generator = SandboxRoleGenerator(tm=task_matcher, dc=content)
-                if PRINT_ROLE_GENERATOR:
-                    print('##################')
-                    print("# ROLE GENERATOR #")
-                    print('##################')
-                    print()
-                    role = role_generator.generate()
-                    print(role)
-                    print()
-
-            except Exception as exc:
-                print(f"{type(exc)}: {exc}")
+            role_generator = SandboxRoleGenerator(tm=task_matcher, dc=content)
+            if PRINT_ROLE_GENERATOR:
+                print('##################')
+                print("# ROLE GENERATOR #")
+                print('##################')
+                print()
+                role = role_generator.generate()
+                print(role)
                 print()

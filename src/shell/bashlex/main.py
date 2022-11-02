@@ -82,7 +82,7 @@ class BashlexNodeTransformer:
 
     @staticmethod
     def transform_parameter(node: bashlex.ast.node, line: str) -> List[ShellParameterObject]:
-        return [ShellParameterObject(name=node.value, pos=(node.pos[0] - 1, node.pos[1]))]
+        return [ShellParameterObject(name=node.value, pos=(node.pos[0], node.pos[1]))]
 
     @staticmethod
     def transform_word(node, line) -> List[Union[ShellWordObject, ShellRawObject]]:
