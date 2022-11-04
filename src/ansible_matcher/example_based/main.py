@@ -1,4 +1,4 @@
-from dataclasses import dataclass, field
+from dataclasses import field
 from typing import Type, Callable, Any
 from copy import deepcopy
 import re
@@ -8,7 +8,7 @@ from src.shell.main import *
 from src.ansible_matcher.example_based.commands_config import match_config
 from src.utils.meta import MetaSingleton
 
-from log import globalLog
+from src.log import globalLog
 
 
 @dataclass

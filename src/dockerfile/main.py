@@ -121,7 +121,7 @@ class DockerfileParser:
         raise NotImplementedError
 
     def from_path(self, path: str) -> DockerfileContent:
-        return self.from_stream(open(path, "w"))
+        return self.from_stream(open(path, "r"))
 
     def from_stream(self, file) -> DockerfileContent:
         return self.from_str(file.read())

@@ -8,7 +8,7 @@ import sandbox.utils.file_utils as file_utils
 import sandbox.utils.ansible_utils as ansible_utils
 import sandbox.utils.cloud_utils as cloud_utils
 
-from log import globalLog
+from src.log import globalLog
 
 
 if __name__ == "__main__":

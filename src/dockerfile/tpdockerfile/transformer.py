@@ -1,7 +1,7 @@
 import dockerfile
 
 from src.dockerfile.main import *
-from exception import TPDockerfileParserException
+from src.exception import TPDockerfileParserException
 
 from typing import Tuple, Type, Dict
 

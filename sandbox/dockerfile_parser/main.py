@@ -1,12 +1,11 @@
 import logging
 import dockerfile
 
-from src.dockerfile.main import *
 from sandbox.shell_parser.main import SandboxShellParser
 from src.dockerfile.tpdockerfile.main import TPDockerfileParser as SandboxDockerfileParser
 import sandbox.utils.file_utils as file_utils
 
-from log import globalLog
+from src.log import globalLog
 
 
 if __name__ == "__main__":

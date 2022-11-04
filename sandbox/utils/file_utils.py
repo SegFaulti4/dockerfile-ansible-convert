@@ -26,3 +26,7 @@ def extract_dockerfiles() -> None:
     setup_dir(DOCKERFILES_DIR)
     with zipfile.ZipFile(DOCKERFILES_ARCHIVE, 'r') as zipF:
         zipF.extractall(DOCKERFILES_DIR)
+
+
+if __name__ == "__main__":
+    extract_dockerfiles()

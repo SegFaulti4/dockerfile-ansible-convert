@@ -2,7 +2,7 @@ import bashlex
 import bashlex.ast
 
 from src.shell.main import *
-from log import globalLog
+from src.log import globalLog
 
 from typing import List, Union
 

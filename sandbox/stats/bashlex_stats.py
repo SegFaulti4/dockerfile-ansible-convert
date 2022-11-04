@@ -4,7 +4,7 @@ import sandbox.stats.stat_node as stat_node
 import bashlex
 
 from bashlex.errors import ParsingError
-from log import globalLog
+from src.log import globalLog
 globalLog.setLevel(logging.ERROR)
 
 

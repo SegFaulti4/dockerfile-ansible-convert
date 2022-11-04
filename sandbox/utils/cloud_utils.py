@@ -1,4 +1,3 @@
-import os
 import time
 from typing import Tuple, Dict, Any
 
@@ -7,8 +6,8 @@ import openstack
 import openstack.exceptions
 import configparser
 
-import exception
-from log import globalLog
+from src import exception
+from src.log import globalLog
 
 
 CONFIG = configparser.ConfigParser()['DEFAULT']

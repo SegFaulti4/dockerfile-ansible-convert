@@ -1,10 +1,9 @@
 import logging
 import bashlex
 
-from src.shell.main import *
 from src.shell.bashlex.main import BashlexShellParser as SandboxShellParser
 
-from log import globalLog
+from src.log import globalLog
 
 
 if __name__ == "__main__":

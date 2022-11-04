@@ -6,7 +6,7 @@ from src.ansible_matcher.main import *
 from src.dockerfile.main import *
 from src.ansible_generator.context import *
 
-from log import globalLog
+from src.log import globalLog
 
 
 class _ScriptPartType(Enum):

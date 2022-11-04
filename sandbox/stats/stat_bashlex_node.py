@@ -2,7 +2,7 @@ import bashlex.ast
 
 import logging
 
-from log import globalLog
+from src.log import globalLog
 globalLog.setLevel(logging.INFO)
 
 

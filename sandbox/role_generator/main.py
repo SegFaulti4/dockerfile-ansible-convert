@@ -1,13 +1,12 @@
 import logging
 
-from src.ansible_generator.main import *
 from sandbox.shell_parser.main import SandboxShellParser
 from sandbox.dockerfile_parser.main import SandboxDockerfileParser
 from sandbox.task_matcher.main import SandboxTaskMatcher
 from src.ansible_generator.main import RoleGenerator as SandboxRoleGenerator
 import sandbox.utils.file_utils as file_utils
 
-from log import globalLog
+from src.log import globalLog
 
 
 if __name__ == "__main__":
