@@ -1,54 +1,34 @@
-class ConvertException(Exception):
+class BaseException(Exception):
     pass
 
 
-class DockerfileASTException(ConvertException):
+class ShellParserException(BaseException):
     pass
 
 
-class PlaybookGeneratorException(ConvertException):
+class BashlexShellParserException(ShellParserException):
     pass
 
 
-class PlaybookContextException(PlaybookGeneratorException):
+class DockerfileParserException(BaseException):
     pass
 
 
-class CommandMatchException(PlaybookGeneratorException):
+class TPDockerfileParserException(DockerfileParserException):
     pass
 
 
-class CommandParseException(CommandMatchException):
+class TaskMatcherException(BaseException):
     pass
 
 
-class BashlexTransformException(ConvertException):
+class ExampleBasedMatcherException(TaskMatcherException):
     pass
 
 
-class EnrichCommandException(ConvertException):
+class AnsiblePlayContextException(BaseException):
     pass
 
 
-class GenerateAnsibleASTException(ConvertException):
-    pass
-
-
-class DockerfileStackException(GenerateAnsibleASTException):
-    pass
-
-
-class MatchAnsibleModuleException(ConvertException):
-    pass
-
-
-class TestException(Exception):
-    pass
-
-
-class AnsibleCheckException(TestException):
-    pass
-
-
-class CloudException(TestException):
+class RoleGeneratorException(BaseException):
     pass

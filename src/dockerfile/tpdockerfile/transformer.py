@@ -1,7 +1,7 @@
 import dockerfile
 
 from src.dockerfile.main import *
-from draft_exception import TPDockerfileGeneratorException
+from exception import TPDockerfileParserException
 
 from typing import Tuple, Type, Dict
 
@@ -14,7 +14,7 @@ class DockerfileCommandTransformer:
             res = getattr(DockerfileCommandTransformer, "transform_" + cmd.cmd.lower())(cmd)
             return res
         except AttributeError:
-            raise TPDockerfileGeneratorException("Unknown directive " + cmd.cmd)
+            raise TPDockerfileParserException("Unknown directive " + cmd.cmd)
 
     @staticmethod
     def transform_run(directive) -> Tuple[Type, Dict]:

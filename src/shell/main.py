@@ -1,7 +1,7 @@
 from typing import List, Tuple
 from dataclasses import dataclass
 
-from draft_exception import ShellParserException
+from exception import ShellParserException
 
 
 class ShellObject:
