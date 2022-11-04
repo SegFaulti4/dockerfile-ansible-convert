@@ -46,7 +46,7 @@ class RoleGenerator:
         self._df_content = dc
         self._task_matcher = tm
 
-    def generate(self):
+    def generate(self) -> List[Dict[str, Any]]:
         # method for each DockerfileDirective
         handle_map = {
             RunDirective: self._handle_run,

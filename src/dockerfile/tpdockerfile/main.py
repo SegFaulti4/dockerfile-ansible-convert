@@ -1,7 +1,7 @@
 from src.dockerfile.tpdockerfile.transformer import *
 
 
-class TPDockerfileContentGenerator(DockerfileContentGenerator):
+class TPDockerfileParser(DockerfileParser):
 
     def parse_str(self, val: str) -> List[Tuple[Type, Dict]]:
         parsed = dockerfile.parse_string(val)

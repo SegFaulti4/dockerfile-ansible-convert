@@ -114,7 +114,7 @@ class ShellDirective(UselessDirective):
 
 
 @dataclass
-class DockerfileContentGenerator:
+class DockerfileParser:
     shell_parser: ShellParser
 
     def parse_str(self, val: str) -> List[Tuple[Type, Dict]]:

@@ -11,7 +11,7 @@ setup(
     name='dockerfile_ansible_convert',
     entry_points={
         'console_scripts': [
-            'd2a-convert = dockerfile_ansible_convert.main:main'
+            'd2a-convert = main:main'
         ],
     }
 )
