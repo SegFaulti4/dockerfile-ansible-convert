@@ -548,18 +548,18 @@ class ExampleBasedMatcher(TaskMatcher):
         return comm_call, res
 
     @staticmethod
-    def _empty_command_call_field(command_field: Dict[str, List[ShellWordObject]]):
-        res = 0
+    def _empty_command_call_field(command_field: Dict[str, List[ShellWordObject]]) -> bool:
         for v in command_field.values():
             if isinstance(v, list):
-                res += len(v)
+                if len(v):
+                    return False
             else:
-                res += 1
+                return False
 
-        return res == 0
+        return True
 
     @staticmethod
-    def _empty_command_call(comm_call: ShellCommandCall):
+    def _empty_command_call(comm_call: ShellCommandCall) -> bool:
         return ExampleBasedMatcher._empty_command_call_field(comm_call.params) and \
                ExampleBasedMatcher._empty_command_call_field(comm_call.opts)
 
@@ -586,6 +586,8 @@ class ExampleBasedMatcher(TaskMatcher):
         if command_call is None:
             return None
         matched_call = ExampleBasedMatcher.match_command_call(command_call)
+        if matched_call is None:
+            return None
 
         def replace_word_object(word: ShellWordObject):
             return word.value

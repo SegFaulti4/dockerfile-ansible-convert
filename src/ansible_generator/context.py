@@ -125,11 +125,15 @@ class AnsiblePlayContext:
     def resolve_shell_expression(self, expr: ShellExpression) -> Union[str, None]:
         words: List[ShellWordObject] = []
         for part in expr.parts:
-            if isinstance(part, ShellWordObject):
-                resolved = self.resolve_shell_word(part)
-                if resolved is None:
-                    return None
-                words.append(resolved)
+            if isinstance(part, ShellCommandObject):
+                for word in part.parts:
+                    if isinstance(word, ShellWordObject):
+                        resolved = self.resolve_shell_word(word)
+                        if resolved is None:
+                            return None
+                        words.append(resolved)
+                    else:
+                        return None
             else:
                 return None
 

@@ -1,4 +1,6 @@
 import logging
+import oyaml as yaml
+import sys
 
 from sandbox.shell_parser.main import SandboxShellParser
 from sandbox.dockerfile_parser.main import SandboxDockerfileParser
@@ -51,11 +53,11 @@ if __name__ == "__main__":
                     print(f"{obj}")
                 print()
 
-            role = SandboxRoleGenerator(tm=task_matcher, dc=content).generate()
+            tasks = SandboxRoleGenerator(tm=task_matcher, dc=content).generate()
             if PRINT_ROLE_GENERATOR:
                 print('##################')
                 print("# ROLE GENERATOR #")
                 print('##################')
                 print()
-                print(role)
+                yaml.dump(tasks, sys.stdout)
                 print()
