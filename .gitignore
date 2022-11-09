@@ -130,3 +130,5 @@ dmypy.json
 /data/dockerfiles/
 /data/playbooks/
 /tests/clouds.yaml
+/sandbox/utils/clouds.yaml
+/sandbox/utils/instance.cfg
