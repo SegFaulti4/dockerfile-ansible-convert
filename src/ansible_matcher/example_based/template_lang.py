@@ -2,8 +2,13 @@ from src.ansible_matcher.example_based.antlr.src.CommandTemplateLexer import Com
 from src.ansible_matcher.example_based.antlr.src.CommandTemplateParser import CommandTemplateParser
 from src.ansible_matcher.example_based.antlr.src.CommandTemplateParserVisitor import CommandTemplateParserVisitor
 from antlr4 import *
-from typing import List, Union, Optional
-from dataclasses import dataclass
+from typing import List, Union, Optional, Dict
+from dataclasses import dataclass, field
+
+from src.ansible_matcher.main import *
+from src.shell.main import *
+from src.ansible_matcher.example_based.commands_config import match_config
+from src.utils.meta import MetaSingleton
 
 
 @dataclass
@@ -81,6 +86,30 @@ class ConstructingTemplateVisitor(CommandTemplateParserVisitor):
 
         return TemplateField(field_name=field_name.getText(), spec_many=spec_many,
                              spec_optional=spec_optional, spec_path=spec_path)
+
+@dataclass
+class CommandOpt:
+    arg_required: bool
+    many_args: bool
+    name: str
+
+
+@dataclass
+class SubcommandMixin:
+    command_name: str
+    subcommand_name: str
+
+
+@dataclass
+class ExtractedCommandCall(SubcommandMixin):
+    params: Dict[str, List[ShellWordObject]] = field(default_factory=dict)
+    opts: Dict[str, List[ShellWordObject]] = field(default_factory=dict)
+
+
+@dataclass
+class ExtractedCommandExample(SubcommandMixin):
+    params: Dict[str, List[TemplateObject]] = field(default_factory=dict)
+    opts: Dict[str, List[TemplateObject]] = field(default_factory=dict)
 
 
 if __name__ == "__main__":
