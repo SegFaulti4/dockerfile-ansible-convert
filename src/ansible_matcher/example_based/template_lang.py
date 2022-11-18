@@ -4,88 +4,195 @@ from src.ansible_matcher.example_based.antlr.src.CommandTemplateParserVisitor im
 from antlr4 import *
 from typing import List, Union, Optional, Dict
 from dataclasses import dataclass, field
+from itertools import zip_longest
 
 from src.ansible_matcher.main import *
 from src.shell.main import *
 from src.ansible_matcher.example_based.commands_config import match_config
 from src.utils.meta import MetaSingleton
 
-
-@dataclass
-class TemplateWord:
-    word: str
+from src.log import globalLog
 
 
 @dataclass
 class TemplateField:
-    field_name: str
+    name: str
+    pos: Tuple[int, int]
     spec_many: bool
     spec_optional: bool
     spec_path: bool
 
 
 @dataclass
-class TemplateObject:
-    parts: List[Union[TemplateWord, TemplateField]]
+class TemplatePart:
+    value: str
+    parts: List[TemplateField]
+
+
+CommandTemplate = List[TemplatePart]
+Command = List[ShellWordObject]
 
 
 @dataclass
-class CommandTemplate:
-    objects: List[TemplateObject]
+class TemplateTweaks:
+    cwd: str
+
+    def tweak_spec_path(self, obj: Union[TemplatePart, ShellWordObject]):
+        # TODO
+        raise NotImplementedError
 
 
-class ConstructingTemplateVisitor(CommandTemplateParserVisitor):
+class CommandTemplateMatcher:
+    ObjectPart = Union[TemplatePart, ShellWordObject]
+    Object = Union[CommandTemplate, Command]
 
-    def visitCommand_template(self, ctx: CommandTemplateParser.Command_templateContext) -> Optional[CommandTemplate]:
-        obj_contexts = ctx.template_object()
-        if obj_contexts is None or not obj_contexts:
+    template: CommandTemplate
+    template_tweaks: Optional[TemplateTweaks]
+    _cur: Optional[TemplatePart]
+
+    def __init__(self, template: CommandTemplate, template_tweaks: TemplateTweaks = None):
+        self.template = template
+        self.template_tweaks = template_tweaks
+
+    @staticmethod
+    def _cut_object_part(part: ObjectPart, start_pos: int, end_pos: int) -> ObjectPart:
+        raise NotImplementedError
+
+    @staticmethod
+    def _subpart_list(part: TemplatePart) -> List[Union[str, TemplateField]]:
+        subpart_list = []
+        t = part.value[0:part.parts[0].pos[0]]
+        if t:
+            subpart_list.append(t)
+        cur_pos = part.parts[0].pos[1]
+
+        for subpart in part.parts[1:]:
+            subpart_list.append(part.value[cur_pos:subpart.pos[0]])
+            subpart_list.append(subpart)
+            cur_pos = subpart.pos[1]
+
+        t = part.value[cur_pos:]
+        if t:
+            subpart_list.append(t)
+
+        return subpart_list
+
+    def match_object(self, obj: Object):
+        raise NotImplementedError
+
+    # TODO: refactor as class
+    def _match_object_part(self, obj_part: ObjectPart) -> Optional[Dict[str, Union[ObjectPart, List[ObjectPart]]]]:
+        if self._cur is None:
             return None
 
-        objects = []
-        for obj_ctx in obj_contexts:
-            obj = self.visitTemplate_object(obj_ctx)
-            if obj is None:
-                return None
-            objects.append(obj)
+        many_flag = False
+        match_dict = dict()
+        subpart_list = self._subpart_list(self._cur)
+        obj_pos = 0
+        obj_idx = 0
 
-        return CommandTemplate(objects=objects)
+        def handle_field(field: TemplateField, start_pos: int, end_pos: int) -> bool:
+            nonlocal many_flag
+            nonlocal match_dict
 
-    def visitTemplate_object(self, ctx: CommandTemplateParser.Template_objectContext) -> Optional[TemplateObject]:
-        if ctx.children is None or not ctx.children:
-            return None
+            # spec_optional behavior
+            if start_pos == end_pos:
+                if not field.spec_optional:
+                    globalLog.debug("Can't allow empty non optional template field")
+                    return False
+                return True
 
-        parts = []
-        for child in ctx.getChildren():
-            if isinstance(child, CommandTemplateParser.Template_wordContext):
-                part = self.visitTemplate_word(child)
-                if part is None:
+            field_name = field.name
+            field_value = self._cut_object_part(obj_part, start_pos, end_pos)
+
+            # spec_path behavior
+            if field.spec_path:
+                if self.template_tweaks is None:
+                    globalLog.debug("Skipping spec_path handling")
+                else:
+                    field_value = self.template_tweaks.tweak_spec_path(field_value)
+
+            # spec_many behavior
+            if field.spec_many:
+                many_flag = True
+                if field_name not in match_dict or not isinstance(match_dict[field_name], list):
+                    match_dict[field_name] = []
+                match_dict[field_name].append(field_value)
+            else:
+                match_dict[field_name] = field_value
+
+            return True
+
+        for sub_a, sub_b in zip_longest(subpart_list, subpart_list[1:]):
+            if sub_b is None:
+                if isinstance(sub_a, str):
+                    start_pos = obj_pos
+                    if obj_idx < len(obj_part.parts):
+                        globalLog.debug("Can't match abstract subpart with constant string")
+                        return None
+                    else:
+                        end_pos = len(obj_part.value)
+
+                    if len(sub_a) > end_pos - start_pos:
+                        globalLog.debug("Not enough chars at the end of matching part to match constant string")
+                        return None
+                    if not obj_part.value[start_pos:end_pos].startswith(sub_a):
+                        globalLog.debug("Constant strings don't match")
+                        return None
+
+                elif isinstance(sub_a, TemplateField):
+                    start_pos = obj_pos
+                    end_pos = len(obj_part.value)
+
+                    if not handle_field(sub_a, start_pos, end_pos):
+                        return None
+
+            elif isinstance(sub_a, str) and isinstance(sub_b, TemplateField):
+                start_pos = obj_pos
+                if obj_idx < len(obj_part.parts):
+                    end_pos = obj_part.parts[obj_idx].pos[0]
+                else:
+                    end_pos = len(obj_part.value)
+
+                if len(sub_a) > end_pos - start_pos:
+                    globalLog.debug("Not enough chars to match constant string")
                     return None
-                parts.append(part)
-            elif isinstance(child, CommandTemplateParser.Template_fieldContext):
-                part = self.visitTemplate_field(child)
-                if part is None:
+                if not obj_part.value[start_pos:end_pos].startswith(sub_a):
+                    globalLog.debug("Constant strings don't match")
                     return None
-                parts.append(part)
+                obj_pos += len(sub_a)
 
-        return TemplateObject(parts=parts)
+            elif isinstance(sub_a, TemplateField) and isinstance(sub_b, str):
+                start_pos = obj_pos
+                end_pos = -1
+                end_idx = obj_idx
 
-    def visitTemplate_word(self, ctx: CommandTemplateParser.Template_wordContext) -> Optional[TemplateWord]:
-        word = ctx.WORD()
-        if word is None:
-            return None
-        return TemplateWord(word=word.getText())
+                cur_pos = obj_pos
+                for subpart in obj_part.parts[obj_idx:]:
+                    if sub_b in obj_part.value[cur_pos:subpart.pos[0]]:
+                        end_pos = cur_pos + obj_part.value[cur_pos:subpart.pos[0]].find(sub_b) + len(sub_b)
+                        break
+                    cur_pos = subpart.pos[1]
+                    end_idx += 1
 
-    def visitTemplate_field(self, ctx: CommandTemplateParser.Template_fieldContext) -> Optional[TemplateField]:
-        field_name = ctx.FIELD_NAME()
-        if field_name is None:
-            return None
+                if end_pos == -1:
+                    if sub_b in obj_part.value[cur_pos:]:
+                        end_pos = cur_pos + obj_part.value[cur_pos:].find(sub_b) + len(sub_b)
+                    else:
+                        globalLog.debug("Couldn't find constant string")
+                        return None
 
-        spec_many = ctx.SPEC_MANY() is not None
-        spec_optional = ctx.SPEC_OPTIONAL() is not None
-        spec_path = ctx.SPEC_PATH() is not None
+                if not handle_field(sub_a, start_pos, end_pos):
+                    return None
 
-        return TemplateField(field_name=field_name.getText(), spec_many=spec_many,
-                             spec_optional=spec_optional, spec_path=spec_path)
+                obj_pos = end_pos
+                obj_idx = end_idx
+
+        if not many_flag:
+            self._cur = None
+
+        return match_dict
+
 
 @dataclass
 class CommandOpt:
@@ -108,8 +215,8 @@ class ExtractedCommandCall(SubcommandMixin):
 
 @dataclass
 class ExtractedCommandExample(SubcommandMixin):
-    params: Dict[str, List[TemplateObject]] = field(default_factory=dict)
-    opts: Dict[str, List[TemplateObject]] = field(default_factory=dict)
+    params: Dict[str, List[TemplatePart]] = field(default_factory=dict)
+    opts: Dict[str, List[TemplatePart]] = field(default_factory=dict)
 
 
 if __name__ == "__main__":
