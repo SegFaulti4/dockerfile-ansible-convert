@@ -1,9 +1,10 @@
+import re
+import dataclasses
 from src.ansible_matcher.example_based.antlr.src.CommandTemplateLexer import CommandTemplateLexer
 from src.ansible_matcher.example_based.antlr.src.CommandTemplateParser import CommandTemplateParser
 from src.ansible_matcher.example_based.antlr.src.CommandTemplateParserVisitor import CommandTemplateParserVisitor
 from antlr4 import *
 from typing import List, Union, Optional, Dict
-from dataclasses import dataclass, field
 from itertools import zip_longest
 
 from src.ansible_matcher.main import *
@@ -14,7 +15,7 @@ from src.utils.meta import MetaSingleton
 from src.log import globalLog
 
 
-@dataclass
+@dataclasses.dataclass
 class TemplateField:
     name: str
     pos: Tuple[int, int]
@@ -23,17 +24,35 @@ class TemplateField:
     spec_path: bool
 
 
-@dataclass
+@dataclasses.dataclass
 class TemplatePart:
     value: str
     parts: List[TemplateField]
 
+    def subpart_list(self):
+        res = []
+        t = self.value[0:self.parts[0].pos[0]]
+        if t:
+            res.append(t)
+        cur_pos = self.parts[0].pos[1]
 
-CommandTemplate = List[TemplatePart]
-Command = List[ShellWordObject]
+        for subpart in self.parts[1:]:
+            res.append(self.value[cur_pos:subpart.pos[0]])
+            res.append(subpart)
+            cur_pos = subpart.pos[1]
+
+        t = self.value[cur_pos:]
+        if t:
+            res.append(t)
+
+        return res
 
 
-@dataclass
+CommandTemplateParts = List[TemplatePart]
+CommandCallParts = List[ShellWordObject]
+
+
+@dataclasses.dataclass
 class TemplateTweaks:
     cwd: str
 
@@ -43,180 +62,141 @@ class TemplateTweaks:
 
 
 class CommandTemplateMatcher:
-    ObjectPart = Union[TemplatePart, ShellWordObject]
-    Object = Union[CommandTemplate, Command]
-
-    template: CommandTemplate
+    template: CommandTemplateParts
+    template_re: re.Pattern
+    template_fields_dict: Dict[str, TemplateField]
     template_tweaks: Optional[TemplateTweaks]
-    _cur: Optional[TemplatePart]
 
-    def __init__(self, template: CommandTemplate, template_tweaks: TemplateTweaks = None):
+    _RE_SHELL_PARAM_REPR = "α"
+    _RE_SHELL_WORD_SEP = "ω"
+
+    def __init__(self, template: CommandTemplateParts, template_tweaks: TemplateTweaks = None):
         self.template = template
+        comm_re_str, fields = self._gen_command_template_re(template)
+        self.template_re = re.compile(comm_re_str)
+        self.template_fields_dict = {f.name: f for f in fields}
         self.template_tweaks = template_tweaks
 
     @staticmethod
-    def _cut_object_part(part: ObjectPart, start_pos: int, end_pos: int) -> ObjectPart:
-        raise NotImplementedError
+    def _gen_template_field_re(template_field: TemplateField):
+        # assuming that field_name is unique in current template
+        return fr"(?P<field_{template_field.name}>.*)"
 
     @staticmethod
-    def _subpart_list(part: TemplatePart) -> List[Union[str, TemplateField]]:
-        subpart_list = []
-        t = part.value[0:part.parts[0].pos[0]]
-        if t:
-            subpart_list.append(t)
-        cur_pos = part.parts[0].pos[1]
-
-        for subpart in part.parts[1:]:
-            subpart_list.append(part.value[cur_pos:subpart.pos[0]])
-            subpart_list.append(subpart)
-            cur_pos = subpart.pos[1]
-
-        t = part.value[cur_pos:]
-        if t:
-            subpart_list.append(t)
-
-        return subpart_list
-
-    def match_object(self, obj: Object):
-        raise NotImplementedError
-
-    # TODO: refactor as class
-    def _match_object_part(self, obj_part: ObjectPart) -> Optional[Dict[str, Union[ObjectPart, List[ObjectPart]]]]:
-        if self._cur is None:
-            return None
+    def _gen_template_part_re(template_part: TemplatePart) -> Tuple[str, List[TemplateField]]:
+        subpart_list = template_part.subpart_list()
+        res_str = ""
+        res_list = []
 
         many_flag = False
-        match_dict = dict()
-        subpart_list = self._subpart_list(self._cur)
-        obj_pos = 0
-        obj_idx = 0
 
-        def handle_field(field: TemplateField, start_pos: int, end_pos: int) -> bool:
-            nonlocal many_flag
-            nonlocal match_dict
+        for subpart in subpart_list:
+            if isinstance(subpart, str):
+                res_str += re.escape(subpart)
+            elif isinstance(subpart, TemplateField):
+                res_str += CommandTemplateMatcher._gen_template_field_re(subpart)
+                res_list.append(subpart)
+                many_flag = many_flag or subpart.spec_many
 
-            # spec_optional behavior
-            if start_pos == end_pos:
-                if not field.spec_optional:
-                    globalLog.debug("Can't allow empty non optional template field")
-                    return False
-                return True
+        if many_flag:
+            res_str = f"({res_str})*"
+        return res_str, res_list
 
-            field_name = field.name
-            field_value = self._cut_object_part(obj_part, start_pos, end_pos)
+    @staticmethod
+    def _gen_command_template_re(command_template: CommandTemplateParts) -> Tuple[str, List[TemplateField]]:
+        parts = [CommandTemplateMatcher._gen_template_part_re(part) for part in command_template]
 
-            # spec_path behavior
-            if field.spec_path:
-                if self.template_tweaks is None:
-                    globalLog.debug("Skipping spec_path handling")
+        return fr"{CommandTemplateMatcher._RE_SHELL_WORD_SEP}".join(
+            part[0] for part in parts
+        ), [
+                   f for part in parts for f in part[1]
+               ]
+
+    @staticmethod
+    def _preprocess_shell_word(word: ShellWordObject) -> Tuple[str, List[str]]:
+        res_str = ""
+        res_list = []
+        slice_start = 0
+
+        for param in word.parts:
+            res_str += word.value[slice_start:param.pos[0]]
+            res_str += CommandTemplateMatcher._RE_SHELL_PARAM_REPR
+            res_list.append(word.value[param.pos[0]:param.pos[1]])
+            slice_start = param.pos[1]
+        res_str += word.value[slice_start:]
+
+        return res_str, res_list
+
+    @staticmethod
+    def _preprocess_command(obj: CommandCallParts) -> Tuple[str, List[str]]:
+        preprocessed = [CommandTemplateMatcher._preprocess_shell_word(word) for word in obj]
+
+        return CommandTemplateMatcher._RE_SHELL_WORD_SEP.join(
+            prep[0] for prep in preprocessed
+        ), [
+                   w for prep in preprocessed for w in prep[1]
+               ]
+
+    def match(self, obj: CommandCallParts) -> Optional[Dict[str, str]]:
+        res = dict()
+        command_str, command_params = self._preprocess_command(obj)
+        match = self.template_re.fullmatch(command_str)
+
+        params_slice_start = 0
+        for key, value in match.groupdict().items():
+            param_count = value.count(self._RE_SHELL_PARAM_REPR)
+            constants = value.split(self._RE_SHELL_PARAM_REPR)
+
+            field_name = key
+            field_value = ""
+            for constant, param in zip_longest(constants, command_params[params_slice_start:][:param_count]):
+                if param is None:
+                    field_value += constant
                 else:
-                    field_value = self.template_tweaks.tweak_spec_path(field_value)
+                    field_value += constant + param
 
-            # spec_many behavior
-            if field.spec_many:
-                many_flag = True
-                if field_name not in match_dict or not isinstance(match_dict[field_name], list):
-                    match_dict[field_name] = []
-                match_dict[field_name].append(field_value)
+            template_field = self.template_fields_dict[field_name]
+            if template_field.spec_many:
+                if field_name not in res:
+                    res[field_name] = []
+                res[field_name].append(field_value)
             else:
-                match_dict[field_name] = field_value
+                res[key] = field_value
+            params_slice_start += param_count
 
-            return True
-
-        for sub_a, sub_b in zip_longest(subpart_list, subpart_list[1:]):
-            if sub_b is None:
-                if isinstance(sub_a, str):
-                    start_pos = obj_pos
-                    if obj_idx < len(obj_part.parts):
-                        globalLog.debug("Can't match abstract subpart with constant string")
-                        return None
+        for template_field in self.template_fields_dict.values():
+            if not template_field.spec_optional:
+                if template_field.name not in res:
+                    globalLog.debug(f"Match failed - non optional field ({template_field.name}) doesn't have value")
+                    return None
+            if template_field.spec_path:
+                if template_field in res:
+                    if self.template_tweaks is None:
+                        globalLog.debug(
+                            f"Match warning - can't process path field ({template_field}), 'tweaks' is None")
                     else:
-                        end_pos = len(obj_part.value)
+                        res[template_field.name] = self.template_tweaks.tweak_spec_path(res[template_field.name])
 
-                    if len(sub_a) > end_pos - start_pos:
-                        globalLog.debug("Not enough chars at the end of matching part to match constant string")
-                        return None
-                    if not obj_part.value[start_pos:end_pos].startswith(sub_a):
-                        globalLog.debug("Constant strings don't match")
-                        return None
-
-                elif isinstance(sub_a, TemplateField):
-                    start_pos = obj_pos
-                    end_pos = len(obj_part.value)
-
-                    if not handle_field(sub_a, start_pos, end_pos):
-                        return None
-
-            elif isinstance(sub_a, str) and isinstance(sub_b, TemplateField):
-                start_pos = obj_pos
-                if obj_idx < len(obj_part.parts):
-                    end_pos = obj_part.parts[obj_idx].pos[0]
-                else:
-                    end_pos = len(obj_part.value)
-
-                if len(sub_a) > end_pos - start_pos:
-                    globalLog.debug("Not enough chars to match constant string")
-                    return None
-                if not obj_part.value[start_pos:end_pos].startswith(sub_a):
-                    globalLog.debug("Constant strings don't match")
-                    return None
-                obj_pos += len(sub_a)
-
-            elif isinstance(sub_a, TemplateField) and isinstance(sub_b, str):
-                start_pos = obj_pos
-                end_pos = -1
-                end_idx = obj_idx
-
-                cur_pos = obj_pos
-                for subpart in obj_part.parts[obj_idx:]:
-                    if sub_b in obj_part.value[cur_pos:subpart.pos[0]]:
-                        end_pos = cur_pos + obj_part.value[cur_pos:subpart.pos[0]].find(sub_b) + len(sub_b)
-                        break
-                    cur_pos = subpart.pos[1]
-                    end_idx += 1
-
-                if end_pos == -1:
-                    if sub_b in obj_part.value[cur_pos:]:
-                        end_pos = cur_pos + obj_part.value[cur_pos:].find(sub_b) + len(sub_b)
-                    else:
-                        globalLog.debug("Couldn't find constant string")
-                        return None
-
-                if not handle_field(sub_a, start_pos, end_pos):
-                    return None
-
-                obj_pos = end_pos
-                obj_idx = end_idx
-
-        if not many_flag:
-            self._cur = None
-
-        return match_dict
+        return res
 
 
-@dataclass
+@dataclasses.dataclass
 class CommandOpt:
     arg_required: bool
     many_args: bool
     name: str
 
 
-@dataclass
-class SubcommandMixin:
-    command_name: str
-    subcommand_name: str
+@dataclasses.dataclass
+class ExtractedCommandCall:
+    params: CommandCallParts = dataclasses.field(default_factory=dict)
+    opts: Dict[str, List[ShellWordObject]] = dataclasses.field(default_factory=dict)
 
 
-@dataclass
-class ExtractedCommandCall(SubcommandMixin):
-    params: Dict[str, List[ShellWordObject]] = field(default_factory=dict)
-    opts: Dict[str, List[ShellWordObject]] = field(default_factory=dict)
-
-
-@dataclass
-class ExtractedCommandExample(SubcommandMixin):
-    params: Dict[str, List[TemplatePart]] = field(default_factory=dict)
-    opts: Dict[str, List[TemplatePart]] = field(default_factory=dict)
+@dataclasses.dataclass
+class ExtractedCommandTemplate:
+    params: CommandTemplateParts = dataclasses.field(default_factory=dict)
+    opts: Dict[str, List[TemplatePart]] = dataclasses.field(default_factory=dict)
 
 
 if __name__ == "__main__":
