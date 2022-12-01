@@ -1,0 +1,53 @@
+{
+    "mkdir": {
+        "patterns": "mkdir {{ parameters : m }}",
+        "opts": {
+            "mode": {
+                "arg_required": false,
+                "many_args": false,
+                "aliases": [
+                    "-m",
+                    "--mode"
+                ]
+            },
+            "parents": {
+                "arg_required": false,
+                "many_args": false,
+                "aliases": [
+                    "-p",
+                    "--parents"
+                ]
+            },
+            "verbose": {
+                "arg_required": false,
+                "many_args": false,
+                "aliases": [
+                    "-v",
+                    "--verbose"
+                ]
+            }
+        },
+        "opts_postprocess_map": {
+            "-m {{ mode }}": {
+                "file": {
+                    "mode": "{{ mode }}"
+                }
+            },
+            "-v": {}
+        },
+        "examples": {
+            "mkdir -p {{ directories : mp }}": {
+                "file": {
+                    "path": "{{ directories }}",
+                    "state": "directory"
+                }
+            },
+            "mkdir {{ directories : mp }}": {
+                "file": {
+                    "path": "{{ directories }}",
+                    "state": "directory"
+                }
+            }
+        }
+    }
+}

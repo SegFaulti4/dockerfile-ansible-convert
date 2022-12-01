@@ -1,5 +1,6 @@
 from template_lang import *
 import regex
+import re
 
 
 def test1():
