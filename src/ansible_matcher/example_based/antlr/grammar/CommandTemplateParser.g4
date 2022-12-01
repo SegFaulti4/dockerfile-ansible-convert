@@ -3,11 +3,12 @@ parser grammar CommandTemplateParser;
 options { tokenVocab=CommandTemplateLexer; }
 
 command_template
-    :   template_object (SPACE template_object)*
+    :   template_part (SPACE template_part)*
     ;
 
-template_object
-    :   (template_word | template_field)+
+template_part
+    :   template_word (template_field template_word)* template_field?
+    |   template_field (template_word template_field)* template_word?
     ;
 
 template_word
