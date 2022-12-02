@@ -5,12 +5,9 @@ from src.ansible_matcher.example_based.antlr.src.CommandTemplateLexer import Com
 from src.ansible_matcher.example_based.antlr.src.CommandTemplateParser import CommandTemplateParser
 from src.ansible_matcher.example_based.antlr.src.CommandTemplateParserVisitor import CommandTemplateParserVisitor
 from antlr4 import *
-from typing import List, Union, Optional, Dict
+from typing import List, Union, Optional, Dict, Any
 
-from src.ansible_matcher.main import *
 from src.shell.main import *
-from src.ansible_matcher.example_based.commands_config import match_config
-from src.utils.meta import MetaSingleton
 
 from src.log import globalLog
 
@@ -29,7 +26,7 @@ class TemplatePart:
     value: str
     parts: List[TemplateField]
 
-    def subpart_list(self):
+    def subpart_list(self) -> List[Union[str, TemplateField]]:
         if not self.parts:
             return [self.value]
 
@@ -151,6 +148,9 @@ class TemplateTweaks:
         raise NotImplementedError
 
 
+TemplateMatchResult = Dict[str, Union[str, List[str]]]
+
+
 class CommandTemplateMatcher:
     template: CommandTemplateParts
     template_regex: regex.Pattern
@@ -160,12 +160,46 @@ class CommandTemplateMatcher:
     _RE_SHELL_PARAM_REPR = "α"
     _RE_SHELL_WORD_SEP = "ω"
 
+    @staticmethod
+    def merge_match_results(d1: TemplateMatchResult, d2: TemplateMatchResult) -> TemplateMatchResult:
+        for k, v in d2.items():
+            if isinstance(v, list):
+                if k not in d1:
+                    d1[k] = []
+                d1[k].extend(v)
+            else:
+                d1[k] = v
+        return d1
+
     def __init__(self, template: CommandTemplateParts, template_tweaks: TemplateTweaks = None):
         self.template = template
         comm_re_str, fields = self._gen_command_template_regex(template)
         self.template_regex = regex.compile(comm_re_str)
         self.template_fields_dict = {f.name: f for f in fields}
         self.template_tweaks = template_tweaks
+
+    def match(self, obj: CommandCallParts) -> Optional[Tuple[TemplateMatchResult, CommandCallParts]]:
+        command_str, command_params = self._preprocess_command(obj)
+
+        match = self.template_regex.match(command_str)
+        if match is None:
+            return None
+
+        field_values = self._extract_values(match, command_params)
+        if field_values is None:
+            return None
+
+        unmatched_parts = self._unmatched_call_parts(match, obj, command_params, command_str)
+        return field_values, unmatched_parts
+
+    def full_match(self, obj: CommandCallParts) -> Optional[TemplateMatchResult]:
+        command_str, command_params = self._preprocess_command(obj)
+
+        match = self.template_regex.fullmatch(command_str)
+        if match is None:
+            return None
+
+        return self._extract_values(match, command_params)
 
     @staticmethod
     def _gen_template_field_regex(template_field: TemplateField):
@@ -193,7 +227,7 @@ class CommandTemplateMatcher:
     @staticmethod
     def _gen_command_template_regex(command_template: CommandTemplateParts) -> Tuple[str, List[TemplateField]]:
         sep = CommandTemplateMatcher._RE_SHELL_WORD_SEP
-        res_str = "^"
+        res_str = ""
         res_list = []
 
         for part in command_template[:-1]:
@@ -205,7 +239,6 @@ class CommandTemplateMatcher:
 
         last_str, last_list, last_flag = CommandTemplateMatcher._gen_template_part_regex(command_template[-1])
         res_str += f"({last_str}{sep})*({last_str})?" if last_flag else last_str
-        res_str += "$"
         res_list.extend(last_list)
 
         return res_str, res_list
@@ -235,7 +268,7 @@ class CommandTemplateMatcher:
             w for prep in preprocessed for w in prep[1]
         ]
 
-    def _resolve_field_value(self, value: str, command_params: List[str], spec_path: bool) \
+    def _resolve_field_value(self, value: str, command_params: List[str], spec_path: bool = True) \
             -> Tuple[Optional[str], Optional[int]]:
         param_count = value.count(CommandTemplateMatcher._RE_SHELL_PARAM_REPR)
         constants = value.split(CommandTemplateMatcher._RE_SHELL_PARAM_REPR)
@@ -245,6 +278,9 @@ class CommandTemplateMatcher:
             return None, None
 
         field_value = ""
+        # don't need to handle the case when value starts with parameter
+        # or when there is two or more parameters in a row
+        # since corresponding constants returned by split() function will be ''
         for constant, param in itertools.zip_longest(constants, command_params[:param_count]):
             if param is None:
                 field_value += constant
@@ -259,10 +295,8 @@ class CommandTemplateMatcher:
 
         return field_value, param_count
 
-    def match(self, obj: CommandCallParts) -> Optional[Dict[str, str]]:
+    def _extract_values(self, match: regex.Match, comm_param_values: List[str]) -> Optional[Dict[str, str]]:
         res = dict()
-        command_str, command_params = self._preprocess_command(obj)
-        match = self.template_regex.fullmatch(command_str)
 
         params_start = 0
         for field_name, field in self.template_fields_dict.items():
@@ -276,7 +310,7 @@ class CommandTemplateMatcher:
                     continue
 
             if not field.spec_many:
-                field_value, param_count = self._resolve_field_value(captures[-1], command_params[params_start:],
+                field_value, param_count = self._resolve_field_value(captures[-1], comm_param_values[params_start:],
                                                                      field.spec_path)
                 if field_value is None:
                     return None
@@ -285,7 +319,7 @@ class CommandTemplateMatcher:
             else:
                 field_values = []
                 for capture in captures:
-                    field_value, param_count = self._resolve_field_value(capture, command_params[params_start:],
+                    field_value, param_count = self._resolve_field_value(capture, comm_param_values[params_start:],
                                                                          field.spec_path)
                     if field_value is None:
                         return None
@@ -295,177 +329,94 @@ class CommandTemplateMatcher:
 
         return res
 
+    @staticmethod
+    def _unmatched_call_parts(match: regex.Match, comm: CommandCallParts,
+                              comm_param_values: List[str], command_str: str) -> CommandCallParts:
+        unmatched_str = command_str[match.span()[1]:]
+        param_count = unmatched_str.count(CommandTemplateMatcher._RE_SHELL_PARAM_REPR)
+        words = unmatched_str.split(CommandTemplateMatcher._RE_SHELL_WORD_SEP)
 
-@dataclasses.dataclass
-class CommandOpt:
-    arg_required: bool
-    many_args: bool
-    name: str
+        comm_params = [param for word in comm for param in word.parts]
 
+        res = []
+        param_start = len(comm_params) - param_count
+        for word in words:
+            param_count = word.count(CommandTemplateMatcher._RE_SHELL_PARAM_REPR)
+            consts = word.split(CommandTemplateMatcher._RE_SHELL_PARAM_REPR)
 
-@dataclasses.dataclass
-class ExtractedCommandCall:
-    params: CommandCallParts = dataclasses.field(default_factory=list)
-    opts: Dict[str, List[ShellWordObject]] = dataclasses.field(default_factory=dict)
+            value = ""
+            parts = []
+            for const, param_idx in itertools.zip_longest(consts, range(param_start, param_start + param_count)):
+                value += const
+                if param_idx is not None:
+                    param = comm_params[param_idx]
+                    param_value = comm_param_values[param_idx]
+                    parts.append(ShellParameterObject(
+                        name=param.name,
+                        pos=(len(value), len(value) + len(param_value))
+                    ))
+                    value += param_value
 
+            res.append(ShellWordObject(value=value, parts=parts))
 
-@dataclasses.dataclass
-class ExtractedCommandTemplate:
-    params: CommandTemplateParts = dataclasses.field(default_factory=list)
-    opts: Dict[str, List[TemplatePart]] = dataclasses.field(default_factory=dict)
-
-
-class CommandOptsExtractor:
-    opts_map: Dict[str, CommandOpt]
-    _rt = None
-
-    @dataclasses.dataclass
-    class RT:
-        opts: List = dataclasses.field(default_factory=list)
-        params: List = dataclasses.field(default_factory=list)
-        words: List = dataclasses.field(default_factory=list)
-        
-    def __init__(self, opts_map: Optional[Dict[str, CommandOpt]] = None):
-        if opts_map is None:
-            opts_map = dict()
-        self.opts_map = opts_map
-
-    def extract(self, comm: Union[CommandCallParts, CommandTemplateParts]) \
-            -> Optional[Union[ExtractedCommandCall, ExtractedCommandTemplate]]:
-
-        self._extract(comm)
-        res = None
-
-        if self._rt is not None:
-            if all(isinstance(word, ShellWordObject) for word in comm):
-                opts = self._group_opt_args()
-                res = ExtractedCommandCall(params=self._rt.params,
-                                           opts=opts)
-
-            elif all(isinstance(part, TemplatePart) for part in comm):
-                opts = self._group_opt_args()
-                res = ExtractedCommandTemplate(params=self._rt.params,
-                                               opts=opts)
-
-        self._rt = None
         return res
 
-    def _extract(self, comm: Union[CommandCallParts, CommandTemplateParts]):
-        self._rt = CommandOptsExtractor.RT(words=comm)
 
-        while self._rt.words:
-            word = self._rt.words[0]
+class TemplateFiller:
 
-            if not word.value.startswith('-'):
-                self._rt.params.append(word)
-                self._rt.words.pop(0)
-                continue
+    template: TemplatePart
 
-            if word.value == '--':
-                self._rt.params.extend(self._rt.words[1:])
-                self._rt.words.clear()
-                break
+    def __init__(self, templ: CommandTemplateParts):
+        value = templ[0].value
+        parts = templ[0].parts
 
-            if word.value.startswith('--'):
-                if not self._probe_long():
-                    self._rt = None
-                    return
+        for part in templ[1:]:
+            value += " "
+            for f in part.parts:
+                parts.append(TemplateField(name=f.name, pos=(f.pos[0] + len(value), f.pos[1] + len(value)),
+                                           spec_many=False, spec_optional=False, spec_path=False))
+        self.template = TemplatePart(value=value, parts=parts)
+
+    def fill(self, fields_dict: TemplateMatchResult) -> Optional[Union[str, List[str]]]:
+        res_size = 0
+        single_value_fields = []
+        list_values_fields = []
+        for f in self.template.parts:
+            if f.name not in fields_dict:
+                return None
+            if isinstance(fields_dict[f.name], list):
+                if res_size == 0:
+                    res_size = len(fields_dict[f.name])
+                elif res_size != len(fields_dict[f.name]):
+                    return None
+                list_values_fields.append(f.name)
             else:
-                if not self._probe_short():
-                    self._rt = None
-                    return
+                single_value_fields.append(f.name)
 
-    def _probe_long(self):
-        word = self._rt.words.pop(0)
-        eq_pos = word.value.find('=')
-        if eq_pos != -1:
-            opt_name = word.value[:eq_pos]
-            arg = self._cut_token(word, eq_pos + 1)
-            if arg is None:
-                return False
+        if res_size == 0:
+            return TemplateFiller.fill_single_values(self.template, fields_dict)
         else:
-            opt_name = word.value
-            arg = None
-
-        opt = self._opt_match(opt_name)
-        if opt is None:
-            return False
-        if opt.arg_required and arg is None:
-            if not self._rt.words or self._rt.words[0].value.startswith('-'):
-                globalLog.debug("Extraction failed - Required arg is not provided for opt " + opt.name)
-                return False
-            arg = self._rt.words.pop(0)
-        self._rt.opts.append((opt, arg))
-        return True
-
-    def _probe_short(self):
-        word = self._rt.words.pop(0)
-
-        for i in range(1, len(word.value)):
-            opt_name = word.value[i]
-            opt = self._opt_match("-" + opt_name)
-            if opt is None:
-                return False
-
-            if opt.arg_required:
-                if word.value[i + 1:] != '':
-                    arg = self._cut_token(word, i + 1)
-                    if arg is None:
-                        return False
-                else:
-                    if not self._rt.words:
-                        globalLog.debug("Extraction failed - Required arg is not provided for opt " + opt.name)
-                        return False
-                    arg = self._rt.words.pop(0)
-                self._rt.opts.append((opt, arg))
-                break
-            else:
-                self._rt.opts.append((opt, None))
-        return True
-
-    def _opt_match(self, opt_name):
-        name_matches = [o for o in self.opts_map if o.startswith(opt_name)]
-        if not name_matches:
-            globalLog.debug("Extraction failed - No matching opts found for " + opt_name)
-            return None
-        if opt_name in name_matches:
-            return self.opts_map[opt_name]
-        if len(name_matches) > 1:
-            globalLog.debug("Extraction failed - Too many matching opts for " + opt_name)
-            return None
-        return self.opts_map[name_matches[0]]
+            res = []
+            values_dict = {f: fields_dict[f] for f in single_value_fields}
+            for i in range(res_size):
+                for f in list_values_fields:
+                    values_dict[f] = fields_dict[f][i]
+                res.append(TemplateFiller.fill_single_values(self.template, values_dict))
+                if res[-1] is None:
+                    return None
+            return res
 
     @staticmethod
-    def _cut_token(token: Union[ShellWordObject, TemplatePart], start_pos: int) \
-            -> Optional[Union[ShellWordObject, TemplatePart]]:
-
-        if isinstance(token, ShellWordObject):
-            part_type = ShellParameterObject
-            err_msg = f"Extraction failed - can't cut shell word - {token.value}"
-        elif isinstance(token, TemplatePart):
-            part_type = TemplateField
-            err_msg = f"Extraction failed - can't cut template part - {token.value}"
-        else:
-            return None
-
-        token.value = token.value[start_pos:]
-        for part in filter(lambda x: isinstance(x, part_type), token.parts):
-            if part.pos[0] < start_pos:
-                globalLog.debug(err_msg)
-                return None
-            part.pos = part.pos[0] - start_pos, part.pos[1] - start_pos
-        return token
-
-    def _group_opt_args(self):
-        opts = dict()
-        for opt, arg in self._rt.opts:
-            if opt.many_args:
-                if opt.name not in opts:
-                    opts[opt.name] = []
-                opts[opt.name].append(arg)
-            else:
-                opts[opt.name] = arg
-        return opts
+    def fill_single_values(templ_part: TemplatePart, values_dict: Dict[str, str]) -> Optional[str]:
+        res = ""
+        for subpart in templ_part.parts:
+            if isinstance(subpart, str):
+                res += subpart
+            elif isinstance(subpart, TemplateField):
+                if subpart.name not in values_dict:
+                    return None
+                res += values_dict[subpart.name]
+        return res
 
 
 if __name__ == "__main__":

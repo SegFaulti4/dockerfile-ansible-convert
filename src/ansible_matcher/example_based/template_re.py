@@ -35,17 +35,11 @@ def test2():
     shell_parser = SandboxShellParser()
     sep = CommandTemplateMatcher._RE_SHELL_WORD_SEP
 
-    re_str = r"^rmω\-rfω(\./(?P<field_files>[^ω]*)ω)*(\./(?P<field_files>[^ω]*))?$"
-    matching_str = "rm -rf ./a ./b"
-    matching_parsed = shell_parser.parse(matching_str)
-    matching_prepped = CommandTemplateMatcher._preprocess_command(matching_parsed[0].parts)[0]
-
-    comm_re_str = r"^rmω\-rfω(\./(?P<field_files>[^ω]*)ω)*((?P<field_files>[^ω]*))?$"
+    comm_re_str = r"rmω\-rfω(\./(?P<field_files>[^ω]*)ω)*(\./(?P<field_files>[^ω]*))?"
     template_regex = regex.compile(comm_re_str)
 
     command_str = 'rmω-rfω./a.cω~/b.c'
-    m1 = template_regex.fullmatch(command_str)
-    m2 = regex.fullmatch(comm_re_str, command_str)
+    match = regex.match(comm_re_str, command_str)
 
     print(comm_re_str)
     print(command_str)
