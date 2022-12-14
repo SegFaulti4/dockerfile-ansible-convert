@@ -1,14 +1,14 @@
 from typing import Dict, Any, Type, Callable, List
 
 
-def visit_dict(d_dict: Dict[str, Any], target: Type, target_func: Callable):
+def visit_dict(d_dict: Dict[str, Any], predicate: Callable, proc: Callable):
     queue = list((k, v, d_dict) for k, v in d_dict.items())
     visited = set()
 
     while queue:
         k, v, d = queue.pop(0)
-        if isinstance(v, target):
-            d[k] = target_func(v)
+        if predicate(v):
+            d[k] = proc(v)
         elif isinstance(v, dict):
             if (id(k), id(d)) not in visited:
                 queue.extend((_k, _v, v) for _k, _v in v.items())

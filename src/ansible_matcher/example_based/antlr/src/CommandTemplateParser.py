@@ -1,4 +1,4 @@
-# Generated from /home/popovms/ispras/dockerfile-ansible-convert/src/ansible_matcher/example_based/antlr/grammar/CommandTemplateParser.g4 by ANTLR 4.10.1
+# Generated from /home/popovms/course/dockerfile-ansible-convert/src/ansible_matcher/example_based/antlr/grammar/CommandTemplateParser.g4 by ANTLR 4.11.1
 # encoding: utf-8
 from antlr4 import *
 from io import StringIO
@@ -72,7 +72,7 @@ class CommandTemplateParser ( Parser ):
 
     def __init__(self, input:TokenStream, output:TextIO = sys.stdout):
         super().__init__(input, output)
-        self.checkVersion("4.10.1")
+        self.checkVersion("4.11.1")
         self._interp = ParserATNSimulator(self, self.atn, self.decisionsToDFA, self.sharedContextCache)
         self._predicates = None
 
@@ -131,7 +131,7 @@ class CommandTemplateParser ( Parser ):
             self.state = 13
             self._errHandler.sync(self)
             _la = self._input.LA(1)
-            while _la==CommandTemplateParser.SPACE:
+            while _la==3:
                 self.state = 9
                 self.match(CommandTemplateParser.SPACE)
                 self.state = 10
@@ -199,7 +199,7 @@ class CommandTemplateParser ( Parser ):
             self.state = 40
             self._errHandler.sync(self)
             token = self._input.LA(1)
-            if token in [CommandTemplateParser.WORD]:
+            if token in [2]:
                 self.enterOuterAlt(localctx, 1)
                 self.state = 16
                 self.template_word()
@@ -219,13 +219,13 @@ class CommandTemplateParser ( Parser ):
                 self.state = 26
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                if _la==CommandTemplateParser.OPEN:
+                if _la==1:
                     self.state = 25
                     self.template_field()
 
 
                 pass
-            elif token in [CommandTemplateParser.OPEN]:
+            elif token in [1]:
                 self.enterOuterAlt(localctx, 2)
                 self.state = 28
                 self.template_field()
@@ -245,7 +245,7 @@ class CommandTemplateParser ( Parser ):
                 self.state = 38
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                if _la==CommandTemplateParser.WORD:
+                if _la==2:
                     self.state = 37
                     self.template_word()
 
@@ -372,13 +372,13 @@ class CommandTemplateParser ( Parser ):
             self.state = 56
             self._errHandler.sync(self)
             _la = self._input.LA(1)
-            if _la==CommandTemplateParser.SPEC_OPEN:
+            if _la==5:
                 self.state = 46
                 self.match(CommandTemplateParser.SPEC_OPEN)
                 self.state = 48
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                if _la==CommandTemplateParser.SPEC_MANY:
+                if _la==8:
                     self.state = 47
                     self.match(CommandTemplateParser.SPEC_MANY)
 
@@ -386,7 +386,7 @@ class CommandTemplateParser ( Parser ):
                 self.state = 51
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                if _la==CommandTemplateParser.SPEC_OPTIONAL:
+                if _la==9:
                     self.state = 50
                     self.match(CommandTemplateParser.SPEC_OPTIONAL)
 
@@ -394,7 +394,7 @@ class CommandTemplateParser ( Parser ):
                 self.state = 54
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                if _la==CommandTemplateParser.SPEC_PATH:
+                if _la==10:
                     self.state = 53
                     self.match(CommandTemplateParser.SPEC_PATH)
 

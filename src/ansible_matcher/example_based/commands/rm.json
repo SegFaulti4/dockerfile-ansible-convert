@@ -50,7 +50,7 @@
                 ]
             }
         },
-        "opts_postprocess_map": {
+        "opts_postprocess": {
             "-f": {},
             "-I": {},
             "-i": {},

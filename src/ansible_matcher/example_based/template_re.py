@@ -1,4 +1,4 @@
-from template_lang import *
+from main import *
 import regex
 import re
 

@@ -409,7 +409,7 @@ class TemplateFiller:
     @staticmethod
     def fill_single_values(templ_part: TemplatePart, values_dict: Dict[str, str]) -> Optional[str]:
         res = ""
-        for subpart in templ_part.parts:
+        for subpart in templ_part.subpart_list():
             if isinstance(subpart, str):
                 res += subpart
             elif isinstance(subpart, TemplateField):

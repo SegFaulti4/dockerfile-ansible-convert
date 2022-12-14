@@ -1,3 +1,4 @@
+import copy
 from typing import Union, Optional, Dict, Any, Type, Callable
 
 from src.ansible_matcher.main import *
@@ -13,24 +14,25 @@ from src.log import globalLog
 
 
 class ExampleBasedMatcher(TaskMatcher):
-    tweaks: Optional[TemplateTweaks]
+    _tweaks: Optional[TemplateTweaks] = None
+    _config_loader = command_config_loader
 
-    def __init__(self, cwd = None):
-        if cwd is None:
-            self.tweaks = None
-        else:
-            self.tweaks = TemplateTweaks(cwd=cwd)
+    def __init__(self):
+        pass
 
-    def set_cwd(self, cwd: str) -> None:
-        self.tweaks = TemplateTweaks(cwd=cwd)
-
-    def match_command(self, comm: CommandCallParts) -> Union[Dict[str, Any], None]:
+    def match_command(self, comm: CommandCallParts, context: Optional[TaskContext] = None) \
+            -> Union[Dict[str, Any], None]:
         if not ExampleBasedMatcher.check_requirements(comm):
             return None
 
-        command_config = command_config_loader.load(comm)
+        command_config = self._config_loader.load(comm)
         if command_config is None:
             return None
+        
+        if context is None:
+            self._tweaks = None
+        else:
+            self._tweaks = TemplateTweaks(cwd=context.cwd)
 
         extracted_call = ExampleBasedMatcher.extract_command_call(command_config, comm)
         if extracted_call is None:
@@ -58,10 +60,11 @@ class ExampleBasedMatcher(TaskMatcher):
             -> Optional[ExtractedCommandCall]:
 
         opts_extractor = CommandOptsExtractor(opts_map=command_config.opts)
-        return opts_extractor.extract(comm)
+        tmp = copy.deepcopy(comm)
+        return opts_extractor.extract(tmp)
 
     def match_template(self, command_config: CommandConfig, command_template: CommandTemplateParts,
-                       extracted_call: ExtractedCommandCall, task_template: Dict[str, Any]) \
+                       extracted_call: ExtractedCommandCall, example_task_template: Dict[str, Any]) \
             -> Optional[Dict[str, Any]]:
 
         extracted_template = ExampleBasedMatcher.extract_command_template(command_config, command_template)
@@ -79,6 +82,8 @@ class ExampleBasedMatcher(TaskMatcher):
         opt_fields, postprocess_task_template = postprocess_res
         fields_dict = CommandTemplateMatcher.merge_match_results(parameter_fields, opt_fields)
 
+        task_template = ExampleBasedMatcher.merge_task_templates(postprocess_task_template,
+                                                                 copy.deepcopy(example_task_template))
         task_call = ExampleBasedMatcher.fill_in_task_template(task_template, fields_dict)
         if task_call is None:
             return None
@@ -90,12 +95,13 @@ class ExampleBasedMatcher(TaskMatcher):
             -> Optional[ExtractedCommandTemplate]:
 
         opts_extractor = CommandOptsExtractor(opts_map=command_config.opts)
-        return opts_extractor.extract(templ)
+        tmp = copy.deepcopy(templ)
+        return opts_extractor.extract(tmp)
 
     def match_extracted_template(self, ext_call: ExtractedCommandCall, ext_templ: ExtractedCommandTemplate) \
             -> Optional[Tuple[TemplateMatchResult, Dict[str, CommandCallParts]]]:
 
-        params_matcher = CommandTemplateMatcher(template=ext_templ.params, template_tweaks=self.tweaks)
+        params_matcher = CommandTemplateMatcher(template=ext_templ.params, template_tweaks=self._tweaks)
         param_fields = params_matcher.full_match(ext_call.params)
         if param_fields is None:
             return None
@@ -116,8 +122,12 @@ class ExampleBasedMatcher(TaskMatcher):
         for k, v in templ_opts.items():
             if k not in call_opts:
                 return None
+            if v is None:
+                continue
+            if call_opts[k] is None:
+                return None
 
-            opt_matcher = CommandTemplateMatcher(template=v, template_tweaks=self.tweaks)
+            opt_matcher = CommandTemplateMatcher(template=v, template_tweaks=self._tweaks)
             opt_match = opt_matcher.match(call_opts[k])
             if opt_match is None:
                 return None
@@ -172,8 +182,11 @@ class ExampleBasedMatcher(TaskMatcher):
                     return ""
                 return res
 
+        def is_template(x) -> bool:
+            return isinstance(x, list) and all(isinstance(y, TemplatePart) for y in x)
+
         filler = TaskTemplateFiller(fields_dict)
-        task_call = visit_dict(task_template, CommandTemplateParts, filler)
+        task_call = visit_dict(task_template, is_template, filler)
         if not filler.success:
             return None
         return task_call

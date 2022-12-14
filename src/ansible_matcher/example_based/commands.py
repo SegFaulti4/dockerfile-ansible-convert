@@ -1,6 +1,7 @@
 import dataclasses
 import json
 import glob
+import os
 from typing import Optional, Dict
 
 from src.shell.main import *
@@ -35,8 +36,9 @@ class _CommandConfigLoader:
 
     def __init__(self):
         self._configs = []
+        commands_glob = os.path.join(os.path.dirname(__file__), "commands/*.json")
 
-        for path in glob.glob("./commands/*.json"):
+        for path in glob.glob(commands_glob):
             configs = _CommandConfigLoader._load_config_from_json(path)
             self._configs.extend(configs)
 
@@ -83,7 +85,7 @@ class _CommandConfigLoader:
                 return new_s
 
         templater = TaskTemplater()
-        task_templ = visit_dict(task, str, templater)
+        task_templ = visit_dict(task, lambda x: isinstance(x, str), templater)
 
         if not templater.success:
             globalLog.warn("Failed to create task template")
@@ -106,7 +108,7 @@ class _CommandConfigLoader:
             return None
 
         res = []
-        for comm, task in examples:
+        for comm, task in examples.items():
             if not isinstance(comm, str):
                 globalLog.warn(f"Wrong type of command template in '{_CommandConfigLoader.EXAMPLES}'")
                 continue
@@ -169,7 +171,7 @@ class _CommandConfigLoader:
             return None
 
         res = []
-        for opts, task in opts_post:
+        for opts, task in opts_post.items():
             if not isinstance(opts, str):
                 globalLog.warn(f"Wrong type of opts template in '{_CommandConfigLoader.OPTS_POSTPROCESS}'")
                 continue
@@ -194,7 +196,7 @@ class _CommandConfigLoader:
             with open(path, "r") as inF:
                 config = json.load(inF)
                 res = []
-                for name, comm_conf in config:
+                for name, comm_conf in config.items():
                     entry, examples, opts, opts_post = _CommandConfigLoader._load_entry(
                         comm_conf.get(_CommandConfigLoader.ENTRY, None)
                     ), _CommandConfigLoader._load_examples(
@@ -220,3 +222,7 @@ class _CommandConfigLoader:
 
 
 command_config_loader = _CommandConfigLoader()
+
+
+if __name__ == "__main__":
+    print()

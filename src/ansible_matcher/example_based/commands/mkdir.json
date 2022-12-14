@@ -1,6 +1,6 @@
 {
     "mkdir": {
-        "patterns": "mkdir {{ parameters : m }}",
+        "entry": "mkdir {{ parameters : m }}",
         "opts": {
             "mode": {
                 "arg_required": false,
@@ -27,14 +27,6 @@
                 ]
             }
         },
-        "opts_postprocess_map": {
-            "-m {{ mode }}": {
-                "file": {
-                    "mode": "{{ mode }}"
-                }
-            },
-            "-v": {}
-        },
         "examples": {
             "mkdir -p {{ directories : mp }}": {
                 "file": {
@@ -48,6 +40,14 @@
                     "state": "directory"
                 }
             }
+        },
+        "opts_postprocess": {
+            "-m {{ mode }}": {
+                "file": {
+                    "mode": "{{ mode }}"
+                }
+            },
+            "-v": {}
         }
     }
 }

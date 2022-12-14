@@ -2,7 +2,7 @@ import logging
 
 from src.ansible_matcher.main import *
 from sandbox.shell_parser.main import SandboxShellParser
-from src.ansible_matcher.example_based.main import ExampleBasedMatcher as SandboxTaskMatcher
+from src.ansible_matcher.example_based.old.main import ExampleBasedMatcher as SandboxTaskMatcher
 
 from src.log import globalLog
 
@@ -18,18 +18,13 @@ if __name__ == "__main__":
 
     with open("./input", "r") as inF:
         for line in inF.readlines():
-            line = line.strip()
-            if not line:
-                continue
-
             try:
                 if PRINT_SOURCE:
                     print('##########')
                     print("# SOURCE #")
                     print('##########')
                     print()
-                    print(line)
-                    print()
+                    print(line.strip())
 
                 shell_objs = shell_parser.parse(line)
                 if PRINT_SHELL_PARSER:
@@ -52,6 +47,6 @@ if __name__ == "__main__":
                             print(f"{task}")
                     print()
 
-            except IOError as exc:
+            except Exception as exc:
                 print(f"{type(exc)}: {exc}")
                 print()

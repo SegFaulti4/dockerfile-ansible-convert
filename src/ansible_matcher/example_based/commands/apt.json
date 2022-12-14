@@ -2,6 +2,11 @@
     "apt": {
         "entry": "apt-get {{ parameters : m }}",
         "examples": {
+            "apt-get install {{ packages : m }}": {
+                "apt": {
+                    "name": "{{ packages }}"
+                }
+            },
             "apt-get autoclean": {
                 "apt": {
                     "autoclean": "yes"
@@ -21,11 +26,6 @@
             "apt-get dist-upgrade": {
                 "apt": {
                     "upgrade": "dist"
-                }
-            },
-            "apt-get install {{ packages : m }}": {
-                "apt": {
-                    "name": "{{ packages }}"
                 }
             },
             "apt-get remove": {
