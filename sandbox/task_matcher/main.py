@@ -18,13 +18,18 @@ if __name__ == "__main__":
 
     with open("./input", "r") as inF:
         for line in inF.readlines():
+            line = line.strip()
+            if not line:
+                continue
+
             try:
                 if PRINT_SOURCE:
                     print('##########')
                     print("# SOURCE #")
                     print('##########')
                     print()
-                    print(line.strip())
+                    print(line)
+                    print()
 
                 shell_objs = shell_parser.parse(line)
                 if PRINT_SHELL_PARSER:
@@ -47,6 +52,6 @@ if __name__ == "__main__":
                             print(f"{task}")
                     print()
 
-            except Exception as exc:
+            except IOError as exc:
                 print(f"{type(exc)}: {exc}")
                 print()

@@ -1,0 +1,75 @@
+{
+    "rm": {
+        "entry": "rm {{ param : m }}",
+        "opts": {
+            "force": {
+                "arg_required": false,
+                "many_args": false,
+                "aliases": [
+                    "-f",
+                    "--force"
+                ]
+            },
+            "interactive once": {
+                "arg_required": false,
+                "many_args": false,
+                "aliases": [
+                    "-I"
+                ]
+            },
+            "interactive always": {
+                "arg_required": false,
+                "many_args": false,
+                "aliases": [
+                    "-i"
+                ]
+            },
+            "recursive": {
+                "arg_required": false,
+                "many_args": false,
+                "aliases": [
+                    "-r",
+                    "-R",
+                    "--recursive"
+                ]
+            },
+            "directive": {
+                "arg_required": false,
+                "many_args": false,
+                "aliases": [
+                    "-d",
+                    "--dir"
+                ]
+            },
+            "verbose": {
+                "arg_required": false,
+                "many_args": false,
+                "aliases": [
+                    "-v",
+                    "--verbose"
+                ]
+            }
+        },
+        "opts_postprocess": {
+            "-f": {},
+            "-I": {},
+            "-i": {},
+            "-d": {},
+            "-v": {}
+        },
+        "examples": {
+            "rm -r {{ files : mp }}": {
+                "file": {
+                    "state": "absent",
+                    "path": "{{ files }}"
+                }
+            },
+            "rm {{ files : mp }}": {
+                "file": {
+                    "state": "absent",
+                    "path": "{{ files }}"
+                }
+            }
+        }
+    }
+}

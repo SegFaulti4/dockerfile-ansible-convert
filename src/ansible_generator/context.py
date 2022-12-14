@@ -84,29 +84,22 @@ class AnsiblePlayContext:
         parts = []
         slice_start = 0
         for param in word.parts:
-            var_name = param.name[1:]
-            if var_name in self.local_vars:
-                part_name = "{{ " + self.local_var_name_wrapper(var_name) + " }}"
-            elif var_name in self.global_vars:
-                part_name = self.global_vars[var_name]
+            param_name = param.name
+            if param_name in self.local_vars:
+                param_name = self.local_var_name_wrapper(param_name)
+                param_val = "{{ " + param_name + " }}"
+            elif param_name in self.global_vars:
+                param_val = self.global_vars[param_name]
             else:
                 return None
 
-            value += word[slice_start:param.pos[0]]
-            part_pos = len(value), len(value) + len(part_name)
-            value += part_name
-            part = ShellParameterObject(name=part_name, pos=part_pos)
+            value += word.value[slice_start:param.pos[0]]
+            part_pos = len(value), len(value) + len(param_val)
+            value += param_val
+            part = ShellParameterObject(name=param_name, pos=part_pos)
             parts.append(part)
             slice_start = param.pos[1]
-
-        value += word[slice_start:]
-
-        wrapped = self.path_str_wrapper(value)
-        diff = len(wrapped) - len(value)
-        if diff != 0:
-            for part in parts:
-                part.pos = diff + part.pos[0], diff + part.pos[1]
-            value = wrapped
+        value += word.value[slice_start:]
 
         return ShellWordObject(value=value, parts=parts)
 
@@ -118,7 +111,7 @@ class AnsiblePlayContext:
             resolved = self.resolve_shell_word(word)
             if resolved is None:
                 return None
-            res.append(word)
+            res.append(resolved)
 
         return res
 
