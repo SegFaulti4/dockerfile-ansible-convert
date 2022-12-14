@@ -12,7 +12,7 @@ from src.log import globalLog
 
 
 if __name__ == "__main__":
-    globalLog.setLevel(logging.INFO)
+    globalLog.setLevel(logging.DEBUG)
     shell_parser = SandboxShellParser()
     dockerfile_parser = SandboxDockerfileParser(shell_parser=shell_parser)
     task_matcher = SandboxTaskMatcher()
@@ -42,6 +42,7 @@ if __name__ == "__main__":
                 print('##########')
                 print()
                 print(source)
+                print()
 
             content = dockerfile_parser.from_str(source)
             if PRINT_DOCKERFILE_PARSER:

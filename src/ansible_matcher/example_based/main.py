@@ -14,13 +14,13 @@ from src.log import globalLog
 
 
 class ExampleBasedMatcher(TaskMatcher):
-    _tweaks: Optional[TemplateTweaks] = None
+    _tweaks: TemplateTweaks
     _config_loader = command_config_loader
 
     def __init__(self):
         pass
 
-    def match_command(self, comm: CommandCallParts, context: Optional[TaskContext] = None) \
+    def match_command(self, comm: CommandCallParts, cwd: Optional[str] = None, usr: Optional[str] = None) \
             -> Union[Dict[str, Any], None]:
         if not ExampleBasedMatcher.check_requirements(comm):
             return None
@@ -28,11 +28,8 @@ class ExampleBasedMatcher(TaskMatcher):
         command_config = self._config_loader.load(comm)
         if command_config is None:
             return None
-        
-        if context is None:
-            self._tweaks = None
-        else:
-            self._tweaks = TemplateTweaks(cwd=context.cwd)
+
+        self._tweaks = TemplateTweaks(cwd=cwd, usr=usr)
 
         extracted_call = ExampleBasedMatcher.extract_command_call(command_config, comm)
         if extracted_call is None:

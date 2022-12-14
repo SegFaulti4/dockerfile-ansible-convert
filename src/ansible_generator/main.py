@@ -338,7 +338,9 @@ class RoleGenerator:
         if words is None:
             return self._handle_run_shell(obj.line)
 
-        task = self._task_matcher.match_command(words)
+        task = self._task_matcher.match_command(words,
+                                                cwd=self._context.get_workdir(),
+                                                usr=self._context.get_user())
         if task is None:
             return self._handle_run_shell(obj.line)
 

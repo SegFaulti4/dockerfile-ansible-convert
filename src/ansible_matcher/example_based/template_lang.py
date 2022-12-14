@@ -1,6 +1,7 @@
 import regex
 import dataclasses
 import itertools
+import os
 from src.ansible_matcher.example_based.antlr.src.CommandTemplateLexer import CommandTemplateLexer
 from src.ansible_matcher.example_based.antlr.src.CommandTemplateParser import CommandTemplateParser
 from src.ansible_matcher.example_based.antlr.src.CommandTemplateParserVisitor import CommandTemplateParserVisitor
@@ -141,11 +142,22 @@ class TemplateConstructor(CommandTemplateParserVisitor):
 
 @dataclasses.dataclass
 class TemplateTweaks:
-    cwd: str
+    cwd: Optional[str] = None
+    usr: Optional[str] = None
 
     def tweak_spec_path(self, path: str):
-        # TODO
-        raise NotImplementedError
+        if path.startswith("/"):
+            return path
+        if path.startswith("~"):
+            if self.usr is None:
+                globalLog.info(f"Could not change path string - {path}, usr is None")
+                return path
+            return os.path.join(f"/home/{self.usr}/", path[1:])
+
+        if self.cwd is None:
+            globalLog.info(f"Could not change path string - {path}, cwd is None")
+            return path
+        return os.path.join(self.cwd, path)
 
 
 TemplateMatchResult = Dict[str, Union[str, List[str]]]
@@ -288,7 +300,10 @@ class CommandTemplateMatcher:
                 field_value += constant + param
 
         if spec_path:
-            if self.template_tweaks is None:
+            # TODO: this looks dirty
+            if not constants[0] or constants[0] == '"' or constants[0] == "'":
+                globalLog.debug("Match info - path string starts with parameter, skipping handling")
+            elif self.template_tweaks is None:
                 globalLog.debug("Match warning - can't process path field, 'tweaks' is None")
             else:
                 field_value = self.template_tweaks.tweak_spec_path(field_value)
