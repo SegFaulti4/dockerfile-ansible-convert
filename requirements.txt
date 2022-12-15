@@ -3,3 +3,6 @@ openstacksdk==0.40.0
 bashlex~=0.16
 PyYAML~=6.0
 ansible==2.9.4
+regex~=2022.10.31
+oyaml~=1.0
+antlr4-python3-runtime==4.11.1
