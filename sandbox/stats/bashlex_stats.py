@@ -1,6 +1,6 @@
 import sys
 import logging
-import sandbox.stats.stat_node as stat_node
+import sandbox.stats.stat_bashlex_node as stat_node
 import bashlex
 
 from bashlex.errors import ParsingError
