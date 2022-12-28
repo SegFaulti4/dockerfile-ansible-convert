@@ -1,4 +1,4 @@
-from typing import Dict, Any, Type, Callable, List
+from typing import Dict, Any, Type, Callable, List, Union
 
 
 def visit_dict(d_dict: Dict[str, Any], predicate: Callable, proc: Callable):
@@ -35,3 +35,11 @@ def merge_dicts(into_dict: Dict, from_dict: Dict):
             else:
                 into_dict[k] = [into_dict[k]] + [v]
     return into_dict
+
+
+def listify(val: Any) -> List[Any]:
+    if val is None:
+        return []
+    if isinstance(val, list):
+        return val
+    return [val]

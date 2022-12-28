@@ -372,7 +372,8 @@ class CommandTemplateMatcher:
                     ))
                     value += param_value
 
-            res.append(ShellWordObject(value=value, parts=parts))
+            if value:
+                res.append(ShellWordObject(value=value, parts=parts))
 
         return res
 

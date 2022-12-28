@@ -8,7 +8,7 @@ from src.ansible_matcher.example_based.template_lang import \
 from src.ansible_matcher.example_based.commands import CommandConfig, command_config_loader
 from src.ansible_matcher.example_based.opts_extraction import \
     ExtractedCommandCall, ExtractedCommandTemplate, CommandOptsExtractor
-from src.ansible_matcher.example_based.utils import visit_dict, merge_dicts
+from src.ansible_matcher.example_based.utils import visit_dict, merge_dicts, listify
 
 from src.log import globalLog
 
@@ -115,13 +115,17 @@ class ExampleBasedMatcher(TaskMatcher):
             -> Optional[Tuple[TemplateMatchResult, Dict[str, CommandCallParts]]]:
 
         opt_fields = dict()
-        unmatched_opts = dict()
+        unmatched_opts = {k: listify(v) for k, v in call_opts.items()}
+
         for k, v in templ_opts.items():
             if k not in call_opts:
                 return None
-            if v is None:
+            v = listify(v)
+
+            if not v and not unmatched_opts[k]:
+                del unmatched_opts[k]
                 continue
-            if call_opts[k] is None:
+            if not v or not unmatched_opts[k]:
                 return None
 
             opt_matcher = CommandTemplateMatcher(template=v, template_tweaks=self._tweaks)
@@ -131,7 +135,9 @@ class ExampleBasedMatcher(TaskMatcher):
             tmp_fields, unmatched = opt_match
 
             opt_fields = CommandTemplateMatcher.merge_match_results(opt_fields, tmp_fields)
-            if unmatched:
+            if not unmatched:
+                del unmatched_opts[k]
+            else:
                 unmatched_opts[k] = unmatched
 
         return opt_fields, unmatched_opts
