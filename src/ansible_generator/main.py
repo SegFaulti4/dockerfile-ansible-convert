@@ -5,6 +5,7 @@ from enum import Enum
 from src.ansible_matcher.main import *
 from src.dockerfile.main import *
 from src.ansible_generator.context import *
+from src.ansible_generator.statistics import *
 
 from src.log import globalLog
 
@@ -37,14 +38,14 @@ class _Runtime:
 
 
 class RoleGenerator:
+    task_matcher: TaskMatcher
     _df_content: DockerfileContent
-    _task_matcher: TaskMatcher
     _context: Union[AnsiblePlayContext, None] = None
     _runtime: Union[_Runtime, None] = None
 
     def __init__(self, dc: DockerfileContent, tm: TaskMatcher):
         self._df_content = dc
-        self._task_matcher = tm
+        self.task_matcher = tm
 
     def generate(self) -> List[Dict[str, Any]]:
         # method for each DockerfileDirective
@@ -75,6 +76,9 @@ class RoleGenerator:
             handle_map[type(directive)](directive)
 
         return self._return()
+
+    def get_statistics(self) -> RoleGeneratorStatistics:
+        raise NotImplementedError
 
     ###################
     # GENERAL METHODS #
@@ -338,9 +342,9 @@ class RoleGenerator:
         if words is None:
             return self._handle_run_shell(obj.line)
 
-        task = self._task_matcher.match_command(words,
-                                                cwd=self._context.get_workdir(),
-                                                usr=self._context.get_user())
+        task = self.task_matcher.match_command(words,
+                                               cwd=self._context.get_workdir(),
+                                               usr=self._context.get_user())
         if task is None:
             return self._handle_run_shell(obj.line)
 
