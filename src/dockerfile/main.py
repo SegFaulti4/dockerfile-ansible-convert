@@ -17,11 +17,17 @@ class RunDirective(DockerfileDirective):
     line: str
     script: ShellScript
 
+    def __len__(self):
+        return 5 + len(self.script.line)
+
 
 @dataclass
 class EnvDirective(DockerfileDirective):
     names: List[str]
     values: List[ShellExpression]
+
+    def __len__(self):
+        return 4 + sum(1 + len(n) for n in self.names) + sum(1 + len(v.line) for v in self.values)
 
 
 @dataclass
@@ -29,16 +35,25 @@ class ArgDirective(DockerfileDirective):
     name: str
     value: ShellExpression
 
+    def __len__(self):
+        return 5 + len(self.name) + len(self.value.line)
+
 
 @dataclass
 class UserDirective(DockerfileDirective):
     name: ShellExpression
     group: ShellExpression
 
+    def __len__(self):
+        return 6 + len(self.name.line) + len(self.group.line)
+
 
 @dataclass
 class WorkdirDirective(DockerfileDirective):
     path: ShellExpression
+
+    def __len__(self):
+        return 9 + len(self.path.line)
 
 
 @dataclass
@@ -46,71 +61,102 @@ class AddDirective(DockerfileDirective):
     source: ShellExpression
     destinations: List[ShellExpression]
 
+    def __len__(self):
+        return 5 + len(self.source.line) + sum(1 + len(d.line) for d in self.destinations)
+
 
 @dataclass
 class CopyDirective(DockerfileDirective):
     source: ShellExpression
     destinations: List[ShellExpression]
 
+    def __len__(self):
+        return 6 + len(self.source.line) + sum(1 + len(d.line) for d in self.destinations)
+
 
 @dataclass
-class UselessDirective(DockerfileDirective):
+class UnsupportedDirective(DockerfileDirective):
     values: List[str]
 
-
-@dataclass
-class FromDirective(UselessDirective):
-    pass
+    def __len__(self):
+        return 1 + sum(1 + len(v) for v in self.values)
 
 
 @dataclass
-class CmdDirective(UselessDirective):
-    pass
+class FromDirective(UnsupportedDirective):
+
+    def __len__(self):
+        return 4 + super().__len__()
 
 
 @dataclass
-class LabelDirective(UselessDirective):
-    pass
+class CmdDirective(UnsupportedDirective):
+
+    def __len__(self):
+        return 3 + super().__len__()
 
 
 @dataclass
-class MaintainerDirective(UselessDirective):
-    pass
+class LabelDirective(UnsupportedDirective):
+
+    def __len__(self):
+        return 5 + super().__len__()
 
 
 @dataclass
-class ExposeDirective(UselessDirective):
-    pass
+class MaintainerDirective(UnsupportedDirective):
+
+    def __len__(self):
+        return 10 + super().__len__()
 
 
 @dataclass
-class EntrypointDirective(UselessDirective):
-    pass
+class ExposeDirective(UnsupportedDirective):
+
+    def __len__(self):
+        return 6 + super().__len__()
 
 
 @dataclass
-class VolumeDirective(UselessDirective):
-    pass
+class EntrypointDirective(UnsupportedDirective):
+
+    def __len__(self):
+        return 10 + super().__len__()
 
 
 @dataclass
-class OnbuildDirective(UselessDirective):
-    pass
+class VolumeDirective(UnsupportedDirective):
+
+    def __len__(self):
+        return 6 + super().__len__()
 
 
 @dataclass
-class StopsignalDirective(UselessDirective):
-    pass
+class OnbuildDirective(UnsupportedDirective):
+
+    def __len__(self):
+        return 7 + super().__len__()
 
 
 @dataclass
-class HealthcheckDirective(UselessDirective):
-    pass
+class StopsignalDirective(UnsupportedDirective):
+
+    def __len__(self):
+        return 10 + super().__len__()
 
 
 @dataclass
-class ShellDirective(UselessDirective):
-    pass
+class HealthcheckDirective(UnsupportedDirective):
+
+    def __len__(self):
+        return 11 + super().__len__()
+
+
+@dataclass
+class ShellDirective(UnsupportedDirective):
+
+    def __len__(self):
+        return 5 + super().__len__()
 
 
 @dataclass

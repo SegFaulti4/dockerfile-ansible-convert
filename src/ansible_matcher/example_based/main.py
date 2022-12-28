@@ -9,11 +9,14 @@ from src.ansible_matcher.example_based.commands import CommandConfig, command_co
 from src.ansible_matcher.example_based.opts_extraction import \
     ExtractedCommandCall, ExtractedCommandTemplate, CommandOptsExtractor
 from src.ansible_matcher.example_based.utils import visit_dict, merge_dicts, listify
+from src.ansible_matcher.example_based.statistics import *
 
 from src.log import globalLog
 
 
 class ExampleBasedMatcher(TaskMatcher):
+    stats: ExampleBasedMatcherStatistics
+
     _tweaks: TemplateTweaks
     _config_loader = command_config_loader
 
@@ -23,16 +26,19 @@ class ExampleBasedMatcher(TaskMatcher):
     def match_command(self, comm: CommandCallParts, cwd: Optional[str] = None, usr: Optional[str] = None) \
             -> Union[Dict[str, Any], None]:
         if not ExampleBasedMatcher.check_requirements(comm):
+            self._stat_unknown(comm)
             return None
 
         command_config = self._config_loader.load(comm)
         if command_config is None:
+            self._stat_unknown(comm)
             return None
 
         self._tweaks = TemplateTweaks(cwd=cwd, usr=usr)
 
         extracted_call = ExampleBasedMatcher.extract_command_call(command_config, comm)
         if extracted_call is None:
+            self._stat_unmatched(comm, command_config)
             return None
 
         for command_template, task_template in command_config.examples:
@@ -40,9 +46,31 @@ class ExampleBasedMatcher(TaskMatcher):
                                                            extracted_call, task_template)
             if task_call is None:
                 continue
+
+            self._stat_matched(comm, command_config)
             return task_call
 
+        self._stat_matched(comm, command_config)
         return None
+
+    def _stat_unknown(self, comm: CommandCallParts) -> None:
+        self.stats.names.append("UNKNOWN COMMAND")
+        self.stats.coverages.append(0.)
+        self.stats.lengths.append(sum(1 + len(w.value) for w in comm) - 1)
+
+    def _stat_unmatched(self, comm: CommandCallParts, command_config: CommandConfig) -> None:
+        self.stats.names.append(" ".join(
+            map(lambda x: x.value, filter(lambda x: not x.parts, command_config.entry))
+        ))
+        self.stats.coverages.append(0.)
+        self.stats.lengths.append(sum(1 + len(w.value) for w in comm) - 1)
+
+    def _stat_matched(self, comm: CommandCallParts, command_config: CommandConfig) -> None:
+        self.stats.names.append(" ".join(
+            map(lambda x: x.value, filter(lambda x: not x.parts, command_config.entry))
+        ))
+        self.stats.coverages.append(1.)
+        self.stats.lengths.append(sum(1 + len(w.value) for w in comm) - 1)
 
     @staticmethod
     def check_requirements(comm: CommandCallParts) -> bool:

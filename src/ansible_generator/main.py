@@ -40,6 +40,7 @@ class _Runtime:
 class RoleGenerator:
     task_matcher: TaskMatcher
     stats: RoleGeneratorStatistics
+
     _df_content: DockerfileContent
     _context: Union[AnsiblePlayContext, None] = None
     _runtime: Union[_Runtime, None] = None
@@ -47,7 +48,7 @@ class RoleGenerator:
     def __init__(self, dc: DockerfileContent, tm: TaskMatcher):
         self._df_content = dc
         self.task_matcher = tm
-        self.stats = RoleGeneratorStatistics(coverages=[])
+        self.stats = RoleGeneratorStatistics()
 
     def generate(self) -> List[Dict[str, Any]]:
         # method for each DockerfileDirective
@@ -72,7 +73,7 @@ class RoleGenerator:
             ShellDirective: self._handle_shell
         }
 
-        self.stats = RoleGeneratorStatistics(coverages=[])
+        self.stats = RoleGeneratorStatistics()
         self._runtime = _Runtime()
         self._context = AnsiblePlayContext(global_vars=dict(), local_vars=dict())
         for directive in self._df_content.directives:
@@ -119,7 +120,7 @@ class RoleGenerator:
     def _handle_default(self, directive) -> None:
         globalLog.info("Dockerfile directive " + type(directive).__name__ + " doesn't affect role generation")
 
-    @supported_directive(RunDirective)
+    @supported_directive
     def _handle_run(self, directive: RunDirective) -> None:
         # method for each ShellScriptPart
         handle_run_map = {
@@ -138,16 +139,16 @@ class RoleGenerator:
 
         self._clear_local_context()
 
-    @supported_directive(EnvDirective)
+    @supported_directive
     def _handle_env(self, directive: EnvDirective) -> None:
         for name, value in zip(directive.names, directive.values):
             self._add_global_assignment(name, value)
 
-    @supported_directive(ArgDirective)
+    @supported_directive
     def _handle_arg(self, directive: ArgDirective) -> None:
         self._add_global_assignment(directive.name, directive.value)
 
-    @supported_directive(UserDirective)
+    @supported_directive
     def _handle_user(self, directive: UserDirective) -> None:
         val = self._context.resolve_shell_expression(directive.name)
         if val is None:
@@ -158,7 +159,7 @@ class RoleGenerator:
         else:
             self._context.set_global_user(name=val)
 
-    @supported_directive(WorkdirDirective)
+    @supported_directive
     def _handle_workdir(self, directive: WorkdirDirective) -> None:
         val = self._context.resolve_shell_expression(directive.path)
         if val is None:
@@ -169,7 +170,7 @@ class RoleGenerator:
         else:
             self._context.set_global_workdir(path=val)
 
-    @supported_directive(AddDirective)
+    @supported_directive
     def _handle_add(self, directive: AddDirective) -> None:
         paths = [directive.source] + [dest for dest in directive.destinations]
         vals = []
@@ -191,52 +192,52 @@ class RoleGenerator:
             }
             self._add_task(task, set_user=True, set_vars=False, set_condition=False)
 
-    @supported_directive(CopyDirective)
+    @supported_directive
     def _handle_copy(self, directive: CopyDirective) -> None:
         return self._handle_add(directive=AddDirective(source=directive.source,
                                                        destinations=directive.destinations))
 
-    @unsupported_directive(FromDirective)
+    @unsupported_directive
     def _handle_from(self, directive) -> None:
         return self._handle_default(directive)
 
-    @unsupported_directive(CmdDirective)
+    @unsupported_directive
     def _handle_cmd(self, directive) -> None:
         return self._handle_default(directive)
 
-    @unsupported_directive(LabelDirective)
+    @unsupported_directive
     def _handle_label(self, directive) -> None:
         return self._handle_default(directive)
 
-    @unsupported_directive(MaintainerDirective)
+    @unsupported_directive
     def _handle_maintainer(self, directive) -> None:
         return self._handle_default(directive)
 
-    @unsupported_directive(ExposeDirective)
+    @unsupported_directive
     def _handle_expose(self, directive) -> None:
         return self._handle_default(directive)
 
-    @unsupported_directive(EntrypointDirective)
+    @unsupported_directive
     def _handle_entrypoint(self, directive) -> None:
         return self._handle_default(directive)
 
-    @unsupported_directive(VolumeDirective)
+    @unsupported_directive
     def _handle_volume(self, directive) -> None:
         return self._handle_default(directive)
 
-    @unsupported_directive(OnbuildDirective)
+    @unsupported_directive
     def _handle_onbuild(self, directive) -> None:
         return self._handle_default(directive)
 
-    @unsupported_directive(StopsignalDirective)
+    @unsupported_directive
     def _handle_stopsignal(self, directive) -> None:
         return self._handle_default(directive)
 
-    @unsupported_directive(HealthcheckDirective)
+    @unsupported_directive
     def _handle_healthcheck(self, directive) -> None:
         return self._handle_default(directive)
 
-    @unsupported_directive(ShellDirective)
+    @unsupported_directive
     def _handle_shell(self, directive) -> None:
         return self._handle_default(directive)
 
