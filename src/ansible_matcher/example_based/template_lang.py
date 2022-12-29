@@ -6,7 +6,7 @@ from src.ansible_matcher.example_based.antlr.src.CommandTemplateLexer import Com
 from src.ansible_matcher.example_based.antlr.src.CommandTemplateParser import CommandTemplateParser
 from src.ansible_matcher.example_based.antlr.src.CommandTemplateParserVisitor import CommandTemplateParserVisitor
 from antlr4 import *
-from typing import List, Union, Optional, Dict, Any
+from typing import Union, Optional, Dict
 
 from src.shell.main import *
 
@@ -436,7 +436,7 @@ class TemplateFiller:
 
 
 if __name__ == "__main__":
-    from sandbox.shell_parser.main import SandboxShellParser
+    from sandbox.src.shell.main import SandboxShellParser
 
     shell_parser = SandboxShellParser()
     template_constr = TemplateConstructor()
