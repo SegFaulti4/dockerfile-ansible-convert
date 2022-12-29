@@ -4,7 +4,7 @@ from dataclasses import dataclass, field
 
 @dataclass
 class RoleGeneratorStatistics:
-    types: List[Type] = field(default_factory=list)
+    names: List[str] = field(default_factory=list)
     coverages: List[float] = field(default_factory=list)
     lengths: List[int] = field(default_factory=list)
 
@@ -14,7 +14,7 @@ def unsupported_directive(func):
         d_type, d_cov, d_len = type(args[1]), 0., len(args[1])
         res = func(*args, **kwargs)
 
-        args[0].stats.types.append(d_type)
+        args[0].stats.names.append(d_type.__name__)
         args[0].stats.coverages.append(d_cov)
         args[0].stats.lengths.append(d_len)
         return res
@@ -27,7 +27,7 @@ def supported_directive(func):
         d_type, d_cov, d_len = type(args[1]), 1., len(args[1])
         res = func(*args, **kwargs)
 
-        args[0].stats.types.append(d_type)
+        args[0].stats.names.append(d_type.__name__)
         args[0].stats.coverages.append(d_cov)
         args[0].stats.lengths.append(d_len)
         return res

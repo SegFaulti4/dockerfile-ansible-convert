@@ -15,7 +15,7 @@ from src.log import globalLog
 
 
 class ExampleBasedMatcher(TaskMatcher):
-    stats: ExampleBasedMatcherStatistics
+    stats = ExampleBasedMatcherStatistics()
 
     _tweaks: TemplateTweaks
     _config_loader = command_config_loader
@@ -26,7 +26,6 @@ class ExampleBasedMatcher(TaskMatcher):
     def match_command(self, comm: CommandCallParts, cwd: Optional[str] = None, usr: Optional[str] = None) \
             -> Union[Dict[str, Any], None]:
         if not ExampleBasedMatcher.check_requirements(comm):
-            self._stat_unknown(comm)
             return None
 
         command_config = self._config_loader.load(comm)
@@ -54,21 +53,21 @@ class ExampleBasedMatcher(TaskMatcher):
         return None
 
     def _stat_unknown(self, comm: CommandCallParts) -> None:
-        self.stats.names.append("UNKNOWN COMMAND")
+        self.stats.names.append(comm[0].value + "(unknown)")
         self.stats.coverages.append(0.)
         self.stats.lengths.append(sum(1 + len(w.value) for w in comm) - 1)
 
     def _stat_unmatched(self, comm: CommandCallParts, command_config: CommandConfig) -> None:
         self.stats.names.append(" ".join(
             map(lambda x: x.value, filter(lambda x: not x.parts, command_config.entry))
-        ))
+        ) + "(known)")
         self.stats.coverages.append(0.)
         self.stats.lengths.append(sum(1 + len(w.value) for w in comm) - 1)
 
     def _stat_matched(self, comm: CommandCallParts, command_config: CommandConfig) -> None:
         self.stats.names.append(" ".join(
             map(lambda x: x.value, filter(lambda x: not x.parts, command_config.entry))
-        ))
+        ) + "(known)")
         self.stats.coverages.append(1.)
         self.stats.lengths.append(sum(1 + len(w.value) for w in comm) - 1)
 

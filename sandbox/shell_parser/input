@@ -1,1 +1,0 @@
-mkdir --context=$SYS:$OBJ:$CONT $DIR
