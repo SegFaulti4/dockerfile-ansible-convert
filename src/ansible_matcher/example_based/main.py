@@ -52,24 +52,24 @@ class ExampleBasedMatcher(TaskMatcher):
         self._stat_matched(comm, command_config)
         return None
 
-    def _stat_unknown(self, comm: CommandCallParts) -> None:
+    def _stat_unknown(self, comm: CommandCallParts) -> None:'''
         self.stats.names.append(comm[0].value + "(unknown)")
         self.stats.coverages.append(0.)
-        self.stats.lengths.append(sum(1 + len(w.value) for w in comm) - 1)
+        self.stats.lengths.append(sum(1 + len(w.value) for w in comm) - 1)'''
 
-    def _stat_unmatched(self, comm: CommandCallParts, command_config: CommandConfig) -> None:
+    def _stat_unmatched(self, comm: CommandCallParts, command_config: CommandConfig) -> None:'''
         self.stats.names.append(" ".join(
             map(lambda x: x.value, filter(lambda x: not x.parts, command_config.entry))
         ) + "(known)")
         self.stats.coverages.append(0.)
-        self.stats.lengths.append(sum(1 + len(w.value) for w in comm) - 1)
+        self.stats.lengths.append(sum(1 + len(w.value) for w in comm) - 1)'''
 
-    def _stat_matched(self, comm: CommandCallParts, command_config: CommandConfig) -> None:
+    def _stat_matched(self, comm: CommandCallParts, command_config: CommandConfig) -> None:'''
         self.stats.names.append(" ".join(
             map(lambda x: x.value, filter(lambda x: not x.parts, command_config.entry))
         ) + "(known)")
         self.stats.coverages.append(1.)
-        self.stats.lengths.append(sum(1 + len(w.value) for w in comm) - 1)
+        self.stats.lengths.append(sum(1 + len(w.value) for w in comm) - 1)'''
 
     @staticmethod
     def check_requirements(comm: CommandCallParts) -> bool:
@@ -106,8 +106,8 @@ class ExampleBasedMatcher(TaskMatcher):
         opt_fields, postprocess_task_template = postprocess_res
         fields_dict = CommandTemplateMatcher.merge_match_results(parameter_fields, opt_fields)
 
-        task_template = ExampleBasedMatcher.merge_task_templates(postprocess_task_template,
-                                                                 copy.deepcopy(example_task_template))
+        task_template = ExampleBasedMatcher.merge_task_templates(copy.deepcopy(example_task_template),
+                                                                 postprocess_task_template)
         task_call = ExampleBasedMatcher.fill_in_task_template(task_template, fields_dict)
         if task_call is None:
             return None

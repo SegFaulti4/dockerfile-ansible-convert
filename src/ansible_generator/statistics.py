@@ -11,7 +11,7 @@ class RoleGeneratorStatistics:
 
 def unsupported_directive(func):
     def new_func(*args, **kwargs):
-        d_type, d_cov, d_len = type(args[1]), 0., len(args[1])
+        d_type, d_cov, d_len = type(kwargs['directive']), 0., len(kwargs['directive'])
         res = func(*args, **kwargs)
 
         args[0].stats.names.append(d_type.__name__)
@@ -24,7 +24,7 @@ def unsupported_directive(func):
 
 def supported_directive(func):
     def new_func(*args, **kwargs):
-        d_type, d_cov, d_len = type(args[1]), 1., len(args[1])
+        d_type, d_cov, d_len = type(kwargs['directive']), 1., len(kwargs['directive'])
         res = func(*args, **kwargs)
 
         args[0].stats.names.append(d_type.__name__)

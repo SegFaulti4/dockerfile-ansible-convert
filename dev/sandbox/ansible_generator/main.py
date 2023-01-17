@@ -6,9 +6,13 @@ from dev.sandbox.shell.main import SandboxShellParser
 from dev.sandbox.containerfile.main import SandboxDockerfileParser
 from dev.sandbox.ansible_matcher.main import SandboxTaskMatcher
 from src.ansible_generator.main import RoleGenerator as SandboxRoleGenerator
-import dev.sandbox.utils.file_utils as file_utils
+import dev.utils.file_utils as file_utils
 
 from src.log import globalLog
+
+
+def print_header(s):
+    print(f"\033[4m\033[97m{s}\033[0m\033[0m")
 
 
 if __name__ == "__main__":
@@ -24,7 +28,7 @@ if __name__ == "__main__":
 
     with open("input", "r") as inF:
         for name in inF.readlines():
-            path = f"{file_utils.DOCKERFILES_DIR}{name.strip()}"
+            path = f"{file_utils.CONTAINERFILES_DIR}/{name.strip()}"
 
             with open(path, "r") as df:
                 source = "".join(df.readlines())
@@ -33,13 +37,16 @@ if __name__ == "__main__":
             tasks = SandboxRoleGenerator(tm=task_matcher, dc=content).generate()
 
             if SHOW_PATH:
-                print(f"PATH:\t{path}\n")
+                print_header("PATH:")
+                print(f"{path}\n")
             if SHOW_SOURCE:
-                print(f"SOURCE:\n{source}\n")
+                print_header("SOURCE:")
+                print(f"{source.strip()}\n")
             if SHOW_DOCKERFILE_PARSER:
                 rep = "\n".join(str(obj) for obj in content.directives)
-                print(f"DOCKERFILE PARSER:\n{rep}\n")
+                print_header("DOCKERFILE PARSER:")
+                print(f"{rep}\n")
             if SHOW_ROLE_GENERATOR:
-                print("ROLE GENERATOR:\n")
-                yaml.dump(tasks, sys.stdout)
+                print_header("ROLE GENERATOR:")
+                yaml.safe_dump(tasks, sys.stdout)
                 print()

@@ -436,7 +436,7 @@ class TemplateFiller:
 
 
 if __name__ == "__main__":
-    from sandbox.src.shell.main import SandboxShellParser
+    from dev.sandbox.shell.main import SandboxShellParser
 
     shell_parser = SandboxShellParser()
     template_constr = TemplateConstructor()

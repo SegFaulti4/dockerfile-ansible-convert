@@ -77,7 +77,7 @@ class RoleGenerator:
         self._runtime = _Runtime()
         self._context = AnsiblePlayContext(global_vars=dict(), local_vars=dict())
         for directive in self._df_content.directives:
-            handle_map[type(directive)](directive)
+            handle_map[type(directive)](directive=directive)
 
         return self._return()
 

@@ -3,7 +3,7 @@ import dockerfile
 
 from dev.sandbox.shell.main import SandboxShellParser
 from src.containerfile.tpdockerfile.main import TPDockerfileParser as SandboxDockerfileParser
-import dev.sandbox.utils.file_utils as file_utils
+import dev.utils.file_utils as file_utils
 
 from src.log import globalLog
 
@@ -21,7 +21,7 @@ if __name__ == "__main__":
     with open("input", "r") as inF:
         for name in inF.readlines():
             try:
-                path = f"{file_utils.DOCKERFILES_DIR}{name.strip()}"
+                path = f"{file_utils.CONTAINERFILES_DIR}{name.strip()}"
 
                 with open(path, "r") as df:
                     source = "".join(df.readlines())

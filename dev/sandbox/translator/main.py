@@ -4,7 +4,7 @@ from dev.sandbox.shell.main import SandboxShellParser
 from dev.sandbox.containerfile.main import SandboxDockerfileParser
 from dev.sandbox.ansible_matcher.main import SandboxTaskMatcher
 from dev.sandbox.ansible_generator.main import SandboxRoleGenerator
-import dev.sandbox.utils.file_utils as file_utils
+import dev.utils.file_utils as file_utils
 import dev.sandbox.utils.ansible_utils as ansible_utils
 import dev.sandbox.utils.cloud_utils as cloud_utils
 
@@ -24,8 +24,8 @@ if __name__ == "__main__":
     EXECUTE_ROLE = False
 
     for name, path in zip(
-            file_utils.filenames_from_dir(file_utils.DOCKERFILES_DIR),
-            file_utils.filepaths_from_dir(file_utils.DOCKERFILES_DIR)
+            file_utils.filenames_from_dir(file_utils.CONTAINERFILES_DIR),
+            file_utils.filepaths_from_dir(file_utils.CONTAINERFILES_DIR)
     ):
         if PRINT_PATH:
             print('########')

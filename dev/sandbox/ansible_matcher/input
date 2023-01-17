@@ -1,1 +1,2 @@
-rm -rf /var/lib/apt/lists/*
+apt-get install --no-install-recommends g++
+apt-get install --no-install-recommends g++
