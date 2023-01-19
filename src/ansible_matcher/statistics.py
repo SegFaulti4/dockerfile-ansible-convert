@@ -4,6 +4,8 @@ from dataclasses import dataclass, field
 
 @dataclass
 class TaskMatcherStatistics:
-    names: List[str] = field(default_factory=list)
-    coverages: List[float] = field(default_factory=list)
-    lengths: List[int] = field(default_factory=list)
+    name: List[str] = field(default_factory=list)
+    supported: List[bool] = field(default_factory=list)
+    coverage: List[float] = field(default_factory=list)
+    length: List[int] = field(default_factory=list)
+    line: List[str] = field(default_factory=list)

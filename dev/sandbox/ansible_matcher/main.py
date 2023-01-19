@@ -29,20 +29,22 @@ if __name__ == "__main__":
                 continue
 
             try:
-                shell_objs = shell_parser.parse(line)
-                objs = [task_matcher.match_command(obj.parts) for obj in shell_objs if isinstance(obj, ShellCommandObject)]
+                script = shell_parser.parse_as_script(line)
+                comm = script.parts[0]
+                if isinstance(comm, ShellCommandObject):
+                    obj = task_matcher.match_command(comm.parts)
+                else:
+                    obj = None
 
                 if SHOW_SOURCE:
                     print_header("SOURCE:")
                     print(f"{line}\n")
                 if SHOW_SHELL_PARSER:
-                    rep = "\n".join(str(obj) for obj in shell_objs)
                     print_header("SHELL_PARSER:")
-                    print(f"{rep}\n")
+                    print(f"{comm}\n")
                 if SHOW_TASK_MATCHER:
-                    rep = "\n".join(str(obj) for obj in objs)
                     print_header("TASK MATCHER:")
-                    print(f"{rep}\n")
+                    print(f"{obj}\n")
 
             except IOError as exc:
                 print(f"{type(exc)}: {exc}")

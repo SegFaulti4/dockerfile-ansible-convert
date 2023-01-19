@@ -4,19 +4,22 @@ from dataclasses import dataclass, field
 
 @dataclass
 class RoleGeneratorStatistics:
-    names: List[str] = field(default_factory=list)
-    coverages: List[float] = field(default_factory=list)
-    lengths: List[int] = field(default_factory=list)
+    name: List[str] = field(default_factory=list)
+    supported: List[bool] = field(default_factory=list)
+    coverage: List[float] = field(default_factory=list)
+    length: List[int] = field(default_factory=list)
 
 
 def unsupported_directive(func):
     def new_func(*args, **kwargs):
-        d_type, d_cov, d_len = type(kwargs['directive']), 0., len(kwargs['directive'])
         res = func(*args, **kwargs)
 
-        args[0].stats.names.append(d_type.__name__)
-        args[0].stats.coverages.append(d_cov)
-        args[0].stats.lengths.append(d_len)
+        stats = args[0].stats
+        if args[0].collect_stats:
+            stats.name.append(type(kwargs['directive']).__name__)
+            stats.supported.append(False)
+            stats.coverage.append(0.)
+            stats.length.append(len(kwargs['directive']))
         return res
 
     return new_func
@@ -24,12 +27,14 @@ def unsupported_directive(func):
 
 def supported_directive(func):
     def new_func(*args, **kwargs):
-        d_type, d_cov, d_len = type(kwargs['directive']), 1., len(kwargs['directive'])
         res = func(*args, **kwargs)
 
-        args[0].stats.names.append(d_type.__name__)
-        args[0].stats.coverages.append(d_cov)
-        args[0].stats.lengths.append(d_len)
+        stats = args[0].stats
+        if args[0].collect_stats:
+            stats.name.append(type(kwargs['directive']).__name__)
+            stats.supported.append(True)
+            stats.coverage.append(1.)
+            stats.length.append(len(kwargs['directive']))
         return res
 
     return new_func

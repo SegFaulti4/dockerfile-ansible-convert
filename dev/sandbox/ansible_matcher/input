@@ -1,2 +1,2 @@
-apt-get install --no-install-recommends g++
-apt-get install --no-install-recommends g++
+apt-get install --no-install-recommends -y -o Dpkg::Options::="--force-confnew" curl
+apt-get install --no-install-recommends -y -o Dpkg::Options::="--force-confnew" curl

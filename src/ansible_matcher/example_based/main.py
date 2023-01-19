@@ -20,21 +20,22 @@ class ExampleBasedMatcher(TaskMatcher):
     def __init__(self, config_loader: CommandConfigLoader = init_command_config_loader):
         self._config_loader = config_loader
 
-    def match_command(self, comm: CommandCallParts, cwd: Optional[str] = None, usr: Optional[str] = None) \
+    def match_command(self, comm: CommandCallParts, cwd: Optional[str] = None, usr: Optional[str] = None,
+                      collect_stats: bool = False) \
             -> Union[Dict[str, Any], None]:
         if not ExampleBasedMatcher.check_requirements(comm):
             return None
 
         command_config = self._config_loader.load(comm)
         if command_config is None:
-            self._stat_unknown(comm)
+            self._stat_unknown(comm, collect_stats)
             return None
 
         self._tweaks = TemplateTweaks(cwd=cwd, usr=usr)
 
         extracted_call = ExampleBasedMatcher.extract_command_call(command_config, comm)
         if extracted_call is None:
-            self._stat_unmatched(comm, command_config)
+            self._stat_unmatched(comm, command_config, collect_stats)
             return None
 
         for command_template, task_template in command_config.examples:
@@ -43,30 +44,45 @@ class ExampleBasedMatcher(TaskMatcher):
             if task_call is None:
                 continue
 
-            self._stat_matched(comm, command_config)
+            self._stat_matched(comm, command_config, collect_stats)
             return task_call
 
-        self._stat_matched(comm, command_config)
+        self._stat_unmatched(comm, command_config, collect_stats)
         return None
 
-    def _stat_unknown(self, comm: CommandCallParts) -> None:
-        self.stats.names.append(comm[0].value + "(unknown)")
-        self.stats.coverages.append(0.)
-        self.stats.lengths.append(sum(1 + len(w.value) for w in comm) - 1)
+    def _stat_unknown(self, comm: CommandCallParts, collect_stat: bool) -> None:
+        if not collect_stat:
+            return
+        self.stats.name.append(comm[0].value)
+        self.stats.supported.append(False)
+        self.stats.coverage.append(0.)
+        line = " ".join(map(lambda x: x.value, comm))
+        self.stats.length.append(len(line))
+        self.stats.line.append(line)
 
-    def _stat_unmatched(self, comm: CommandCallParts, command_config: CommandConfig) -> None:
-        self.stats.names.append(" ".join(
+    def _stat_unmatched(self, comm: CommandCallParts, command_config: CommandConfig, collect_stat: bool) -> None:
+        if not collect_stat:
+            return
+        self.stats.name.append(" ".join(
             map(lambda x: x.value, filter(lambda x: not x.parts, command_config.entry))
-        ) + "(known)")
-        self.stats.coverages.append(0.)
-        self.stats.lengths.append(sum(1 + len(w.value) for w in comm) - 1)
+        ))
+        self.stats.supported.append(True)
+        self.stats.coverage.append(0.)
+        line = " ".join(map(lambda x: x.value, comm))
+        self.stats.length.append(len(line))
+        self.stats.line.append(line)
 
-    def _stat_matched(self, comm: CommandCallParts, command_config: CommandConfig) -> None:
-        self.stats.names.append(" ".join(
+    def _stat_matched(self, comm: CommandCallParts, command_config: CommandConfig, collect_stat: bool) -> None:
+        if not collect_stat:
+            return
+        self.stats.name.append(" ".join(
             map(lambda x: x.value, filter(lambda x: not x.parts, command_config.entry))
-        ) + "(known)")
-        self.stats.coverages.append(1.)
-        self.stats.lengths.append(sum(1 + len(w.value) for w in comm) - 1)
+        ))
+        self.stats.supported.append(True)
+        self.stats.coverage.append(1.)
+        line = " ".join(map(lambda x: x.value, comm))
+        self.stats.length.append(len(line))
+        self.stats.line.append(line)
 
     @staticmethod
     def check_requirements(comm: CommandCallParts) -> bool:
@@ -103,7 +119,7 @@ class ExampleBasedMatcher(TaskMatcher):
         opt_fields, postprocess_task_template = postprocess_res
         fields_dict = CommandTemplateMatcher.merge_match_results(parameter_fields, opt_fields)
 
-        task_template = ExampleBasedMatcher.merge_task_templates(copy.deepcopy(example_task_template),
+        task_template = ExampleBasedMatcher.merge_task_templates(example_task_template,
                                                                  postprocess_task_template)
         task_call = ExampleBasedMatcher.fill_in_task_template(task_template, fields_dict)
         if task_call is None:
@@ -220,4 +236,5 @@ class ExampleBasedMatcher(TaskMatcher):
 
     @staticmethod
     def merge_task_templates(into_templ: Dict[str, Any], from_templ: Dict[str, Any]) -> Dict[str, Any]:
-        return merge_dicts(into_templ, from_templ)
+        tmp = copy.deepcopy(into_templ)
+        return merge_dicts(tmp, from_templ)

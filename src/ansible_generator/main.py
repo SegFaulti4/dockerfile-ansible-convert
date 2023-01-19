@@ -39,16 +39,18 @@ class _Runtime:
 
 class RoleGenerator:
     task_matcher: TaskMatcher
-    stats: RoleGeneratorStatistics
+    collect_stats: bool
+    stats: Optional[RoleGeneratorStatistics]
 
     _df_content: DockerfileContent
     _context: Union[AnsiblePlayContext, None] = None
     _runtime: Union[_Runtime, None] = None
 
-    def __init__(self, dc: DockerfileContent, tm: TaskMatcher):
+    def __init__(self, dc: DockerfileContent, tm: TaskMatcher, collect_stats: bool = False):
         self._df_content = dc
         self.task_matcher = tm
-        self.stats = RoleGeneratorStatistics()
+        self.collect_stats = collect_stats
+        self.stats = None
 
     def generate(self) -> List[Dict[str, Any]]:
         # method for each DockerfileDirective
@@ -363,7 +365,8 @@ class RoleGenerator:
 
         task = self.task_matcher.match_command(words,
                                                cwd=self._context.get_workdir(),
-                                               usr=self._context.get_user())
+                                               usr=self._context.get_user(),
+                                               collect_stats=self.collect_stats)
         if task is None:
             return self._handle_run_shell(obj.line)
 
