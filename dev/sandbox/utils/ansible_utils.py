@@ -2,7 +2,7 @@ import yaml
 import subprocess
 from typing import Any, List, Dict
 
-import dev.utils.file_utils as file_utils
+import dev.utils.data_utils as file_utils
 
 
 def write_new_role(role_name: str, tasks: List[Dict[str, Any]]) -> None:

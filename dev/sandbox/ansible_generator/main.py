@@ -6,7 +6,7 @@ from dev.sandbox.shell.main import SandboxShellParser
 from dev.sandbox.containerfile.main import SandboxDockerfileParser
 from dev.sandbox.ansible_matcher.main import SandboxTaskMatcher
 from src.ansible_generator.main import RoleGenerator as SandboxRoleGenerator
-import dev.utils.file_utils as file_utils
+import dev.utils.data_utils as file_utils
 
 from src.log import globalLog
 

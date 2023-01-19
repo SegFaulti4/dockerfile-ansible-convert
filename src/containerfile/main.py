@@ -159,7 +159,6 @@ class ShellDirective(UnsupportedDirective):
         return 5 + super().__len__()
 
 
-@dataclass
 class DockerfileParser:
     shell_parser: ShellParser
 

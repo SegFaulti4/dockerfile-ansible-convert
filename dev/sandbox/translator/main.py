@@ -4,7 +4,7 @@ from dev.sandbox.shell.main import SandboxShellParser
 from dev.sandbox.containerfile.main import SandboxDockerfileParser
 from dev.sandbox.ansible_matcher.main import SandboxTaskMatcher
 from dev.sandbox.ansible_generator.main import SandboxRoleGenerator
-import dev.utils.file_utils as file_utils
+import dev.utils.data_utils as file_utils
 import dev.sandbox.utils.ansible_utils as ansible_utils
 import dev.sandbox.utils.cloud_utils as cloud_utils
 

@@ -3,7 +3,7 @@ import dockerfile
 
 from dev.sandbox.shell.main import SandboxShellParser
 from src.containerfile.tpdockerfile.main import TPDockerfileParser as SandboxDockerfileParser
-import dev.utils.file_utils as file_utils
+import dev.utils.data_utils as file_utils
 
 from src.log import globalLog
 
