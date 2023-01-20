@@ -10,7 +10,7 @@ else:
 
 def serializedATN():
     return [
-        4,1,11,61,2,0,7,0,2,1,7,1,2,2,7,2,2,3,7,3,1,0,1,0,1,0,5,0,12,8,0,
+        4,1,13,61,2,0,7,0,2,1,7,1,2,2,7,2,2,3,7,3,1,0,1,0,1,0,5,0,12,8,0,
         10,0,12,0,15,9,0,1,1,1,1,1,1,1,1,5,1,21,8,1,10,1,12,1,24,9,1,1,1,
         3,1,27,8,1,1,1,1,1,1,1,1,1,5,1,33,8,1,10,1,12,1,36,9,1,1,1,3,1,39,
         8,1,3,1,41,8,1,1,2,1,2,1,3,1,3,1,3,1,3,3,3,49,8,3,1,3,3,3,52,8,3,
@@ -25,9 +25,9 @@ def serializedATN():
         32,1,0,0,0,34,35,1,0,0,0,35,38,1,0,0,0,36,34,1,0,0,0,37,39,3,4,2,
         0,38,37,1,0,0,0,38,39,1,0,0,0,39,41,1,0,0,0,40,16,1,0,0,0,40,28,
         1,0,0,0,41,3,1,0,0,0,42,43,5,2,0,0,43,5,1,0,0,0,44,45,5,1,0,0,45,
-        56,5,4,0,0,46,48,5,5,0,0,47,49,5,8,0,0,48,47,1,0,0,0,48,49,1,0,0,
-        0,49,51,1,0,0,0,50,52,5,9,0,0,51,50,1,0,0,0,51,52,1,0,0,0,52,54,
-        1,0,0,0,53,55,5,10,0,0,54,53,1,0,0,0,54,55,1,0,0,0,55,57,1,0,0,0,
+        56,5,4,0,0,46,48,5,5,0,0,47,49,5,9,0,0,48,47,1,0,0,0,48,49,1,0,0,
+        0,49,51,1,0,0,0,50,52,5,10,0,0,51,50,1,0,0,0,51,52,1,0,0,0,52,54,
+        1,0,0,0,53,55,5,11,0,0,54,53,1,0,0,0,54,55,1,0,0,0,55,57,1,0,0,0,
         56,46,1,0,0,0,56,57,1,0,0,0,57,58,1,0,0,0,58,59,5,6,0,0,59,7,1,0,
         0,0,10,13,22,26,34,38,40,48,51,54,56
     ]
@@ -43,11 +43,12 @@ class CommandTemplateParser ( Parser ):
     sharedContextCache = PredictionContextCache()
 
     literalNames = [ "<INVALID>", "'{{'", "<INVALID>", "<INVALID>", "<INVALID>", 
-                     "':'", "'}}'", "<INVALID>", "'m'", "'o'", "'p'" ]
+                     "':'", "'}}'", "<INVALID>", "<INVALID>", "'m'", "'o'", 
+                     "'p'" ]
 
     symbolicNames = [ "<INVALID>", "OPEN", "WORD", "SPACE", "FIELD_NAME", 
-                      "SPEC_OPEN", "CLOSE", "INSIDE_S", "SPEC_MANY", "SPEC_OPTIONAL", 
-                      "SPEC_PATH", "SPECS_S" ]
+                      "SPEC_OPEN", "CLOSE", "INSIDE_S", "INSIDE_ANY", "SPEC_MANY", 
+                      "SPEC_OPTIONAL", "SPEC_PATH", "SPECS_S", "SPECS_ANY" ]
 
     RULE_command_template = 0
     RULE_template_part = 1
@@ -65,10 +66,12 @@ class CommandTemplateParser ( Parser ):
     SPEC_OPEN=5
     CLOSE=6
     INSIDE_S=7
-    SPEC_MANY=8
-    SPEC_OPTIONAL=9
-    SPEC_PATH=10
-    SPECS_S=11
+    INSIDE_ANY=8
+    SPEC_MANY=9
+    SPEC_OPTIONAL=10
+    SPEC_PATH=11
+    SPECS_S=12
+    SPECS_ANY=13
 
     def __init__(self, input:TokenStream, output:TextIO = sys.stdout):
         super().__init__(input, output)
@@ -378,7 +381,7 @@ class CommandTemplateParser ( Parser ):
                 self.state = 48
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                if _la==8:
+                if _la==9:
                     self.state = 47
                     self.match(CommandTemplateParser.SPEC_MANY)
 
@@ -386,7 +389,7 @@ class CommandTemplateParser ( Parser ):
                 self.state = 51
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                if _la==9:
+                if _la==10:
                     self.state = 50
                     self.match(CommandTemplateParser.SPEC_OPTIONAL)
 
@@ -394,7 +397,7 @@ class CommandTemplateParser ( Parser ):
                 self.state = 54
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                if _la==10:
+                if _la==11:
                     self.state = 53
                     self.match(CommandTemplateParser.SPEC_PATH)
 

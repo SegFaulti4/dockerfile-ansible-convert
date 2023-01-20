@@ -66,7 +66,7 @@ class TemplateConstructor(CommandTemplateParserVisitor):
         )
 
         templ = template_parser.command_template()
-        if templ is None or not isinstance(templ, CommandTemplateParser.Command_templateContext):
+        if not templ or not isinstance(templ, CommandTemplateParser.Command_templateContext):
             return None
         return self.visitCommand_template(templ)
 
@@ -78,15 +78,19 @@ class TemplateConstructor(CommandTemplateParserVisitor):
 
         objects = []
         for obj_ctx in obj_contexts:
-            obj = self.visitTemplate_part(obj_ctx)
-            if obj is None:
+            if isinstance(obj_ctx, CommandTemplateParser.Template_partContext):
+                obj = self.visitTemplate_part(obj_ctx)
+                if obj is None:
+                    return None
+                objects.append(obj)
+            else:
                 return None
-            objects.append(obj)
 
         return objects
 
     def visitTemplate_part(self, ctx: CommandTemplateParser.Template_partContext) -> Optional[TemplatePart]:
-        if ctx.children is None or not ctx.children:
+        if ctx.children is None or not ctx.children or \
+                any(isinstance(c, ErrorNode) for c in ctx.getChildren()):
             return None
 
         template_part_value = ""
@@ -104,6 +108,8 @@ class TemplateConstructor(CommandTemplateParserVisitor):
                 part[0].pos = part[0].pos[0] + len(template_part_value), part[0].pos[1] + len(template_part_value)
                 template_part_parts.append(part[0])
                 template_part_value += part[1]
+            else:
+                return None
 
         return TemplatePart(parts=template_part_parts, value=template_part_value)
 
@@ -112,6 +118,8 @@ class TemplateConstructor(CommandTemplateParserVisitor):
 
     def visitTemplate_field(self, ctx: CommandTemplateParser.Template_fieldContext) \
             -> Optional[Tuple[TemplateField, str]]:
+        if any(isinstance(c, ErrorNode) for c in ctx.getChildren()):
+            return None
 
         token_open = ctx.OPEN()
         token_field_name = ctx.FIELD_NAME()
@@ -121,15 +129,21 @@ class TemplateConstructor(CommandTemplateParserVisitor):
         token_spec_path = ctx.SPEC_PATH()
         token_close = ctx.CLOSE()
 
-        if token_open is None or token_close is None or token_field_name is None:
+        def terminal_non_error(node):
+            return isinstance(node, TerminalNode) and not isinstance(node, ErrorNode)
+
+        if not terminal_non_error(token_open) or \
+            not terminal_non_error(token_close) or \
+            not terminal_non_error(token_field_name):
             return None
 
         def _token_txt(t):
             return "" if t is None else t.getText()
 
-        field_repr = _token_txt(token_open) + _token_txt(token_field_name) + _token_txt(token_spec_open) + \
-            _token_txt(token_spec_many) + _token_txt(token_spec_optional) + _token_txt(token_spec_path) + \
-            _token_txt(token_close)
+        field_repr = _token_txt(token_open) + _token_txt(token_field_name) + \
+                     _token_txt(token_spec_open) + _token_txt(token_spec_many) + \
+                     _token_txt(token_spec_optional) + _token_txt(token_spec_path) + \
+                     _token_txt(token_close)
 
         return TemplateField(
             name=_token_txt(token_field_name),

@@ -130,7 +130,7 @@ def collect_task_matcher_stats(shell_parser: ShellParser, task_matcher: TaskMatc
                 parsed = shell_parser.parse_as_script(line)
                 comm = parsed.parts[0]
                 if isinstance(comm, ShellCommandObject):
-                    matched = task_matcher.match_command(comm.parts)
+                    matched = task_matcher.match_command(comm.parts, collect_stats=True)
             except Exception:
                 pass
 
@@ -161,8 +161,11 @@ def main():
     #mine_shell_commands()
 
     commands_file = MINED_SHELL_COMMANDS_FILE
-    collect_and_print_task_matcher_stats(commands_file)
+
+    #collect_and_print_task_matcher_stats(commands_file)
+    collect_and_save_containerfile_stats()
 
 
 if __name__ == "__main__":
-    main()
+    globalLog.setLevel(logging.ERROR)
+    collect_and_print_task_matcher_stats(os.path.join(DATA_DIR, "containerfile_stats/supported_commands/unmatched/rm"))

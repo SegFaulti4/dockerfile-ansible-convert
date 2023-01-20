@@ -10,6 +10,7 @@ FIELD_NAME      :   [a-zA-Z_][a-zA-Z_0-9]* ;
 SPEC_OPEN       :   ':'                         -> mode(SPECS) ;
 CLOSE           :   '}}'                        -> popMode ;
 INSIDE_S        :   SPACE                       -> skip ;
+INSIDE_ANY      :   . ;
 
 mode SPECS;
 
@@ -18,3 +19,4 @@ SPEC_OPTIONAL   : 'o' ;
 SPEC_PATH       : 'p' ;
 SPECS_CLOSE     : CLOSE                         -> type(CLOSE), popMode ;
 SPECS_S         : SPACE                         -> skip ;
+SPECS_ANY       : . ;
