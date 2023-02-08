@@ -1,13 +1,11 @@
 import logging
-import os
-import sys
 import csv
 from collections import defaultdict
 from tabulate import tabulate
 
 from src.ansible_generator.main import *
 from src.ansible_generator.statistics import *
-from src.ansible_matcher.example_based.main import *
+from src.ansible_matcher.main import *
 from src.ansible_matcher.statistics import *
 from src.containerfile.tpdockerfile.main import *
 from src.shell.bashlex.main import *
@@ -140,7 +138,7 @@ def collect_task_matcher_stats(shell_parser: ShellParser, task_matcher: TaskMatc
 
 def collect_and_print_task_matcher_stats(commands_file: str = MINED_SHELL_COMMANDS_FILE):
     shell_parser = BashlexShellParser()
-    task_matcher = ExampleBasedMatcher()
+    task_matcher = TaskMatcher()
 
     matcher_stats = collect_task_matcher_stats(shell_parser, task_matcher, commands_file)
     print_task_matcher_stats(matcher_stats)
@@ -149,7 +147,7 @@ def collect_and_print_task_matcher_stats(commands_file: str = MINED_SHELL_COMMAN
 def collect_and_save_containerfile_stats():
     shell_parser = BashlexShellParser()
     dockerfile_parser = TPDockerfileParser(shell_parser=shell_parser)
-    task_matcher = ExampleBasedMatcher()
+    task_matcher = TaskMatcher()
 
     generator_stats, matcher_stats = collect_containerfile_stats(dockerfile_parser, task_matcher)
     save_containerfile_stats(generator_stats, matcher_stats)

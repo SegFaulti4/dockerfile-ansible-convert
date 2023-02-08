@@ -4,7 +4,7 @@ import os
 import bashlex
 from bashlex.errors import ParsingError
 
-import sandbox.bashlex_stats.stat_node as stat_node
+import dev.stats.bashlex.stat_node as stat_node
 
 from src.log import globalLog
 

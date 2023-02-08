@@ -12,6 +12,7 @@ from src.containerfile.tpdockerfile.main import TPDockerfileParser
 
 DEV_DIR = os.path.dirname(__file__)
 DATA_DIR = os.path.join(os.path.dirname(DEV_DIR), 'data')
+SANDBOX_DIR = os.path.join(DEV_DIR, 'sandbox')
 CONTAINERFILES_ARCHIVE = os.path.join(DATA_DIR, 'files.zip')
 CONTAINERFILES_DIR = os.path.join(DATA_DIR, 'files')
 MINED_SHELL_COMMANDS_FILE = os.path.join(DATA_DIR, 'mined_commands')

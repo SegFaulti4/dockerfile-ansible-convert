@@ -1,8 +1,7 @@
 import unittest
 import string
-import itertools
 
-from src.ansible_matcher.example_based.template_lang import *
+from src.ansible_matcher.template_lang import *
 
 
 class TestTemplateConstructor(unittest.TestCase):

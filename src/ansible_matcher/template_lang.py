@@ -2,9 +2,9 @@ import regex
 import dataclasses
 import itertools
 import os
-from src.ansible_matcher.example_based.antlr.src.CommandTemplateLexer import CommandTemplateLexer
-from src.ansible_matcher.example_based.antlr.src.CommandTemplateParser import CommandTemplateParser
-from src.ansible_matcher.example_based.antlr.src.CommandTemplateParserVisitor import CommandTemplateParserVisitor
+from src.ansible_matcher.antlr.src.CommandTemplateLexer import CommandTemplateLexer
+from src.ansible_matcher.antlr.src.CommandTemplateParser import CommandTemplateParser
+from src.ansible_matcher.antlr.src import CommandTemplateParserVisitor
 from antlr4 import *
 from typing import Union, Optional, Dict
 

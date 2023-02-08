@@ -1,5 +1,3 @@
-import dataclasses
-
 from src.containerfile.tpdockerfile.transformer import *
 
 

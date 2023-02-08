@@ -2,7 +2,7 @@ import logging
 
 from src.ansible_matcher.main import *
 from dev.sandbox.shell.main import SandboxShellParser
-from src.ansible_matcher.example_based.main import ExampleBasedMatcher as SandboxTaskMatcher
+from src.ansible_matcher.main import TaskMatcher as SandboxTaskMatcher
 
 from src.log import globalLog
 

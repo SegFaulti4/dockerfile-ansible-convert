@@ -5,11 +5,11 @@ import os
 from typing import Optional, Dict
 
 from src.shell.main import *
-from src.ansible_matcher.example_based.template_lang import \
+from src.ansible_matcher.template_lang import \
     CommandCallParts, CommandTemplateParts, \
     TemplateConstructor, CommandTemplateMatcher
-from src.ansible_matcher.example_based.opts_extraction import CommandOpt
-from src.ansible_matcher.example_based.utils import visit_dict
+from src.ansible_matcher.opts_extraction import CommandOpt
+from src.ansible_matcher.utils import visit_dict
 
 from src.log import globalLog
 
@@ -42,7 +42,7 @@ class JsonCommandConfigLoader:
 
     def __init__(self):
         self._configs = []
-        commands_glob = os.path.join(os.path.dirname(__file__), "commands/*.json")
+        commands_glob = os.path.join(os.path.dirname(__file__), "../commands/*.json")
 
         for path in glob.glob(commands_glob):
             configs = JsonCommandConfigLoader._load_config_from_json(path)

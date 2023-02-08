@@ -2,7 +2,7 @@ import dataclasses
 from typing import Union, Optional, Dict
 
 from src.shell.main import *
-from src.ansible_matcher.example_based.template_lang import \
+from src.ansible_matcher.template_lang import \
     TemplateField, TemplatePart, CommandCallParts, CommandTemplateParts
 
 from src.log import globalLog
