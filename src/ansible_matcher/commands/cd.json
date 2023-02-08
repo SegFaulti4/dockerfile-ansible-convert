@@ -1,0 +1,8 @@
+{
+    "cd": {
+        "entry": "cd {{ parameters : m }}",
+        "opts": {},
+        "examples": {},
+        "opts_postprocess": {}
+    }
+}

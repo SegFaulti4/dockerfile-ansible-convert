@@ -365,11 +365,20 @@ class RoleGenerator:
                                                cwd=self._context.get_workdir(),
                                                usr=self._context.get_user(),
                                                collect_stats=self.collect_stats)
-        if task is None:
-            return self._handle_run_shell(obj.line)
 
-        task = self._add_task(task, set_user=True, set_vars=True, set_condition=True)
-        return _ScriptPartType.COMMAND, task
+        if task is not None:
+            task = self._add_task(task, set_user=True, set_vars=True, set_condition=True)
+            return _ScriptPartType.COMMAND, task
+
+        extracted_call = self.task_matcher.extract_command(words)
+        if extracted_call is not None:
+            return self._handle_run_extracted_call(extracted_call)
+
+        return self._handle_run_shell(obj.line)
+
+    def _handle_run_extracted_call(self, extracted_call: ExtractedCommandCall) -> (_ScriptPartType, Any):
+        # TODO
+        raise NotImplementedError
 
     def _handle_run_assignment(self, obj: ShellAssignmentObject) -> (_ScriptPartType, Any):
         value = self._context.resolve_shell_expression(obj.value)
