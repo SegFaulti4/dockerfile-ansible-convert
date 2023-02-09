@@ -1,7 +1,7 @@
 from src.shell.main import *
 
 import re
-from typing import Union, Dict
+from typing import Union, Dict, Optional
 from dataclasses import dataclass
 
 
@@ -9,6 +9,8 @@ from dataclasses import dataclass
 class AnsiblePlayContext:
     global_vars: Dict[str, str]
     local_vars: Dict[str, str]
+    global_env: Dict[str, str]
+    local_env: Dict[str, str]
     global_workdir: Union[str, None] = None
     local_workdir: Union[str, None] = None
     global_user: Union[str, None] = None
@@ -35,8 +37,25 @@ class AnsiblePlayContext:
 
     def clear_local(self) -> None:
         self.local_vars.clear()
+        self.local_env.clear()
         self.local_workdir = None
         self.local_user = None
+
+    def get_global_var(self, name: str) -> Optional[str]:
+        return self.global_vars.get(name, None)
+
+    def set_global_env(self, name: str, value: str) -> None:
+        self.global_env[name] = value
+
+    def get_global_env(self, name: str) -> Optional[str]:
+        return self.global_env.get(name, None)
+
+    def del_global_env(self, name: str) -> None:
+        if name in self.global_env:
+            del self.global_env[name]
+
+    def set_local_env(self, name: str, value: str) -> None:
+        self.local_env[name] = value
 
     def get_global_workdir(self) -> Union[str, None]:
         return self.global_workdir

@@ -1,9 +1,11 @@
 from enum import Enum
+import itertools
 
 from src.ansible_matcher.main import *
 from src.containerfile.main import *
 from src.ansible_generator.context import *
 from src.ansible_generator.statistics import *
+from src.exception import *
 
 from src.log import globalLog
 
@@ -38,16 +40,18 @@ class _Runtime:
 class RoleGenerator:
     task_matcher: TaskMatcher
     collect_stats: bool
+    default_user: str
     stats: Optional[RoleGeneratorStatistics]
 
     _df_content: DockerfileContent
     _context: Union[AnsiblePlayContext, None] = None
     _runtime: Union[_Runtime, None] = None
 
-    def __init__(self, dc: DockerfileContent, tm: TaskMatcher, collect_stats: bool = False):
+    def __init__(self, dc: DockerfileContent, tm: TaskMatcher, collect_stats: bool = False, default_user: str = "root"):
         self._df_content = dc
         self.task_matcher = tm
         self.collect_stats = collect_stats
+        self.default_user = default_user
         self.stats = None
 
     def generate(self) -> List[Dict[str, Any]]:
@@ -75,7 +79,7 @@ class RoleGenerator:
 
         self.stats = RoleGeneratorStatistics()
         self._runtime = _Runtime()
-        self._context = AnsiblePlayContext(global_vars=dict(), local_vars=dict())
+        self._context = AnsiblePlayContext(global_vars=dict(), local_vars=dict(), global_user=self.default_user)
         for directive in self._df_content.directives:
             handle_map[type(directive)](directive=directive)
 
@@ -142,11 +146,21 @@ class RoleGenerator:
     @supported_directive
     def _handle_env(self, directive: EnvDirective) -> None:
         for name, value in zip(directive.names, directive.values):
-            self._add_global_assignment(name, value)
+            fact_name = self._add_fact(name, value)
+            value = "{{ " + fact_name + " }}"
+            self._context.set_global_var(name=name, value=value)
+            self._context.del_global_env(name)
+            self._add_permanent_env(name, value)
 
     @supported_directive
     def _handle_arg(self, directive: ArgDirective) -> None:
-        self._add_global_assignment(directive.name, directive.value)
+        name = directive.name
+        val = self._context.get_global_var(name)
+        if val is None or self._context.get_global_env(name) is not None:
+            fact_name = self._add_fact(name, directive.value)
+            value = "{{ " + fact_name + " }}"
+            self._context.set_global_var(name=name, value=value)
+            self._context.set_global_env(name=name, value=value)
 
     @supported_directive
     def _handle_user(self, directive: UserDirective) -> None:
@@ -254,7 +268,24 @@ class RoleGenerator:
         }
         return task
 
-    def _add_global_assignment(self, name: str, value: ShellExpression) -> None:
+    @staticmethod
+    def _create_etc_env_task(name: str, value: str) -> Dict[str, Any]:
+        task = {
+            "lineinfile": {
+                "dest": "/etc/environment",
+                "state": "present",
+                "regexp": f"^{name}=",
+                "line": f"{name}={value}"
+            }
+        }
+        return task
+
+    def _add_permanent_env(self, name: str, value: str):
+        task = self._create_etc_env_task(name, value)
+        task = self._add_task(task, set_user=False, set_vars=False, set_condition=False)
+        task["become"] = "yes"
+
+    def _add_fact(self, name: str, value: ShellExpression) -> str:
         val = self._context.resolve_shell_expression(value)
         if val is None:
             task = self._create_echo_task(value.line)
@@ -266,7 +297,7 @@ class RoleGenerator:
         task = self._create_set_fact_task(fact_name=fact_name, value=val)
 
         self._add_task(task, set_user=False, set_vars=False, set_condition=False)
-        self._context.set_global_var(name=name, value="{{ " + fact_name + " }}")
+        return fact_name
 
     #########################
     # RUN DIRECTIVE METHODS #
@@ -311,7 +342,10 @@ class RoleGenerator:
 
     def _add_task_user(self, task: Dict) -> None:
         user = self._context.get_user()
-        if user is not None:
+
+        if user is None:
+            globalLog.warning("Could not set 'None' user for task")
+        else:
             task["become"] = True
             task["become_user"] = user
 
@@ -370,14 +404,24 @@ class RoleGenerator:
             task = self._add_task(task, set_user=True, set_vars=True, set_condition=True)
             return _ScriptPartType.COMMAND, task
 
+        '''
         extracted_call = self.task_matcher.extract_command(words)
         if extracted_call is not None:
             return self._handle_run_extracted_call(extracted_call)
+        '''
 
         return self._handle_run_shell(obj.line)
 
     def _handle_run_extracted_call(self, extracted_call: ExtractedCommandCall) -> (_ScriptPartType, Any):
-        # TODO
+
+        def params_cmp(params: CommandCallParts, s: List[str]):
+            return all(map(
+                lambda x, y: x == y,
+                itertools.zip_longest(map(lambda x: x.value, params), s)
+            ))
+
+        if params_cmp(extracted_call.params, ["cd"]):
+            pass
         raise NotImplementedError
 
     def _handle_run_assignment(self, obj: ShellAssignmentObject) -> (_ScriptPartType, Any):
@@ -387,14 +431,16 @@ class RoleGenerator:
             register = self._add_echo_register(task)
             task = self._add_task(task, set_user=True, set_vars=True, set_condition=True)
             self._context.set_local_var(name=obj.name, value="{{ " + register + " }}")
+            self._context.set_local_env(name=obj.name, value="{{ " + register + " }}")
 
             return _ScriptPartType.COMMAND, task
         else:
-            # example: `BAT=bruce || MAN=wayne; echo $BAT$MAN` returns `bruce`
+            # example: `BAT=bruce || MAN=wayne; echo $BAT$MAN` in bash returns `bruce`
             # so in that case variable MAN should not be set
             if self._runtime.local.prev_part_type is not _ScriptPartType.OPERATOR_OR or \
                     self._runtime.local.prev_part_value is not None:
                 self._context.set_local_var(name=obj.name, value=value)
+                self._context.set_local_env(name=obj.name, value=value)
 
             return _ScriptPartType.NONE, None
 
