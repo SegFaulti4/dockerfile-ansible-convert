@@ -5,7 +5,6 @@ from src.ansible_matcher.main import *
 from src.containerfile.main import *
 from src.ansible_generator.context import *
 from src.ansible_generator.statistics import *
-from src.exception import *
 
 from src.log import globalLog
 
@@ -79,7 +78,8 @@ class RoleGenerator:
 
         self.stats = RoleGeneratorStatistics()
         self._runtime = _Runtime()
-        self._context = AnsiblePlayContext(global_vars=dict(), local_vars=dict(), global_user=self.default_user)
+        self._context = AnsiblePlayContext(global_vars=dict(), local_vars=dict(), global_user=self.default_user,
+                                           global_env=dict(), local_env=dict())
         for directive in self._df_content.directives:
             handle_map[type(directive)](directive=directive)
 
@@ -97,15 +97,18 @@ class RoleGenerator:
         return self._runtime.general.role_tasks
 
     def _add_task(self, task: Dict,
-                  set_user: bool,
-                  set_vars: bool,
-                  set_condition: bool) -> Union[Dict, None]:
-        if set_user:
-            self._add_task_user(task)
-        if set_vars:
-            self._add_task_vars(task)
+                  user: str = "",
+                  variables: Dict[str, str] = None,
+                  environment: Dict[str, str] = None,
+                  set_condition: bool = False) -> Union[Dict, None]:
+        if user:
+            self._add_task_user(task, user)
+        if variables:
+            self._add_task_vars(task, variables)
+        if environment:
+            self._add_task_environment(task, environment)
         if set_condition:
-            if self._add_task_condition(task):
+            if self._set_task_condition(task):
                 self._runtime.general.role_tasks.append(task)
                 return self._runtime.general.role_tasks[-1]
             else:
@@ -121,7 +124,8 @@ class RoleGenerator:
     # def _handle_directive(self, directive: DockerfileDirective) -> None:
     #    getattr(self, "_handle_" + type(directive).__name__.replace('Node', '').lower())(directive)
 
-    def _handle_default(self, directive) -> None:
+    @staticmethod
+    def _handle_default(directive) -> None:
         globalLog.info("Dockerfile directive " + type(directive).__name__ + " doesn't affect role generation")
 
     @supported_directive
@@ -148,19 +152,19 @@ class RoleGenerator:
         for name, value in zip(directive.names, directive.values):
             fact_name = self._add_fact(name, value)
             value = "{{ " + fact_name + " }}"
-            self._context.set_global_var(name=name, value=value)
-            self._context.del_global_env(name)
+            self._context.add_global_var(name=name, value=value)
+            self._context.del_global_env_var(name)
             self._add_permanent_env(name, value)
 
     @supported_directive
     def _handle_arg(self, directive: ArgDirective) -> None:
         name = directive.name
-        val = self._context.get_global_var(name)
-        if val is None or self._context.get_global_env(name) is not None:
+        if not self._context.has_global_var(name) or \
+                self._context.has_global_env_var(name):
             fact_name = self._add_fact(name, directive.value)
             value = "{{ " + fact_name + " }}"
-            self._context.set_global_var(name=name, value=value)
-            self._context.set_global_env(name=name, value=value)
+            self._context.add_global_var(name=name, value=value)
+            self._context.add_global_env_var(name=name, value=value)
 
     @supported_directive
     def _handle_user(self, directive: UserDirective) -> None:
@@ -168,7 +172,8 @@ class RoleGenerator:
         if val is None:
             task = self._create_echo_task(directive.name.line)
             register = self._add_echo_register(task)
-            self._add_task(task, set_user=True, set_vars=False, set_condition=False)
+            self._add_task(task, user=self._context.get_user(), environment=self._context.get_environment(),
+                           set_condition=False)
             self._context.set_global_user("{{ " + register + " }}")
         else:
             self._context.set_global_user(name=val)
@@ -179,7 +184,8 @@ class RoleGenerator:
         if val is None:
             task = self._create_echo_task(directive.path.line)
             register = self._add_echo_register(task)
-            self._add_task(task, set_user=True, set_vars=False, set_condition=False)
+            self._add_task(task, user=self._context.get_user(), environment=self._context.get_environment(),
+                           set_condition=False)
             self._context.set_global_workdir("{{ " + register + " }}")
         else:
             self._context.set_global_workdir(path=val)
@@ -193,7 +199,8 @@ class RoleGenerator:
             if val is None:
                 task = self._create_echo_task(path.line)
                 register = self._add_echo_register(task)
-                self._add_task(task, set_user=True, set_vars=False, set_condition=False)
+                self._add_task(task, user=self._context.get_user(), environment=self._context.get_environment(),
+                               set_condition=False)
                 val = "{{ " + register + " }}"
             vals.append(val)
 
@@ -204,7 +211,7 @@ class RoleGenerator:
                     "dest": dest
                 }
             }
-            self._add_task(task, set_user=True, set_vars=False, set_condition=False)
+            self._add_task(task, user=self._context.get_user(), set_condition=False)
 
     @supported_directive
     def _handle_copy(self, directive: CopyDirective) -> None:
@@ -282,7 +289,7 @@ class RoleGenerator:
 
     def _add_permanent_env(self, name: str, value: str):
         task = self._create_etc_env_task(name, value)
-        task = self._add_task(task, set_user=False, set_vars=False, set_condition=False)
+        task = self._add_task(task, set_condition=False)
         task["become"] = "yes"
 
     def _add_fact(self, name: str, value: ShellExpression) -> str:
@@ -290,13 +297,13 @@ class RoleGenerator:
         if val is None:
             task = self._create_echo_task(value.line)
             register = self._add_echo_register(task)
-            self._add_task(task, set_user=False, set_vars=False, set_condition=False)
+            self._add_task(task, environment=self._context.get_environment(), set_condition=False)
             val = "{{ " + register + " }}"
 
-        fact_name = self._context.global_var_name_wrapper(name)
+        fact_name = name.strip().lower().replace('-', '_') + "_fact"
         task = self._create_set_fact_task(fact_name=fact_name, value=val)
 
-        self._add_task(task, set_user=False, set_vars=False, set_condition=False)
+        self._add_task(task, set_condition=False)
         return fact_name
 
     #########################
@@ -318,7 +325,7 @@ class RoleGenerator:
         return register
 
     # returns True if task with set condition should be added and False otherwise
-    def _add_task_condition(self, task: Dict) -> bool:
+    def _set_task_condition(self, task: Dict) -> bool:
         if self._runtime.local.prev_part_type is _ScriptPartType.OPERATOR_OR:
             prev_task = self._runtime.local.prev_part_value
             if prev_task is not None:
@@ -340,19 +347,19 @@ class RoleGenerator:
         else:
             return True
 
-    def _add_task_user(self, task: Dict) -> None:
-        user = self._context.get_user()
-
-        if user is None:
-            globalLog.warning("Could not set 'None' user for task")
-        else:
-            task["become"] = True
+    @staticmethod
+    def _add_task_user(task: Dict, user: str) -> None:
+        task["become"] = True
+        if user != "root":
             task["become_user"] = user
 
-    def _add_task_vars(self, task: Dict) -> None:
-        local_vars = self._context.get_local_vars()
-        if local_vars:
-            task["vars"] = local_vars
+    @staticmethod
+    def _add_task_vars(task: Dict, local_vars: Dict[str, str]) -> None:
+        task["vars"] = local_vars
+
+    @staticmethod
+    def _add_task_environment(task: Dict, environment: Dict[str, str]) -> None:
+        task["environment"] = environment
 
     def _create_shell_task(self, line: str) -> Dict[str, Any]:
         task = {
@@ -379,21 +386,25 @@ class RoleGenerator:
         return task
 
     def _clear_local_context(self) -> None:
-        self._context.clear_local()
+        self._context.clear_local_context()
         self._runtime.local = _LocalRuntime()
 
-    def _handle_run_shell(self, line: str) -> (_ScriptPartType, Any):
-        task = self._create_shell_task(line)
-        task = self._add_task(task, set_user=True, set_vars=True, set_condition=True)
+    def _handle_run_raw(self, obj: ShellRawObject) -> (_ScriptPartType, Any):
+        task = self._create_shell_task(obj.value)
+        task = self._add_task(task, set_condition=True,
+                              user=self._context.get_user(), environment=self._context.get_environment())
         return _ScriptPartType.COMMAND, task
 
-    def _handle_run_raw(self, obj: ShellRawObject) -> (_ScriptPartType, Any):
-        return self._handle_run_shell(obj.value)
+    def _handle_run_command_shell(self, line: str, local_vars: Dict[str, str]) -> (_ScriptPartType, Any):
+        task = self._create_shell_task(line)
+        task = self._add_task(task, user=self._context.get_user(), variables=local_vars, set_condition=True)
+        return _ScriptPartType.COMMAND, task
 
     def _handle_run_command(self, obj: ShellCommandObject) -> (_ScriptPartType, Any):
-        words = self._context.resolve_shell_command(obj)
-        if words is None:
-            return self._handle_run_shell(obj.line)
+        resolved = self._context.resolve_shell_command(obj)
+        if resolved is None:
+            return self._handle_run_raw(ShellRawObject(value=obj.line))
+        words, local_vars = resolved
 
         task = self.task_matcher.match_command(words,
                                                cwd=self._context.get_workdir(),
@@ -401,7 +412,7 @@ class RoleGenerator:
                                                collect_stats=self.collect_stats)
 
         if task is not None:
-            task = self._add_task(task, set_user=True, set_vars=True, set_condition=True)
+            task = self._add_task(task, user=self._context.get_user(), variables=local_vars, set_condition=True)
             return _ScriptPartType.COMMAND, task
 
         '''
@@ -409,8 +420,7 @@ class RoleGenerator:
         if extracted_call is not None:
             return self._handle_run_extracted_call(extracted_call)
         '''
-
-        return self._handle_run_shell(obj.line)
+        return self._handle_run_command_shell(obj.line, local_vars)
 
     def _handle_run_extracted_call(self, extracted_call: ExtractedCommandCall) -> (_ScriptPartType, Any):
 
@@ -429,9 +439,10 @@ class RoleGenerator:
         if value is None:
             task = self._create_echo_task(obj.value.line)
             register = self._add_echo_register(task)
-            task = self._add_task(task, set_user=True, set_vars=True, set_condition=True)
-            self._context.set_local_var(name=obj.name, value="{{ " + register + " }}")
-            self._context.set_local_env(name=obj.name, value="{{ " + register + " }}")
+            task = self._add_task(task, user=self._context.get_user(), environment=self._context.get_environment(),
+                                  set_condition=True)
+            self._context.add_local_var(name=obj.name, value="{{ " + register + " }}")
+            self._context.add_local_env_var(name=obj.name, value="{{ " + register + " }}")
 
             return _ScriptPartType.COMMAND, task
         else:
@@ -439,8 +450,8 @@ class RoleGenerator:
             # so in that case variable MAN should not be set
             if self._runtime.local.prev_part_type is not _ScriptPartType.OPERATOR_OR or \
                     self._runtime.local.prev_part_value is not None:
-                self._context.set_local_var(name=obj.name, value=value)
-                self._context.set_local_env(name=obj.name, value=value)
+                self._context.add_local_var(name=obj.name, value=value)
+                self._context.add_local_env_var(name=obj.name, value=value)
 
             return _ScriptPartType.NONE, None
 
