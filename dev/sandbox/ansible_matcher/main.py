@@ -12,7 +12,7 @@ def print_header(s):
 
 
 if __name__ == "__main__":
-    globalLog.setLevel(logging.WARNING)
+    globalLog.setLevel(logging.DEBUG)
     shell_parser = SandboxShellParser()
     task_matcher = SandboxTaskMatcher()
 
