@@ -429,7 +429,8 @@ class RoleGenerator:
         print(extracted_call.params)
 
         handle_map = {
-            "sudo": self._handle_run_command_sudo
+            "sudo": self._handle_run_command_sudo,
+            "cd": self._handle_run_command_cd
         }
         comm_name = extracted_call.params[0].value
         if comm_name not in handle_map:
@@ -474,3 +475,16 @@ class RoleGenerator:
                                  local_vars: Dict[str, str], line: str) -> (_ScriptPartType, Any):
         return self._handle_run_command_resolved(words=extracted_call.params[1:],
                                                  local_vars=local_vars, line=line, usr="root")
+
+    def _handle_run_command_cd(self, extracted_call: ExtractedCommandCall,
+                               local_vars: Dict[str, str], line: str) -> (_ScriptPartType, Any):
+        if extracted_call.opts:
+            globalLog.info("Any options passed to command cd are ignored")
+
+        if len(extracted_call.params) > 2:
+            globalLog.info("More than one argument passed to 'cd' - only first one will be used")
+            extracted_call.params = extracted_call.params[:2]
+
+        self._context.set_local_workdir(extracted_call.params[1].value)
+
+

@@ -120,6 +120,9 @@ class AnsiblePlayContext:
     def set_global_user(self, name: str) -> None:
         self.global_user = name
 
+    def set_local_workdir(self, path: str) -> None:
+        self.local_workdir = self._path_str_wrapper(path)
+
     def add_global_var(self, name: str, value: str) -> None:
         self.global_vars[name] = value
 
