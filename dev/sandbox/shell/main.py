@@ -11,15 +11,15 @@ if __name__ == "__main__":
     globalLog.setLevel(logging.INFO)
     shell_parser = SandboxShellParser()
 
-    SHOW_SOURCE = False
-    SHOW_BASHLEX = False
-    SHOW_SHELL_PARSER = False
+    SHOW_SOURCE = True
+    SHOW_BASHLEX = True
+    SHOW_SHELL_PARSER = True
 
     SAVE_COMMANDS = True
     SAVE_COMMANDS_PATH = "commands"
     commands = []
 
-    INPUT_PATH = "./input"
+    INPUT_PATH = "./input.txt"
 
     with open(INPUT_PATH, "r") as inF:
         for line in inF.readlines():

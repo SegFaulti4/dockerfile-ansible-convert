@@ -407,12 +407,13 @@ class RoleGenerator:
             return self._handle_run_command_raw(ShellRawObject(value=obj.line))
         words, local_vars = resolved
 
-        return self._handle_run_command_resolved(words=words, local_vars=local_vars, line=obj.line)
+        return self._handle_run_command_resolved(words=words, local_vars=local_vars)
 
     def _handle_run_command_resolved(self, words: List[ShellWordObject], local_vars: Dict[str, str],
-                                     line: str, usr: str = None, cwd: str = None) -> (_ScriptPartType, Any):
+                                     usr: str = None, cwd: str = None) -> (_ScriptPartType, Any):
         usr = self._context.get_user() if usr is None else usr
         cwd = self._context.get_workdir() if cwd is None else cwd
+        line = " ".join(x.value for x in words)
 
         task = self.task_matcher.match_command(words, cwd=cwd, usr=usr, collect_stats=self.collect_stats)
         if task is not None:
@@ -474,7 +475,7 @@ class RoleGenerator:
     def _handle_run_command_sudo(self, extracted_call: ExtractedCommandCall,
                                  local_vars: Dict[str, str], line: str) -> (_ScriptPartType, Any):
         return self._handle_run_command_resolved(words=extracted_call.params[1:],
-                                                 local_vars=local_vars, line=line, usr="root")
+                                                 local_vars=local_vars, usr="root")
 
     def _handle_run_command_cd(self, extracted_call: ExtractedCommandCall,
                                local_vars: Dict[str, str], line: str) -> (_ScriptPartType, Any):
@@ -486,5 +487,4 @@ class RoleGenerator:
             extracted_call.params = extracted_call.params[:2]
 
         self._context.set_local_workdir(extracted_call.params[1].value)
-
-
+        return _ScriptPartType.NONE, None
