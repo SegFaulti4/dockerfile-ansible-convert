@@ -133,8 +133,8 @@ class TemplateConstructor(CommandTemplateParserVisitor):
             return isinstance(node, TerminalNode) and not isinstance(node, ErrorNode)
 
         if not terminal_non_error(token_open) or \
-            not terminal_non_error(token_close) or \
-            not terminal_non_error(token_field_name):
+                not terminal_non_error(token_close) or \
+                not terminal_non_error(token_field_name):
             return None
 
         def _token_txt(t):
@@ -393,7 +393,6 @@ class CommandTemplateMatcher:
 
 
 class TemplateFiller:
-
     template: TemplatePart
 
     def __init__(self, templ: CommandTemplateParts):

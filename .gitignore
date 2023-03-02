@@ -132,3 +132,4 @@ dmypy.json
 /tests/clouds.yaml
 /dev/sandbox/utils/clouds.yaml
 /dev/sandbox/utils/instance.cfg
+/dev/data/*

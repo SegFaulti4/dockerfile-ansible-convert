@@ -32,11 +32,10 @@ def setup_dir(directory: str) -> None:
 
 
 def extract_containerfiles() -> None:
-    setup_dir(CONTAINERFILES_DIR)
     with zipfile.ZipFile(CONTAINERFILES_ARCHIVE, 'r') as zipF:
         for member in tqdm(zipF.infolist(), desc="Extracting"):
             try:
-                zipF.extract(member, CONTAINERFILES_DIR)
+                zipF.extract(member, DATA_DIR)
             except zipfile.error as e:
                 pass
 
@@ -70,3 +69,7 @@ def mine_shell_commands() -> None:
 
     with open(MINED_SHELL_COMMANDS_FILE, "w") as outF:
         outF.writelines(commands)
+
+
+if __name__ == "__main__":
+    extract_containerfiles()

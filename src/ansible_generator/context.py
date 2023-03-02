@@ -1,20 +1,22 @@
 from src.shell.main import *
 
 import re
+import jinja2
+import jinja2.meta
 from typing import Union, Dict, Optional
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 
 
 @dataclass
 class AnsiblePlayContext:
-    global_vars: Dict[str, str]
-    local_vars: Dict[str, str]
     global_env: Dict[str, str]
     local_env: Dict[str, str]
-    global_workdir: Union[str, None] = None
-    local_workdir: Union[str, None] = None
-    global_user: Union[str, None] = None
-    local_user: Union[str, None] = None
+    facts: Dict[str, str]
+    vars: Dict[str, str]
+    global_workdir: Optional[str] = None
+    local_workdir: Optional[str] = None
+    global_user: Optional[str] = None
+    local_user: Optional[str] = None
 
     def resolve_shell_word(self, word: ShellWordObject) -> Optional[Tuple[ShellWordObject, Dict[str, str]]]:
         if not word.parts:
@@ -26,12 +28,12 @@ class AnsiblePlayContext:
         slice_start = 0
         for param in word.parts:
             param_name = param.name
-            if param_name in self.local_vars:
+            if param_name in self.local_env:
                 param_name = self._local_var_name_wrapper(param_name)
                 param_val = "{{ " + param_name + " }}"
                 local_vars = {param_name: param_val}
-            elif param_name in self.global_vars:
-                param_val = self.global_vars[param_name]
+            elif param_name in self.global_env:
+                param_val = self.global_env[param_name]
             else:
                 return None
 
@@ -47,8 +49,6 @@ class AnsiblePlayContext:
 
     def resolve_shell_command(self, command: ShellCommandObject) \
             -> Optional[Tuple[List[ShellWordObject], Dict[str, str]]]:
-        # every ParameterNode should be rewritten
-        # as a reference of ansible variable
         words = []
         local_vars = {}
         for word in command.parts:
@@ -56,26 +56,21 @@ class AnsiblePlayContext:
             if resolved is None:
                 return None
 
-            word, loc_vars = resolved
+            word, word_local_vars = resolved
             words.append(word)
-            local_vars = {**local_vars, **loc_vars}
+            local_vars = {**local_vars, **word_local_vars}
 
         return words, local_vars
 
-    def resolve_shell_expression(self, expr: ShellExpression) -> Optional[str]:
+    def shell_expression_value(self, expr: ShellExpression) -> Optional[str]:
         words: List[ShellWordObject] = []
         for part in expr.parts:
             if isinstance(part, ShellCommandObject):
-                for word in part.parts:
-                    if isinstance(word, ShellWordObject):
-                        resolved = self.resolve_shell_word(word)
-                        if resolved is None:
-                            return None
-                        else:
-                            word, _ = resolved
-                            words.append(word)
-                    else:
-                        return None
+                resolved = self.resolve_shell_command(part)
+                if resolved is None:
+                    return None
+                words, _ = resolved
+                words.extend(words)
             else:
                 return None
 
@@ -108,12 +103,6 @@ class AnsiblePlayContext:
     def get_local_user(self) -> Union[str, None]:
         return self.local_user
 
-    def has_global_var(self, name: str) -> bool:
-        return name in self.global_vars
-
-    def has_global_env_var(self, name: str) -> Optional[str]:
-        return self.global_env.get(name, None)
-
     def set_global_workdir(self, path: str) -> None:
         self.global_workdir = self._path_str_wrapper(path)
 
@@ -123,27 +112,43 @@ class AnsiblePlayContext:
     def set_local_workdir(self, path: str) -> None:
         self.local_workdir = self._path_str_wrapper(path)
 
-    def add_global_var(self, name: str, value: str) -> None:
-        self.global_vars[name] = value
-
-    def add_local_var(self, name: str, value: str) -> None:
-        self.local_vars[name] = value
-
-    def add_global_env_var(self, name: str, value: str) -> None:
+    def add_global_env(self, name: str, value: str) -> None:
         self.global_env[name] = value
 
-    def add_local_env_var(self, name: str, value: str) -> None:
+    def add_local_env(self, name: str, value: str) -> None:
         self.local_env[name] = value
 
+    def set_fact(self, name: str, value: str) -> None:
+        val = self._str_true_value(value)
+        if val is not None:
+            self.facts[name] = val
+
+    def set_var(self, name: str, value: str) -> None:
+        val = self._str_true_value(value)
+        if val is not None:
+            self.vars[name] = val
+
     def clear_local_context(self) -> None:
-        self.local_vars.clear()
         self.local_env.clear()
+        self.vars.clear()
         self.local_workdir = None
         self.local_user = None
 
-    def del_global_env_var(self, name: str) -> None:
-        if name in self.global_env:
-            del self.global_env[name]
+    def word_true_value(self, word: ShellWordObject) -> Optional[str]:
+        return self._str_true_value(word.value)
+
+    def _str_true_value(self, value: str) -> Optional[str]:
+        # Kudos to https://stackoverflow.com/a/55699590
+        env = jinja2.Environment(undefined=jinja2.DebugUndefined)
+        template = env.from_string(value)
+        rendered = template.render({**self.facts, **self.vars})
+
+        ast = env.parse(rendered)
+        undefined = jinja2.meta.find_undeclared_variables(ast)
+
+        if undefined:
+            return None
+        return rendered
 
     def _path_str_wrapper(self, path: str) -> str:
         if re.fullmatch(r'\.(/.*)?', path):
