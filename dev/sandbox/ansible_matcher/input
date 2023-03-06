@@ -1,1 +1,1 @@
-apt-get -y install wget build-essential python python-pip git
+apt-get install -y --no-install-recommends curl netcat numactl

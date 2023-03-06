@@ -40,9 +40,9 @@ def container_run_matcher_tests(args: Tuple[List[str], Iterable[int]]) -> List[s
 
     for idx in span:
         test = tests[idx]
-        container_name = f"deb-test-{idx}"
+        container_name = f"ubuntu-test-{idx}"
 
-        run_comm = f'docker run --name={container_name} ubuntu-test bash -c "{test}"'
+        run_comm = f'docker run --name={container_name} ubuntu-test-stand bash -c "{test}"'
         inspect_comm = f'docker inspect {container_name} --format="{{{{.State.ExitCode}}}}"'
         rm_comm = f'docker rm {container_name}'
 

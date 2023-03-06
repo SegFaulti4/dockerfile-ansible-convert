@@ -156,7 +156,6 @@ def collect_and_save_containerfile_stats():
 
 def main():
     globalLog.setLevel(logging.ERROR)
-    # extract_containerfiles()
     # mine_shell_commands()
 
     commands_file = MINED_SHELL_COMMANDS_FILE

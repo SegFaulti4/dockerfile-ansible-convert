@@ -10,10 +10,10 @@ from src.containerfile.main import RunDirective, DockerfileContent
 from src.containerfile.tpdockerfile.main import TPDockerfileParser
 
 
-DEV_DIR = os.path.dirname(__file__)
-DATA_DIR = os.path.join(os.path.dirname(DEV_DIR), 'data')
+DEV_DIR = os.path.dirname(os.path.dirname(__file__))
+DATA_DIR = os.path.join(DEV_DIR, 'data')
 SANDBOX_DIR = os.path.join(DEV_DIR, 'sandbox')
-CONTAINERFILES_ARCHIVE = os.path.join(DATA_DIR, 'files.zip')
+CONTAINERFILES_ARCHIVE = os.path.join(DATA_DIR, 'files.tar.xz')
 CONTAINERFILES_DIR = os.path.join(DATA_DIR, 'files')
 MINED_SHELL_COMMANDS_FILE = os.path.join(DATA_DIR, 'mined_commands')
 
@@ -30,14 +30,15 @@ def setup_dir(directory: str) -> None:
     if not os.path.exists(directory):
         os.makedirs(directory)
 
-
-def extract_containerfiles() -> None:
-    with zipfile.ZipFile(CONTAINERFILES_ARCHIVE, 'r') as zipF:
-        for member in tqdm(zipF.infolist(), desc="Extracting"):
-            try:
-                zipF.extract(member, DATA_DIR)
-            except zipfile.error as e:
-                pass
+# Not supported since archive formate was changed
+#
+# def extract_containerfiles() -> None:
+#     with zipfile.ZipFile(CONTAINERFILES_ARCHIVE, 'r') as zipF:
+#         for member in tqdm(zipF.infolist(), desc="Extracting"):
+#             try:
+#                 zipF.extract(member, DATA_DIR)
+#             except zipfile.error as e:
+#                 pass
 
 
 def mine_shell_commands() -> None:
@@ -72,4 +73,4 @@ def mine_shell_commands() -> None:
 
 
 if __name__ == "__main__":
-    extract_containerfiles()
+    pass
