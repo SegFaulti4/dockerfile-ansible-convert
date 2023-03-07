@@ -166,6 +166,8 @@ class TemplateTweaks:
             if self.usr is None:
                 globalLog.info(f"Could not change path string - {path}, usr is None")
                 return path
+            if self.usr == "root":
+                return os.path.join(f"/root/", path[1:])
             return os.path.join(f"/home/{self.usr}/", path[1:])
 
         if self.cwd is None:

@@ -129,6 +129,9 @@ class TaskMatcher:
         opt_fields, postprocess_task_template = postprocess_res
         fields_dict = CommandTemplateMatcher.merge_match_results(parameter_fields, opt_fields)
 
+        # needed for referencing current working directory
+        fields_dict = self._merge_special_fields(fields_dict)
+
         task_template = TaskMatcher._merge_task_templates(example_task_template,
                                                           postprocess_task_template)
         task_call = TaskMatcher._fill_in_task_template(task_template, fields_dict)
@@ -248,3 +251,8 @@ class TaskMatcher:
     def _merge_task_templates(into_templ: Dict[str, Any], from_templ: Dict[str, Any]) -> Dict[str, Any]:
         tmp = copy.deepcopy(into_templ)
         return merge_dicts(tmp, from_templ)
+
+    def _merge_special_fields(self, fields_dict: TemplateMatchResult) -> TemplateMatchResult:
+        if self._tweaks.cwd is not None:
+            fields_dict["cwd"] = self._tweaks.cwd
+        return fields_dict
