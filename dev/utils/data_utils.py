@@ -12,10 +12,13 @@ from src.containerfile.tpdockerfile.main import TPDockerfileParser
 
 DEV_DIR = os.path.dirname(os.path.dirname(__file__))
 DATA_DIR = os.path.join(DEV_DIR, 'data')
+LOG_DIR = os.path.join(DATA_DIR, 'log')
 SANDBOX_DIR = os.path.join(DEV_DIR, 'sandbox')
 CONTAINERFILES_ARCHIVE = os.path.join(DATA_DIR, 'files.tar.xz')
 CONTAINERFILES_DIR = os.path.join(DATA_DIR, 'files')
 MINED_SHELL_COMMANDS_FILE = os.path.join(DATA_DIR, 'mined_commands')
+COLLECTED_MATCHER_TESTS_FILE = os.path.join(DATA_DIR, "collected_matcher_tests")
+FILTERED_MATCHER_TESTS_FILE = os.path.join(DATA_DIR, "filtered_matcher_tests_0")
 
 
 def filenames_from_dir(directory: str) -> List[str]:

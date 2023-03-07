@@ -3,6 +3,7 @@ import subprocess
 import os
 import os.path
 import yaml
+import json
 import time
 from subprocess import PIPE
 from typing import Iterable
@@ -16,7 +17,7 @@ DOCKER_NET_NAME = "test-net"
 
 
 def log_header(s: str) -> str:
-    return f"\033[4m\033[96m{s}\033[0m\033[0m"
+    return f"{s.upper()}:"
 
 
 def flag_print(*args, **kwargs):
@@ -44,11 +45,11 @@ def prepare_containerfile_image(comm: str, idx: int, echo: bool = True) -> str:
     log_path = os.path.join(LOG_DIR, image_name)
     with open(log_path, "w") as outF:
         outF.writelines([
-            log_header("IMAGE NAME:") + f"\n{image_name}\n\n",
-            log_header("CONTAINERFILE PATH:") + f"\n{cf_path}\n\n",
-            log_header("BUILD COMMAND:") + f"\n{build_comm}\n\n",
-            log_header("BUILD STDOUT:") + f"\n{build_res.stdout.strip()}\n\n",
-            log_header("BUILD STDERR:") + f"\n{build_res.stderr.strip()}\n\n"
+            log_header("IMAGE NAME") + f"{image_name}\n\n",
+            log_header("CONTAINERFILE PATH") + f"{cf_path}\n\n",
+            log_header("BUILD COMMAND") + f"{build_comm}\n\n",
+            log_header("BUILD STDOUT") + f"{build_res.stdout.strip()}\n\n",
+            log_header("BUILD STDERR") + f"{build_res.stderr.strip()}\n\n"
         ])
 
     return image_name
@@ -68,12 +69,6 @@ def prepare_ansible_image(task: Dict[str, Any], idx: int, echo: bool = True) -> 
     with open(pb_path, "w") as outF:
         outF.write("---\n")
         outF.write(yaml.safe_dump(plays, sort_keys=False))
-
-    # TODO: add commands for net creation somewhere
-    """
-    docker network rm test-net
-    docker network create --subnet=172.18.0.0/16 test-net
-    """
 
     # TODO: fix ip addr abomination
     ip_addr = f"172.18.0.{idx + 2}"
@@ -106,35 +101,45 @@ def prepare_ansible_image(task: Dict[str, Any], idx: int, echo: bool = True) -> 
     log_path = os.path.join(LOG_DIR, image_name)
     with open(log_path, "w") as outF:
         outF.writelines([
-            log_header("IMAGE NAME:") + f"\n{image_name}\n\n",
-            log_header("PLAYBOOK PATH:") + f"\n{pb_path}\n\n",
-            log_header("RUN COMMAND:") + f"\n{run_comm}\n\n",
-            log_header("RUN STDOUT:") + f"\n{run_res.stdout.strip()}\n\n",
-            log_header("RUN STDERR:") + f"\n{run_res.stderr.strip()}\n\n",
-            log_header("ANSIBLE COMMAND:") + f"\n{ansible_comm}\n\n",
-            log_header("ANSIBLE STDOUT:") + f"\n{ansible_res.stdout.strip()}\n\n",
-            log_header("ANSIBLE STDERR:") + f"\n{ansible_res.stderr.strip()}\n\n",
-            log_header("COMMIT COMMAND:") + f"\n{commit_comm}\n\n",
-            log_header("COMMIT STDOUT:") + f"\n{commit_res.stdout.strip()}\n\n",
-            log_header("COMMIT STDERR:") + f"\n{commit_res.stderr.strip()}\n\n",
-            log_header("STOP RM COMMAND:") + f"\n{stop_rm_comm}\n\n",
-            log_header("STOP RM STDOUT:") + f"\n{stop_rm_res.stdout.strip()}\n\n",
-            log_header("STOP RM STDERR:") + f"\n{stop_rm_res.stderr.strip()}\n\n"
+            log_header("IMAGE NAME") + f"{image_name}\n\n",
+            log_header("PLAYBOOK PATH") + f"{pb_path}\n\n",
+            log_header("RUN COMMAND") + f"{run_comm}\n\n",
+            log_header("RUN STDOUT") + f"{run_res.stdout.strip()}\n\n",
+            log_header("RUN STDERR") + f"{run_res.stderr.strip()}\n\n",
+            log_header("ANSIBLE COMMAND") + f"{ansible_comm}\n\n",
+            log_header("ANSIBLE STDOUT") + f"{ansible_res.stdout.strip()}\n\n",
+            log_header("ANSIBLE STDERR") + f"{ansible_res.stderr.strip()}\n\n",
+            log_header("COMMIT COMMAND") + f"{commit_comm}\n\n",
+            log_header("COMMIT STDOUT") + f"{commit_res.stdout.strip()}\n\n",
+            log_header("COMMIT STDERR") + f"{commit_res.stderr.strip()}\n\n",
+            log_header("STOP RM COMMAND") + f"{stop_rm_comm}\n\n",
+            log_header("STOP RM STDOUT") + f"{stop_rm_res.stdout.strip()}\n\n",
+            log_header("STOP RM STDERR") + f"{stop_rm_res.stderr.strip()}\n\n"
         ])
 
     return image_name
 
 
-def diff_images(image1: str, image2: str, echo: bool = True):
+def diff_images(image1: str, image2: str, echo: bool = True) -> Dict[str, Any]:
     diff_comm = f"container-diff diff --json --type=file daemon://{image1} daemon://{image2}"
     flag_print(diff_comm, echo=echo)
     diff_res = subprocess.run(['/bin/bash', '-c', diff_comm],
                               stdout=PIPE, stderr=PIPE, text=True)
 
-    return diff_res.stdout
+    log_path = os.path.join(LOG_DIR, f"diff-{image1}-{image2}")
+    with open(log_path, "w") as outF:
+        outF.write(diff_res.stdout)
+
+    return json.loads(diff_res.stdout)[0]
 
 
 def main():
+    # TODO: add commands for net creation somewhere
+    """
+    docker network rm test-net
+    docker network create --subnet=172.18.0.0/16 test-net
+    """
+
     matcher = TaskMatcher()
     parser = BashlexShellParser()
 
@@ -147,7 +152,8 @@ def main():
     cf_image = prepare_containerfile_image(test, idx)
     ans_image = prepare_ansible_image(task, idx)
 
-    print(diff_images(cf_image, ans_image))
+    diff = diff_images(cf_image, ans_image)
+    print(diff)
 
 
 if __name__ == "__main__":
