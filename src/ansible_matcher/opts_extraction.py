@@ -2,7 +2,7 @@ import dataclasses
 from typing import Union, Optional, Dict
 
 from src.shell.main import *
-from src.ansible_matcher.example_based.template_lang import \
+from src.ansible_matcher.template_lang import \
     TemplateField, TemplatePart, CommandCallParts, CommandTemplateParts
 
 from src.log import globalLog
@@ -79,73 +79,90 @@ class CommandOptsExtractor:
                 break
 
             if word.value.startswith('--'):
-                if not self._probe_long():
-                    self._rt = None
-                    return
+                probe = self._probe_long()
             else:
-                if not self._probe_short():
-                    self._rt = None
-                    return
+                probe = self._probe_short()
 
-    def _probe_long(self):
+            if probe is None:
+                self._rt = None
+                return
+            if not probe:
+                self._rt.params.append(word)
+                self._rt.words.pop(0)
+
+    def _probe_long(self) -> Optional[bool]:
         word = self._rt.words.pop(0)
         eq_pos = word.value.find('=')
         if eq_pos != -1:
             opt_name = word.value[:eq_pos]
             arg = self._cut_token(word, eq_pos + 1)
             if arg is None:
-                return False
+                return None
         else:
             opt_name = word.value
             arg = None
 
         opt = self._opt_match(opt_name)
         if opt is None:
+            self._rt.words.insert(0, word)
             return False
         if opt.arg_required and arg is None:
             if not self._rt.words or self._rt.words[0].value.startswith('-'):
                 globalLog.debug("Extraction failed - Required arg is not provided for opt " + opt.name)
-                return False
+                return None
             arg = self._rt.words.pop(0)
         self._rt.opts.append((opt, arg))
         return True
 
-    def _probe_short(self):
+    def _probe_short(self) -> Optional[bool]:
         word = self._rt.words.pop(0)
 
+        # try to match whole word as an option name (e.g. `gcc -dumpspecs`)
+        opt = self._opt_match("-" + word.value)
+        if opt is not None:
+            if not opt.arg_required:
+                self._rt.opts.append((opt, None))
+                return True
+            if not self._rt.words:
+                globalLog.debug("Extraction failed - Required arg is not provided for opt " + opt.name)
+                return None
+            arg = self._rt.words.pop(0)
+            self._rt.opts.append((opt, arg))
+            return True
+
+        local_opts = []
         for i in range(1, len(word.value)):
             opt_name = word.value[i]
             opt = self._opt_match("-" + opt_name)
             if opt is None:
+                self._rt.words.insert(0, word)
                 return False
 
-            if opt.arg_required:
-                if word.value[i + 1:] != '':
-                    arg = self._cut_token(word, i + 1)
-                    if arg is None:
-                        return False
-                else:
-                    if not self._rt.words:
-                        globalLog.debug("Extraction failed - Required arg is not provided for opt " + opt.name)
-                        return False
-                    arg = self._rt.words.pop(0)
-                self._rt.opts.append((opt, arg))
-                break
+            if not opt.arg_required:
+                local_opts.append((opt, None))
+                continue
+
+            if word.value[i + 1:] != '':
+                arg = self._cut_token(word, i + 1)
+                if arg is None:
+                    return None
             else:
-                self._rt.opts.append((opt, None))
+                if not self._rt.words:
+                    globalLog.debug("Extraction failed - Required arg is not provided for opt " + opt.name)
+                    return None
+                arg = self._rt.words.pop(0)
+            local_opts.append((opt, arg))
+            break
+
+        self._rt.opts.extend(local_opts)
         return True
 
-    def _opt_match(self, opt_name):
+    def _opt_match(self, opt_name) -> Optional[CommandOpt]:
         name_matches = [o for o in self.opts_map if o.startswith(opt_name)]
-        if not name_matches:
-            globalLog.debug("Extraction failed - No matching opts found for " + opt_name)
-            return None
         if opt_name in name_matches:
             return self.opts_map[opt_name]
-        if len(name_matches) > 1:
-            globalLog.debug("Extraction failed - Too many matching opts for " + opt_name)
-            return None
-        return self.opts_map[name_matches[0]]
+        globalLog.debug(f"Couldn't find exact match for option {opt_name}")
+        return None
 
     @staticmethod
     def _cut_token(token: Union[ShellWordObject, TemplatePart], start_pos: int) \

@@ -1,0 +1,67 @@
+{
+    "curl": {
+        "entry": "curl << parameters : m >>",
+        "opts": {
+            "fail": {
+                "arg_required": false,
+                "many_args": false,
+                "aliases": [
+                    "-f", "--fail"
+                ]
+            },
+            "location": {
+                "arg_required": false,
+                "many_args": false,
+                "aliases": [
+                    "-L", "--location"
+                ]
+            },
+            "output": {
+                "arg_required": true,
+                "many_args": false,
+                "aliases": [
+                    "-o", "--output"
+                ]
+            },
+            "remote name": {
+                "arg_required": true,
+                "many_args": false,
+                "aliases": [
+                    "-O", "--remote-name"
+                ]
+            },
+            "show error": {
+                "arg_required": false,
+                "many_args": false,
+                "aliases": [
+                    "-S", "--show-error"
+                ]
+            }
+        },
+        "opts_postprocess_map": {
+            "-L": {
+                "uri": {
+                    "follow_redirects:": "safe"
+                }
+            },
+            "-f": {},
+            "-S": {}
+        },
+        "examples": {
+            "curl -o << output : p >> << url >>": {
+                "uri": {
+                    "method": "GET",
+                    "dest": "<< output >>",
+                    "url": "<< url >>"
+                }
+            },
+            "curl -O << url >>": {
+                "uri": {
+                    "method": "GET",
+                    "dest": "<< cwd >>",
+                    "url": "<< url >>"
+                }
+            }
+        }
+    }
+}

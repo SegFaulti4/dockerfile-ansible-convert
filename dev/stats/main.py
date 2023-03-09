@@ -1,13 +1,11 @@
 import logging
-import os
-import sys
 import csv
 from collections import defaultdict
 from tabulate import tabulate
 
 from src.ansible_generator.main import *
 from src.ansible_generator.statistics import *
-from src.ansible_matcher.example_based.main import *
+from src.ansible_matcher.main import *
 from src.ansible_matcher.statistics import *
 from src.containerfile.tpdockerfile.main import *
 from src.shell.bashlex.main import *
@@ -93,12 +91,13 @@ def save_containerfile_stats(generator_stats: RoleGeneratorStatistics, matcher_s
         with open(os.path.join(unmatched_dir, name), "w") as outF:
             outF.writelines(lines)
 
+
 def collect_containerfile_stats(dockerfile_parser: DockerfileParser, task_matcher: TaskMatcher)\
         -> Tuple[RoleGeneratorStatistics, TaskMatcherStatistics]:
     generator_stats = RoleGeneratorStatistics()
 
     filenames = filenames_from_dir(CONTAINERFILES_DIR)
-    for i, name in tqdm(enumerate(filenames), desc="Collecting stats"):
+    for name in tqdm(filenames, desc="Collecting stats"):
         path = os.path.join(CONTAINERFILES_DIR, name)
         try:
             with open(path.strip(), "r") as df:
@@ -125,7 +124,7 @@ def collect_task_matcher_stats(shell_parser: ShellParser, task_matcher: TaskMatc
                                commands_file: str = MINED_SHELL_COMMANDS_FILE) -> TaskMatcherStatistics:
 
     with open(commands_file, "r") as inF:
-        for i, line in tqdm(enumerate(inF.readlines())):
+        for line in tqdm(inF.readlines()):
             try:
                 parsed = shell_parser.parse_as_script(line)
                 comm = parsed.parts[0]
@@ -140,7 +139,7 @@ def collect_task_matcher_stats(shell_parser: ShellParser, task_matcher: TaskMatc
 
 def collect_and_print_task_matcher_stats(commands_file: str = MINED_SHELL_COMMANDS_FILE):
     shell_parser = BashlexShellParser()
-    task_matcher = ExampleBasedMatcher()
+    task_matcher = TaskMatcher()
 
     matcher_stats = collect_task_matcher_stats(shell_parser, task_matcher, commands_file)
     print_task_matcher_stats(matcher_stats)
@@ -149,7 +148,7 @@ def collect_and_print_task_matcher_stats(commands_file: str = MINED_SHELL_COMMAN
 def collect_and_save_containerfile_stats():
     shell_parser = BashlexShellParser()
     dockerfile_parser = TPDockerfileParser(shell_parser=shell_parser)
-    task_matcher = ExampleBasedMatcher()
+    task_matcher = TaskMatcher()
 
     generator_stats, matcher_stats = collect_containerfile_stats(dockerfile_parser, task_matcher)
     save_containerfile_stats(generator_stats, matcher_stats)
@@ -157,15 +156,15 @@ def collect_and_save_containerfile_stats():
 
 def main():
     globalLog.setLevel(logging.ERROR)
-    #extract_containerfiles()
-    #mine_shell_commands()
+    # mine_shell_commands()
 
     commands_file = MINED_SHELL_COMMANDS_FILE
 
-    #collect_and_print_task_matcher_stats(commands_file)
+    # collect_and_print_task_matcher_stats(commands_file)
     collect_and_save_containerfile_stats()
 
 
 if __name__ == "__main__":
     globalLog.setLevel(logging.ERROR)
-    collect_and_print_task_matcher_stats(os.path.join(DATA_DIR, "containerfile_stats/supported_commands/unmatched/rm"))
+    # collect_and_print_task_matcher_stats(os.path.join(DATA_DIR, MINED_SHELL_COMMANDS_FILE))
+    main()

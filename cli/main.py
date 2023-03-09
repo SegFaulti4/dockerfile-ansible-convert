@@ -5,7 +5,7 @@ import logging
 
 from src.shell.bashlex.main import BashlexShellParser as MainShellParser
 from src.containerfile.tpdockerfile.main import TPDockerfileParser as MainDockerfileParser
-from src.ansible_matcher.example_based.main import ExampleBasedMatcher as MainTaskMatcher
+from src.ansible_matcher.main import TaskMatcher as MainTaskMatcher
 from src.ansible_generator.main import RoleGenerator as MainRoleGenerator
 
 from src.log import globalLog

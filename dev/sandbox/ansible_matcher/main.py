@@ -2,7 +2,7 @@ import logging
 
 from src.ansible_matcher.main import *
 from dev.sandbox.shell.main import SandboxShellParser
-from src.ansible_matcher.example_based.main import ExampleBasedMatcher as SandboxTaskMatcher
+from src.ansible_matcher.main import TaskMatcher as SandboxTaskMatcher
 
 from src.log import globalLog
 
@@ -12,7 +12,7 @@ def print_header(s):
 
 
 if __name__ == "__main__":
-    globalLog.setLevel(logging.WARNING)
+    globalLog.setLevel(logging.DEBUG)
     shell_parser = SandboxShellParser()
     task_matcher = SandboxTaskMatcher()
 
@@ -32,6 +32,7 @@ if __name__ == "__main__":
                 script = shell_parser.parse_as_script(line)
                 comm = script.parts[0]
                 if isinstance(comm, ShellCommandObject):
+                    ext = task_matcher.extract_command(comm.parts)
                     obj = task_matcher.match_command(comm.parts)
                 else:
                     obj = None
@@ -45,6 +46,7 @@ if __name__ == "__main__":
                 if SHOW_TASK_MATCHER:
                     print_header("TASK MATCHER:")
                     print(f"{obj}\n")
+                print(f"{ext}\n")
 
             except IOError as exc:
                 print(f"{type(exc)}: {exc}")

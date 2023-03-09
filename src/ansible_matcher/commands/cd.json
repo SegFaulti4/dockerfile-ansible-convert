@@ -1,0 +1,37 @@
+{
+    "cd": {
+        "entry": "cd << parameters : m >>",
+        "opts": {
+            "links": {
+                "aliases": [
+                    "-L"
+                ],
+                "arg_required": false,
+                "many_args": false
+            },
+            "physical": {
+                "aliases": [
+                    "-P"
+                ],
+                "arg_required": false,
+                "many_args": false
+            },
+            "exit": {
+                "aliases": [
+                    "-e"
+                ],
+                "arg_required": false,
+                "many_args": false
+            },
+            "extended": {
+                "aliases": [
+                    "-@"
+                ],
+                "arg_required": false,
+                "many_args": false
+            }
+        },
+        "examples": {},
+        "opts_postprocess": {}
+    }
+}

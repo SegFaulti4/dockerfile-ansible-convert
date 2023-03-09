@@ -1,8 +1,8 @@
 import os.path
 import os
-import zipfile
+import shutil
 from tqdm import tqdm
-from typing import List
+from typing import List, Iterable
 
 from src.shell.main import ShellCommandObject, ShellScript
 from src.shell.bashlex.main import BashlexShellParser
@@ -10,11 +10,17 @@ from src.containerfile.main import RunDirective, DockerfileContent
 from src.containerfile.tpdockerfile.main import TPDockerfileParser
 
 
-DEV_DIR = os.path.dirname(__file__)
-DATA_DIR = os.path.join(os.path.dirname(DEV_DIR), 'data')
-CONTAINERFILES_ARCHIVE = os.path.join(DATA_DIR, 'files.zip')
+DEV_DIR = os.path.dirname(os.path.dirname(__file__))
+DATA_DIR = os.path.join(DEV_DIR, 'data')
+LOG_DIR = os.path.join(DATA_DIR, 'log')
+SANDBOX_DIR = os.path.join(DEV_DIR, 'sandbox')
+CONTAINERFILES_ARCHIVE = os.path.join(DATA_DIR, 'files.tar.xz')
 CONTAINERFILES_DIR = os.path.join(DATA_DIR, 'files')
+UBUNTU_CONTAINERFILES_DIR = os.path.join(DATA_DIR, 'ubuntu_files')
+DEBIAN_CONTAINERFILES_DIR = os.path.join(DATA_DIR, 'debian_files')
 MINED_SHELL_COMMANDS_FILE = os.path.join(DATA_DIR, 'mined_commands')
+COLLECTED_MATCHER_TESTS_FILE = os.path.join(DATA_DIR, "collected_matcher_tests")
+FILTERED_MATCHER_TESTS_FILE = os.path.join(DATA_DIR, "filtered_matcher_tests_0")
 
 
 def filenames_from_dir(directory: str) -> List[str]:
@@ -29,15 +35,15 @@ def setup_dir(directory: str) -> None:
     if not os.path.exists(directory):
         os.makedirs(directory)
 
-
-def extract_containerfiles() -> None:
-    setup_dir(CONTAINERFILES_DIR)
-    with zipfile.ZipFile(CONTAINERFILES_ARCHIVE, 'r') as zipF:
-        for member in tqdm(zipF.infolist(), desc="Extracting"):
-            try:
-                zipF.extract(member, CONTAINERFILES_DIR)
-            except zipfile.error as e:
-                pass
+# Not supported since archive formate was changed
+#
+# def extract_containerfiles() -> None:
+#     with zipfile.ZipFile(CONTAINERFILES_ARCHIVE, 'r') as zipF:
+#         for member in tqdm(zipF.infolist(), desc="Extracting"):
+#             try:
+#                 zipF.extract(member, DATA_DIR)
+#             except zipfile.error as e:
+#                 pass
 
 
 def mine_shell_commands() -> None:
@@ -69,3 +75,12 @@ def mine_shell_commands() -> None:
 
     with open(MINED_SHELL_COMMANDS_FILE, "w") as outF:
         outF.writelines(commands)
+
+
+def copy_files(paths: List[str], directory: str) -> None:
+    for path in tqdm(paths, desc="Copying files", smoothing=1.0):
+        shutil.copy2(path, directory)
+
+
+if __name__ == "__main__":
+    pass
