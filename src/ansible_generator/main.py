@@ -40,6 +40,7 @@ class RoleGenerator:
     task_matcher: TaskMatcher
     collect_stats: bool
     default_user: str
+    default_workdir: str
     stats: Optional[RoleGeneratorStatistics]
     matcher_tests: Optional[List[str]]
 
@@ -47,13 +48,14 @@ class RoleGenerator:
     _context: Union[AnsiblePlayContext, None] = None
     _runtime: Union[_Runtime, None] = None
 
-    def __init__(self, dc: DockerfileContent, tm: TaskMatcher, default_user: str = "root",
+    def __init__(self, dc: DockerfileContent, tm: TaskMatcher, default_user: str = "root", default_workdir: str = "/",
                  collect_stats: bool = False, collect_matcher_tests: bool = False):
         self._df_content = dc
         self.task_matcher = tm
         self.collect_stats = collect_stats
         self.collect_matcher_tests = collect_matcher_tests
         self.default_user = default_user
+        self.default_workdir = default_workdir
         self.stats = None
         self.matcher_tests = None
 
@@ -85,6 +87,7 @@ class RoleGenerator:
         self._runtime = _Runtime()
         self._context = AnsiblePlayContext(global_env=dict(), local_env=dict(),
                                            global_user=self.default_user,
+                                           global_workdir=self.default_workdir,
                                            facts=dict(), vars=dict())
         for directive in self._df_content.directives:
             handle_map[type(directive)](directive=directive)
@@ -417,14 +420,17 @@ class RoleGenerator:
 
         # ATTENTION: "collect_stats" parameter is passed to matcher
         # collected stats might then be altered `_handle_run_command_extracted`
-        task = self.task_matcher.match_command(words, cwd=cwd, usr=usr, collect_stats=self.collect_stats)
-        if task is not None:
+        tasks = self.task_matcher.match_command(words, cwd=cwd, usr=usr, collect_stats=self.collect_stats)
+        if tasks is not None:
             if self.collect_matcher_tests:
                 values = [self._context.word_true_value(w) for w in words]
                 if all(v is not None for v in values):
                     self.matcher_tests.append(" ".join(values))
 
-            task = self._add_task(task, user=usr, variables=local_vars, set_condition=True)
+            if len(tasks) == 1:
+                task = self._add_task(tasks[0], user=usr, variables=local_vars, set_condition=True)
+            else:
+                task = self._add_task({"block": tasks}, user=usr, variables=local_vars, set_condition=True)
             return _ScriptPartType.COMMAND, task
 
         extracted_call = self.task_matcher.extract_command(words)

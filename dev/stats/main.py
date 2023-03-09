@@ -105,7 +105,7 @@ def collect_containerfile_stats(dockerfile_parser: DockerfileParser, task_matche
 
             content = dockerfile_parser.from_str(source)
             generator = RoleGenerator(tm=task_matcher, dc=content, collect_stats=True)
-            role = generator.generate()
+            generator.generate()
 
             generator_stats.name.extend(generator.stats.name)
             generator_stats.supported.extend(generator.stats.supported)
@@ -113,8 +113,7 @@ def collect_containerfile_stats(dockerfile_parser: DockerfileParser, task_matche
             generator_stats.length.extend(generator.stats.length)
 
         except Exception as exc:
-            pass
-            # globalLog.warning(type(exc), exc)
+            globalLog.info(type(exc), exc)
 
     matcher_stats = task_matcher.stats
     return generator_stats, matcher_stats
@@ -129,9 +128,9 @@ def collect_task_matcher_stats(shell_parser: ShellParser, task_matcher: TaskMatc
                 parsed = shell_parser.parse_as_script(line)
                 comm = parsed.parts[0]
                 if isinstance(comm, ShellCommandObject):
-                    matched = task_matcher.match_command(comm.parts, collect_stats=True)
-            except Exception:
-                pass
+                    task_matcher.match_command(comm.parts, collect_stats=True)
+            except Exception as exc:
+                globalLog.info(type(exc), exc)
 
     matcher_stats = task_matcher.stats
     return matcher_stats
@@ -158,8 +157,7 @@ def main():
     globalLog.setLevel(logging.ERROR)
     # mine_shell_commands()
 
-    commands_file = MINED_SHELL_COMMANDS_FILE
-
+    # commands_file = MINED_SHELL_COMMANDS_FILE
     # collect_and_print_task_matcher_stats(commands_file)
     collect_and_save_containerfile_stats()
 

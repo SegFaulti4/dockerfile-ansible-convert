@@ -1,5 +1,5 @@
 import copy
-from typing import Union, Any
+from typing import Any
 
 from src.ansible_matcher.template_lang import \
     TemplatePart, TemplateMatchResult, TemplateTweaks, TemplateFiller
@@ -21,7 +21,7 @@ class TaskMatcher:
 
     def match_command(self, comm: CommandCallParts, cwd: Optional[str] = None, usr: Optional[str] = None,
                       collect_stats: bool = False) \
-            -> Union[Dict[str, Any], None]:
+            -> Optional[List[Dict[str, Any]]]:
         if not TaskMatcher._check_requirements(comm):
             return None
 
@@ -37,14 +37,14 @@ class TaskMatcher:
             self._stat_unmatched(comm, command_config, collect_stats)
             return None
 
-        for command_template, task_template in command_config.examples:
-            task_call = self._match_template(command_config, command_template,
-                                             extracted_call, task_template)
-            if task_call is None:
+        for command_template, task_templates in command_config.examples:
+            task_calls = self._match_template(command_config, command_template,
+                                              extracted_call, task_templates)
+            if task_calls is None:
                 continue
 
             self._stat_matched(comm, command_config, collect_stats)
-            return task_call
+            return task_calls
 
         self._stat_unmatched(comm, command_config, collect_stats)
         return None
@@ -111,8 +111,8 @@ class TaskMatcher:
         return opts_extractor.extract(tmp)
 
     def _match_template(self, command_config: CommandConfig, command_template: CommandTemplateParts,
-                        extracted_call: ExtractedCommandCall, example_task_template: Dict[str, Any]) \
-            -> Optional[Dict[str, Any]]:
+                        extracted_call: ExtractedCommandCall, example_task_templates: List[Dict[str, Any]]) \
+            -> Optional[List[Dict[str, Any]]]:
 
         extracted_template = TaskMatcher._extract_command_template(command_config, command_template)
         if extracted_template is None:
@@ -129,16 +129,15 @@ class TaskMatcher:
         opt_fields, postprocess_task_template = postprocess_res
         fields_dict = CommandTemplateMatcher.merge_match_results(parameter_fields, opt_fields)
 
-        # needed for referencing current working directory
+        # needed for referencing current working directory and current user
         fields_dict = self._merge_special_fields(fields_dict)
 
-        task_template = TaskMatcher._merge_task_templates(example_task_template,
-                                                          postprocess_task_template)
-        task_call = TaskMatcher._fill_in_task_template(task_template, fields_dict)
-        if task_call is None:
+        task_templates = TaskMatcher._merge_postprocess_task_template(example_task_templates, postprocess_task_template)
+        # task_templates = TaskMatcher._merge_task_templates(example_task_templates, postprocess_task_template)
+        task_calls = [TaskMatcher._fill_in_task_template(t, fields_dict) for t in task_templates]
+        if any(task_call is None for task_call in task_calls):
             return None
-
-        return task_call
+        return task_calls
 
     @staticmethod
     def _extract_command_template(command_config: CommandConfig, templ: CommandTemplateParts) \
@@ -252,7 +251,19 @@ class TaskMatcher:
         tmp = copy.deepcopy(into_templ)
         return merge_dicts(tmp, from_templ)
 
+    @staticmethod
+    def _merge_postprocess_task_template(task_templates: List[Dict[str, Any]], pp_task_templ: Dict[str, Any]) \
+            -> List[Dict[str, any]]:
+        res = []
+        for templ in task_templates:
+            res.append(copy.deepcopy(templ))
+            for module in pp_task_templ:
+                if module in templ:
+                    merge_dicts(res[-1], {module: pp_task_templ[module]})
+
+        return res
+
     def _merge_special_fields(self, fields_dict: TemplateMatchResult) -> TemplateMatchResult:
-        if self._tweaks.cwd is not None:
-            fields_dict["cwd"] = self._tweaks.cwd
+        fields_dict["cwd"] = self._tweaks.cwd
+        fields_dict["usr"] = self._tweaks.usr
         return fields_dict

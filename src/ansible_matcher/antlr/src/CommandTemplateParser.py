@@ -1,4 +1,4 @@
-# Generated from /home/popovms/course/dockerfile-ansible-convert/src/ansible_matcher/example_based/antlr/grammar/CommandTemplateParser.g4 by ANTLR 4.11.1
+# Generated from /home/popovms/course/dockerfile-ansible-convert/src/ansible_matcher/antlr/grammar/CommandTemplateParser.g4 by ANTLR 4.11.1
 # encoding: utf-8
 from antlr4 import *
 from io import StringIO
@@ -42,8 +42,8 @@ class CommandTemplateParser ( Parser ):
 
     sharedContextCache = PredictionContextCache()
 
-    literalNames = [ "<INVALID>", "'{{'", "<INVALID>", "<INVALID>", "<INVALID>", 
-                     "':'", "'}}'", "<INVALID>", "<INVALID>", "'m'", "'o'", 
+    literalNames = [ "<INVALID>", "'<<'", "<INVALID>", "<INVALID>", "<INVALID>", 
+                     "':'", "'>>'", "<INVALID>", "<INVALID>", "'m'", "'o'", 
                      "'p'" ]
 
     symbolicNames = [ "<INVALID>", "OPEN", "WORD", "SPACE", "FIELD_NAME", 

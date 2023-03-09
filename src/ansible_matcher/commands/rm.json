@@ -58,18 +58,18 @@
             "-v": {}
         },
         "examples": {
-            "rm -r << files : mp >>": {
-                "file": {
-                    "state": "absent",
-                    "path": "<< files >>"
+            "rm -r << files : mp >>": [
+                {
+                    "shell": "ls -1d <<files>>",
+                    "register": "ls_reg"
+                }, {
+                    "file": {
+                        "state": "absent",
+                        "path": "{{ item }}"
+                    },
+                    "loop": "{{ find_reg.stdout_lines }}"
                 }
-            },
-            "rm << files : mp >>": {
-                "file": {
-                    "state": "absent",
-                    "path": "<< files >>"
-                }
-            }
+            ]
         }
     }
 }

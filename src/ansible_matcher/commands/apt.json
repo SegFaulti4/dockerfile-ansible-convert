@@ -2,47 +2,63 @@
     "apt": {
         "entry": "apt-get << parameters : m >>",
         "examples": {
-            "apt-get install << packages : m >>": {
-                "apt": {
-                    "name": "<< packages >>"
+            "apt-get install << packages : m >>": [
+                {
+                    "apt": {
+                        "name": "<< packages >>"
+                    }
                 }
-            },
-            "apt-get autoclean": {
-                "apt": {
-                    "autoclean": "yes"
+            ],
+            "apt-get autoclean": [
+                {
+                    "apt": {
+                        "autoclean": "yes"
+                    }
                 }
-            },
-            "apt-get autoremove": {
-                "apt": {
-                    "autoremove": "yes"
+            ],
+            "apt-get autoremove": [
+                {
+                    "apt": {
+                        "autoremove": "yes"
+                    }
                 }
-            },
-            "apt-get build-dep << packages : m >>": {
-                "apt": {
-                    "name": "<< packages >>",
-                    "state": "build-dep"
+            ],
+            "apt-get build-dep << packages : m >>": [
+                {
+                    "apt": {
+                        "name": "<< packages >>",
+                        "state": "build-dep"
+                    }
                 }
-            },
-            "apt-get dist-upgrade": {
-                "apt": {
-                    "upgrade": "dist"
+            ],
+            "apt-get dist-upgrade": [
+                {
+                    "apt": {
+                        "upgrade": "dist"
+                    }
                 }
-            },
-            "apt-get remove": {
-                "apt": {
-                    "state": "absent"
+            ],
+            "apt-get remove": [
+                {
+                    "apt": {
+                        "state": "absent"
+                    }
                 }
-            },
-            "apt-get update": {
-                "apt": {
-                    "update_cache": "yes"
+            ],
+            "apt-get update": [
+                {
+                    "apt": {
+                        "update_cache": "yes"
+                    }
                 }
-            },
-            "apt-get upgrade": {
-                "apt": {
-                    "upgrade": "yes"
+            ],
+            "apt-get upgrade": [
+                {
+                    "apt": {
+                        "upgrade": "yes"
+                    }
                 }
-            }
+            ]
         },
         "opts": {
             "allow-change-held-packages": {

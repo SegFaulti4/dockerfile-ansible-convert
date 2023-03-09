@@ -28,18 +28,22 @@
             }
         },
         "examples": {
-            "mkdir -p << directories : mp >>": {
-                "file": {
-                    "path": "<< directories >>",
-                    "state": "directory"
+            "mkdir -p << directories : mp >>": [
+                {
+                    "file": {
+                        "path": "<< directories >>",
+                        "state": "directory"
+                    }
                 }
-            },
-            "mkdir << directories : mp >>": {
-                "file": {
-                    "path": "<< directories >>",
-                    "state": "directory"
+            ],
+            "mkdir << directories : mp >>": [
+                {
+                    "file": {
+                        "path": "<< directories >>",
+                        "state": "directory"
+                    }
                 }
-            }
+            ]
         },
         "opts_postprocess": {
             "-m << mode >>": {

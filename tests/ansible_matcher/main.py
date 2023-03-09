@@ -55,13 +55,11 @@ def prepare_containerfile_image(comm: str, idx: int, echo: bool = True) -> str:
     return image_name
 
 
-def prepare_ansible_image(task: Dict[str, Any], idx: int, echo: bool = True) -> str:
+def prepare_ansible_image(tasks: List[Dict[str, Any]], idx: int, echo: bool = True) -> str:
     plays = [
         {
             "hosts": "all",
-            "tasks": [
-                task
-            ]
+            "tasks": tasks
         }
     ]
     pb_name = f"test_{idx}.yml"
@@ -146,11 +144,11 @@ def main():
     test = "apt-get install -y --no-install-recommends curl netcat numactl"
 
     comm: ShellCommandObject = parser.parse_as_script(test).parts[0]
-    task = matcher.match_command(comm.parts, cwd='/root')
+    tasks = matcher.match_command(comm.parts, cwd='/root')
 
     idx = 0
     cf_image = prepare_containerfile_image(test, idx)
-    ans_image = prepare_ansible_image(task, idx)
+    ans_image = prepare_ansible_image(tasks, idx)
 
     diff = diff_images(cf_image, ans_image)
     print(diff)

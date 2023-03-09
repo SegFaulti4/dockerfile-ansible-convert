@@ -156,8 +156,8 @@ class TemplateConstructor(CommandTemplateParserVisitor):
 
 @dataclasses.dataclass
 class TemplateTweaks:
-    cwd: Optional[str] = None
-    usr: Optional[str] = None
+    cwd: str
+    usr: str
 
     def tweak_spec_path(self, path: str):
         if path.startswith("/"):

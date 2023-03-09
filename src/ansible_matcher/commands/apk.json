@@ -193,27 +193,35 @@
             }
         },
         "examples": {
-            "apk update": {
-                "apk": {
-                    "update_cache": "yes"
+            "apk update": [
+                {
+                    "apk": {
+                        "update_cache": "yes"
+                    }
                 }
-            },
-            "apk add << packages : m >>": {
-                "apk": {
-                    "name": "<< packages >>"
+            ],
+            "apk add << packages : m >>": [
+                {
+                    "apk": {
+                        "name": "<< packages >>"
+                    }
                 }
-            },
-            "apk del << packages : m >>": {
-                "apk": {
-                    "name": "<< packages >>",
-                    "state": "absent"
+            ],
+            "apk del << packages : m >>": [
+                {
+                    "apk": {
+                        "name": "<< packages >>",
+                        "state": "absent"
+                    }
                 }
-            },
-            "apk upgrade": {
-                "apk": {
-                    "upgrade": "yes"
+            ],
+            "apk upgrade": [
+                {
+                    "apk": {
+                        "upgrade": "yes"
+                    }
                 }
-            }
+            ]
         },
         "opts_postprocess": {
             "--interactive": {},

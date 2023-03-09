@@ -38,7 +38,7 @@
                 ]
             }
         },
-        "opts_postprocess_map": {
+        "opts_postprocess": {
             "-L": {
                 "uri": {
                     "follow_redirects:": "safe"
@@ -48,20 +48,24 @@
             "-S": {}
         },
         "examples": {
-            "curl -o << output : p >> << url >>": {
-                "uri": {
-                    "method": "GET",
-                    "dest": "<< output >>",
-                    "url": "<< url >>"
+            "curl -o << output : p >> << url >>": [
+                {
+                    "uri": {
+                        "method": "GET",
+                        "dest": "<< output >>",
+                        "url": "<< url >>"
+                    }
                 }
-            },
-            "curl -O << url >>": {
-                "uri": {
-                    "method": "GET",
-                    "dest": "<< cwd >>",
-                    "url": "<< url >>"
+            ],
+            "curl -O << url >>": [
+                {
+                    "uri": {
+                        "method": "GET",
+                        "dest": "<< cwd >>",
+                        "url": "<< url >>"
+                    }
                 }
-            }
+            ]
         }
     }
 }

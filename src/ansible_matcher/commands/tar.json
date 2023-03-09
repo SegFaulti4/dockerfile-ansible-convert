@@ -52,26 +52,30 @@
                 ]
             }
         },
-        "opts_postprocess_map": {
+        "opts_postprocess": {
             "-z": {},
             "-j": {},
             "-J": {}
         },
         "examples": {
-            "tar -x -f << file : p >>": {
-                "unarchive": {
-                    "src": "<< file >>",
-                    "dest": "<< cwd >>",
-                    "remote_src": "yes"
+            "tar -x -f << file : p >>": [
+                {
+                    "unarchive": {
+                        "src": "<< file >>",
+                        "dest": "<< cwd >>",
+                        "remote_src": "yes"
+                    }
                 }
-            },
-            "tar -x -f << file : p >> -C << dir : p >>": {
-                "unarchive": {
-                    "src": "<< file >>",
-                    "dest": "<< dir >>",
-                    "remote_src": "yes"
+            ],
+            "tar -x -f << file : p >> -C << dir : p >>": [
+                {
+                    "unarchive": {
+                        "src": "<< file >>",
+                        "dest": "<< dir >>",
+                        "remote_src": "yes"
+                    }
                 }
-            }
+            ]
         }
     }
 }

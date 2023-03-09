@@ -185,13 +185,16 @@ class CommandOptsExtractor:
             part.pos = part.pos[0] - start_pos, part.pos[1] - start_pos
         return token
 
-    def _group_opt_args(self):
+    def _group_opt_args(self) \
+            -> Dict[str, List[Union[ShellWordObject, TemplatePart]]]:
         opts = dict()
         for opt, arg in self._rt.opts:
             if opt.many_args:
                 if opt.name not in opts:
                     opts[opt.name] = []
                 opts[opt.name].append(arg)
+            elif arg is None:
+                opts[opt.name] = []
             else:
-                opts[opt.name] = arg
+                opts[opt.name] = [arg]
         return opts
