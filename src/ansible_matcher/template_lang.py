@@ -408,12 +408,12 @@ class TemplateFiller:
                                            spec_many=False, spec_optional=False, spec_path=False))
         self.template = TemplatePart(value=value, parts=parts)
 
-    def fill(self, fields_dict: TemplateMatchResult) -> Optional[Union[str, List[str]]]:
+    def fill(self, fields_dict: TemplateMatchResult, strict: bool = False) -> Optional[Union[str, List[str]]]:
         res_size = 0
         single_value_fields = []
         list_values_fields = []
         for f in self.template.parts:
-            if f.name not in fields_dict:
+            if f.name not in fields_dict and strict:
                 return None
             if isinstance(fields_dict[f.name], list):
                 if res_size == 0:
@@ -425,27 +425,31 @@ class TemplateFiller:
                 single_value_fields.append(f.name)
 
         if res_size == 0:
-            return TemplateFiller.fill_single_values(self.template, fields_dict)
+            return TemplateFiller.fill_single_values(self.template, fields_dict, strict)
         else:
             res = []
             values_dict = {f: fields_dict[f] for f in single_value_fields}
             for i in range(res_size):
                 for f in list_values_fields:
                     values_dict[f] = fields_dict[f][i]
-                res.append(TemplateFiller.fill_single_values(self.template, values_dict))
+                res.append(TemplateFiller.fill_single_values(self.template, values_dict, strict))
                 if res[-1] is None:
                     return None
             return res
 
     @staticmethod
-    def fill_single_values(templ_part: TemplatePart, values_dict: Dict[str, str]) -> Optional[str]:
+    def fill_single_values(templ_part: TemplatePart, values_dict: Dict[str, str], strict: bool) -> Optional[str]:
         res = ""
         for subpart in templ_part.subpart_list():
             if isinstance(subpart, str):
                 res += subpart
             elif isinstance(subpart, TemplateField):
                 if subpart.name not in values_dict:
-                    return None
+                    if strict:
+                        return None
+                    else:
+                        res += templ_part.value[subpart.pos[0]:subpart.pos[1]]
+
                 res += values_dict[subpart.name]
         return res
 

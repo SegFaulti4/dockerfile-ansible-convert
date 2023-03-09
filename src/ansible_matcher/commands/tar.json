@@ -1,6 +1,6 @@
 {
     "tar": {
-        "entry": "tar {{ parameters : m }}",
+        "entry": "tar << parameters : m >>",
         "opts": {
             "extract": {
                 "arg_required": false,
@@ -58,17 +58,17 @@
             "-J": {}
         },
         "examples": {
-            "tar -x -f {{ file : p }}": {
+            "tar -x -f << file : p >>": {
                 "unarchive": {
-                    "src": "{{ file }}",
-                    "dest": "{{ cwd }}",
+                    "src": "<< file >>",
+                    "dest": "<< cwd >>",
                     "remote_src": "yes"
                 }
             },
-            "tar -x -f {{ file : p }} -C {{ dir : p }}": {
+            "tar -x -f << file : p >> -C << dir : p >>": {
                 "unarchive": {
-                    "src": "{{ file }}",
-                    "dest": "{{ dir }}",
+                    "src": "<< file >>",
+                    "dest": "<< dir >>",
                     "remote_src": "yes"
                 }
             }

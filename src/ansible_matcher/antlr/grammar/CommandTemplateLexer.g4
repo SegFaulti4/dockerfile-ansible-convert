@@ -1,14 +1,14 @@
 lexer grammar CommandTemplateLexer;
 
-OPEN            :   '{{'                        -> pushMode(INSIDE) ;
-WORD            :   ( ~[ {] | '{' ~'{' )+ ;
+OPEN            :   '<<'                        -> pushMode(INSIDE) ;
+WORD            :   ( ~[ <] | '<' ~'<' )+ ;
 SPACE           :   [ ]+ ;
 
 mode INSIDE;
 
 FIELD_NAME      :   [a-zA-Z_][a-zA-Z_0-9]* ;
 SPEC_OPEN       :   ':'                         -> mode(SPECS) ;
-CLOSE           :   '}}'                        -> popMode ;
+CLOSE           :   '>>'                        -> popMode ;
 INSIDE_S        :   SPACE                       -> skip ;
 INSIDE_ANY      :   . ;
 

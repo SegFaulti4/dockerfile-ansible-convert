@@ -1,6 +1,6 @@
 {
     "apk": {
-        "entry": "apk {{ parameters : m }}",
+        "entry": "apk << parameters : m >>",
         "opts": {
             "force": {
                 "aliases": [
@@ -198,14 +198,14 @@
                     "update_cache": "yes"
                 }
             },
-            "apk add {{ packages : m }}": {
+            "apk add << packages : m >>": {
                 "apk": {
-                    "name": "{{ packages }}"
+                    "name": "<< packages >>"
                 }
             },
-            "apk del {{ packages : m }}": {
+            "apk del << packages : m >>": {
                 "apk": {
-                    "name": "{{ packages }}",
+                    "name": "<< packages >>",
                     "state": "absent"
                 }
             },

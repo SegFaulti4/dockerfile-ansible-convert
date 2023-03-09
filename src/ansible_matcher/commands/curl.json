@@ -1,6 +1,6 @@
 {
     "curl": {
-        "entry": "curl {{ parameters : m }}",
+        "entry": "curl << parameters : m >>",
         "opts": {
             "fail": {
                 "arg_required": false,
@@ -48,18 +48,18 @@
             "-S": {}
         },
         "examples": {
-            "curl -o {{ output : p }} {{ url }}": {
+            "curl -o << output : p >> << url >>": {
                 "uri": {
                     "method": "GET",
-                    "dest": "{{ output }}",
-                    "url": "{{ url }}"
+                    "dest": "<< output >>",
+                    "url": "<< url >>"
                 }
             },
-            "curl -O {{ url }}": {
+            "curl -O << url >>": {
                 "uri": {
                     "method": "GET",
-                    "dest": "{{ cwd }}",
-                    "url": "{{ url }}"
+                    "dest": "<< cwd >>",
+                    "url": "<< url >>"
                 }
             }
         }

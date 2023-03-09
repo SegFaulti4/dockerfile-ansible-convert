@@ -1,6 +1,6 @@
 {
     "rm": {
-        "entry": "rm {{ param : m }}",
+        "entry": "rm << param : m >>",
         "opts": {
             "force": {
                 "arg_required": false,
@@ -58,16 +58,16 @@
             "-v": {}
         },
         "examples": {
-            "rm -r {{ files : mp }}": {
+            "rm -r << files : mp >>": {
                 "file": {
                     "state": "absent",
-                    "path": "{{ files }}"
+                    "path": "<< files >>"
                 }
             },
-            "rm {{ files : mp }}": {
+            "rm << files : mp >>": {
                 "file": {
                     "state": "absent",
-                    "path": "{{ files }}"
+                    "path": "<< files >>"
                 }
             }
         }

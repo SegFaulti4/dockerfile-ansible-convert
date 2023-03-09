@@ -1,8 +1,8 @@
 import os.path
 import os
-import zipfile
+import shutil
 from tqdm import tqdm
-from typing import List
+from typing import List, Iterable
 
 from src.shell.main import ShellCommandObject, ShellScript
 from src.shell.bashlex.main import BashlexShellParser
@@ -16,6 +16,8 @@ LOG_DIR = os.path.join(DATA_DIR, 'log')
 SANDBOX_DIR = os.path.join(DEV_DIR, 'sandbox')
 CONTAINERFILES_ARCHIVE = os.path.join(DATA_DIR, 'files.tar.xz')
 CONTAINERFILES_DIR = os.path.join(DATA_DIR, 'files')
+UBUNTU_CONTAINERFILES_DIR = os.path.join(DATA_DIR, 'ubuntu_files')
+DEBIAN_CONTAINERFILES_DIR = os.path.join(DATA_DIR, 'debian_files')
 MINED_SHELL_COMMANDS_FILE = os.path.join(DATA_DIR, 'mined_commands')
 COLLECTED_MATCHER_TESTS_FILE = os.path.join(DATA_DIR, "collected_matcher_tests")
 FILTERED_MATCHER_TESTS_FILE = os.path.join(DATA_DIR, "filtered_matcher_tests_0")
@@ -73,6 +75,11 @@ def mine_shell_commands() -> None:
 
     with open(MINED_SHELL_COMMANDS_FILE, "w") as outF:
         outF.writelines(commands)
+
+
+def copy_files(paths: List[str], directory: str) -> None:
+    for path in tqdm(paths, desc="Copying files", smoothing=1.0):
+        shutil.copy2(path, directory)
 
 
 if __name__ == "__main__":

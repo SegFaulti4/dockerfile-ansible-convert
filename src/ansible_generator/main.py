@@ -415,6 +415,8 @@ class RoleGenerator:
         cwd = self._context.get_workdir() if cwd is None else cwd
         line = " ".join(x.value for x in words)
 
+        # ATTENTION: "collect_stats" parameter is passed to matcher
+        # collected stats might then be altered `_handle_run_command_extracted`
         task = self.task_matcher.match_command(words, cwd=cwd, usr=usr, collect_stats=self.collect_stats)
         if task is not None:
             if self.collect_matcher_tests:
@@ -476,17 +478,41 @@ class RoleGenerator:
 
     def _handle_run_command_sudo(self, extracted_call: ExtractedCommandCall,
                                  local_vars: Dict[str, str], line: str) -> (_ScriptPartType, Any):
-        return self._handle_run_command_resolved(words=extracted_call.params[1:],
+        params = extracted_call.params
+        opt_words = []
+        for p in params[1:]:
+            if not p.value.startswith("-"):
+                break
+            opt_words.append(p.value)
+
+        # length of `sudo` command doesn't include length of "sudoed" command
+        if self.collect_stats:
+            sudo_words = [params[0].value] + opt_words
+            self.task_matcher.stats.length = sum(map(len, sudo_words)) + len(sudo_words) - 1
+
+        # no `sudo` options are currently supported
+        if opt_words:
+            globalLog.info("No `sudo` options are currently supported - command is translated to shell")
+            return self._handle_run_command_shell(line=line, local_vars=local_vars)
+
+        # `sudo` command is covered, "sudoed" command might not be covered
+        if self.collect_stats:
+            self.task_matcher.stats.coverage[-1] = 1.0
+        return self._handle_run_command_resolved(words=params[1:],
                                                  local_vars=local_vars, usr="root")
 
     def _handle_run_command_cd(self, extracted_call: ExtractedCommandCall,
                                local_vars: Dict[str, str], line: str) -> (_ScriptPartType, Any):
         if extracted_call.opts:
-            globalLog.info("Any options passed to command cd are ignored")
+            globalLog.info("No `cd` options are currently supported - command is translated to shell")
+            return self._handle_run_command_shell(line=line, local_vars=local_vars)
 
         if len(extracted_call.params) > 2:
-            globalLog.info("More than one argument passed to 'cd' - only first one will be used")
-            extracted_call.params = extracted_call.params[:2]
+            globalLog.info("More than one argument passed to `cd` - command is translated to shell")
+            return self._handle_run_command_shell(line=line, local_vars=local_vars)
 
+        # mark `cd` command as covered
+        if self.collect_stats:
+            self.task_matcher.stats.coverage[-1] = 1.
         self._context.set_local_workdir(extracted_call.params[1].value)
         return _ScriptPartType.NONE, None
