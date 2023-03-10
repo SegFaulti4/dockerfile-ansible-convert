@@ -220,30 +220,16 @@ class TaskMatcher:
     @staticmethod
     def _fill_in_task_template(task_template: Dict[str, Any], fields_dict: TemplateMatchResult) \
             -> Optional[Dict[str, Any]]:
-
-        class TaskTemplateFiller:
-            def __init__(self, f_dict: TemplateMatchResult):
-                self.fields_dict = f_dict
-                self.success = True
-
-            def __call__(self, templ: CommandTemplateParts):
-                if not self.success:
-                    return ""
-
-                template_filler = TemplateFiller(templ)
-                res = template_filler.fill(self.fields_dict)
-                if res is None:
-                    self.success = False
-                    return ""
-                return res
-
-        def is_template(x) -> bool:
-            return isinstance(x, list) and all(isinstance(y, TemplatePart) for y in x)
-
-        filler = TaskTemplateFiller(fields_dict)
-        task_call = visit_dict(task_template, is_template, filler)
-        if not filler.success:
+        expand_filler = _TaskTemplateExpandFiller(fields_dict, strict=False)
+        task_call = visit_dict(task_template, _TaskTemplateExpandFiller.predicate, expand_filler)
+        if not expand_filler.success:
             return None
+
+        flatten_filler = _TaskTemplateFlattenFiller(fields_dict, strict=False)
+        task_call = visit_dict(task_call, _TaskTemplateFlattenFiller.predicate, flatten_filler)
+        if not flatten_filler.success:
+            return None
+
         return task_call
 
     @staticmethod
@@ -267,3 +253,58 @@ class TaskMatcher:
         fields_dict["cwd"] = self._tweaks.cwd
         fields_dict["usr"] = self._tweaks.usr
         return fields_dict
+
+
+def _is_template(x) -> bool:
+    return isinstance(x, list) and all(isinstance(y, TemplatePart) for y in x)
+
+
+class _TaskTemplateFlattenFiller:
+
+    def __init__(self, f_dict: TemplateMatchResult, strict: bool):
+        self.fields_dict = f_dict
+        self.success = True
+        self.strict = strict
+
+    def __call__(self, templ: CommandTemplateParts):
+        if not self.success:
+            return ""
+
+        template_filler = TemplateFiller(templ)
+        filled = template_filler.fill_flatten(self.fields_dict, strict=self.strict)
+        if filled is None:
+            self.success = False
+            return ""
+        return filled
+
+    @staticmethod
+    def predicate(x) -> bool:
+        return _is_template(x)
+
+
+class _TaskTemplateExpandFiller:
+
+    def __init__(self, f_dict: TemplateMatchResult, strict: bool):
+        self.fields_dict = f_dict
+        self.success = True
+        self.strict = strict
+
+    def __call__(self, arr: List):
+        if not self.success:
+            return []
+
+        res = []
+        for x in arr:
+            if _is_template(x):
+                filled = TemplateFiller(x).fill_expand(self.fields_dict, strict=self.strict)
+                if filled is None:
+                    self.success = False
+                    return []
+                res.extend(filled)
+            else:
+                res.append(x)
+        return res
+
+    @staticmethod
+    def predicate(x) -> bool:
+        return isinstance(x, list)

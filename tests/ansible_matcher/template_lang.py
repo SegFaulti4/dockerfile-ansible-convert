@@ -1,7 +1,6 @@
 import unittest
 import string
 import logging
-import copy
 
 from src.ansible_matcher.template_lang import *
 from src.log import globalLog
@@ -175,7 +174,7 @@ class TestTemplateFiller(unittest.TestCase):
             f"word {rb}single{lb} word {rb}many{lb} word {rb}optional{lb} word"
         ]
         self.fields_dict = {
-            "single": ["single"],
+            "single": "single",
             "many": ["1", "2", "3"]
         }
         self.templates = [self.templ_constr.from_str(s) for s in self.templ_strings]

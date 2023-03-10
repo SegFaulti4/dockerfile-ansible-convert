@@ -180,8 +180,7 @@ class TemplateTweaks:
         return os.path.join(self.cwd, path)
 
 
-# TODO: seek and destroy
-TemplateMatchResult = Dict[str, List[str]]
+TemplateMatchResult = Dict[str, Union[str, List[str]]]
 
 
 class CommandTemplateMatcher:
@@ -403,51 +402,8 @@ class TemplateFiller:
     template: CommandTemplateParts
 
     def __init__(self, templ: CommandTemplateParts):
-        """value = templ[0].value
-        parts = []
-        for f in templ[0].parts:
-            parts.append(TemplateField(name=f.name, pos=(f.pos[0], f.pos[1]),
-                                       spec_many=False, spec_optional=False, spec_path=False))
-
-        for part in templ[1:]:
-            value += " "
-            for f in part.parts:
-                parts.append(TemplateField(name=f.name, pos=(f.pos[0] + len(value), f.pos[1] + len(value)),
-                                           spec_many=False, spec_optional=False, spec_path=False))
-            value += part.value
-
-        self.template = TemplatePart(value=value, parts=parts)"""
         assert all(isinstance(p, TemplatePart) for p in templ)
         self.template = templ
-
-    """def fill(self, fields_dict: TemplateMatchResult, strict: bool = True) -> Optional[Union[str, List[str]]]:
-        res_size = 0
-        single_value_fields = []
-        list_values_fields = []
-        for f in self.template.parts:
-            if f.name not in fields_dict and strict:
-                return None
-            if isinstance(fields_dict[f.name], list):
-                if res_size == 0:
-                    res_size = len(fields_dict[f.name])
-                elif res_size != len(fields_dict[f.name]):
-                    return None
-                list_values_fields.append(f.name)
-            else:
-                single_value_fields.append(f.name)
-
-        if res_size == 0:
-            return TemplateFiller.fill_single_values(self.template, fields_dict, strict)
-        else:
-            res = []
-            values_dict = {f: fields_dict[f] for f in single_value_fields}
-            for i in range(res_size):
-                for f in list_values_fields:
-                    values_dict[f] = fields_dict[f][i]
-                res.append(TemplateFiller.fill_single_values(self.template, values_dict, strict))
-                if res[-1] is None:
-                    return None
-            return res"""
 
     @staticmethod
     def _fill_template_part(part: TemplatePart, values_dict: Dict[str, str]) -> str:
@@ -460,80 +416,70 @@ class TemplateFiller:
         return res
 
     @staticmethod
-    def _get_multiples(fields_dict: TemplateMatchResult, field_names: List[str], strict: bool) \
-            -> Optional[List[int]]:
-        lengths = set(len(fields_dict.get(name, list())) for name in field_names)
-        if strict and 0 in lengths:
-            globalLog.debug("Strict filling, can't find values for some fields - filling failed")
-            return None
-        multiples = list(length for length in lengths if length > 1)
-        if len(multiples) > 1:
-            globalLog.debug("Found different sized (len > 1) lists in fields dict - filling failed")
-            return None
-        return multiples
+    def _get_multiples(fields_dict: TemplateMatchResult, field_names: List[str]) \
+            -> List[int]:
+        return list(set(len(fields_dict[name]) for name in field_names
+                        if name in fields_dict and isinstance(fields_dict[name], list)))
 
     def fill_flatten(self, fields_dict: TemplateMatchResult, strict: bool = False) -> Optional[str]:
         res = []
         for part in self.template:
             field_names = list(f.name for f in part.parts)
-            multiples = TemplateFiller._get_multiples(fields_dict, field_names, strict)
-            if multiples is None:
+            if any(name not in fields_dict for name in field_names) and strict:
                 return None
+            multiples = TemplateFiller._get_multiples(fields_dict, field_names)
 
-            if multiples:
+            if not multiples:
+                values_dict = {name: fields_dict[name] for name in field_names if name in fields_dict}
+                res.append(TemplateFiller._fill_template_part(part, values_dict))
+            elif len(multiples) > 1:
+                globalLog.debug("Found multiple different sized lists in fields dict - filling failed")
+                return None
+            elif multiples[0] == 0 and strict:
+                return None
+            else:
                 values = []
                 for i in range(multiples[0]):
                     values_dict = {}
                     for name in field_names:
-                        v = fields_dict.get(name, list())
-                        if not v:
+                        if name not in fields_dict:
                             continue
-                        values_dict[name] = v[i] if len(v) > 1 else v[0]
+                        if isinstance(fields_dict[name], list):
+                            values_dict[name] = fields_dict[name][i]
+                        else:
+                            values_dict[name] = fields_dict[name]
                     values.append(TemplateFiller._fill_template_part(part, values_dict))
                 res.append(" ".join(values))
-            else:
-                values_dict = {k: v[0] for k, v in fields_dict.items() if v}
-                res.append(TemplateFiller._fill_template_part(part, values_dict))
 
         return " ".join(res)
 
     def fill_expand(self, fields_dict: TemplateMatchResult, strict: bool = False) -> Optional[List[str]]:
         res = []
         field_names = list(f.name for part in self.template for f in part.parts)
-        multiples = TemplateFiller._get_multiples(fields_dict, field_names, strict)
-        if multiples is None:
+        if any(name not in fields_dict for name in field_names) and strict:
             return None
+        multiples = TemplateFiller._get_multiples(fields_dict, field_names)
 
-        if multiples:
+        if not multiples:
+            values_dict = {name: fields_dict[name] for name in field_names if name in fields_dict}
+            res.append(" ".join(TemplateFiller._fill_template_part(part, values_dict) for part in self.template))
+        elif len(multiples) > 1:
+            globalLog.debug("Found multiple different sized lists in fields dict - filling failed")
+            return None
+        elif multiples[0] == 0 and strict:
+            return None
+        else:
             for i in range(multiples[0]):
                 values_dict = {}
                 for name in field_names:
-                    v = fields_dict.get(name, list())
-                    if not v:
+                    if name not in fields_dict:
                         continue
-                    values_dict[name] = v[i] if len(v) > 1 else v[0]
-                res.append(" ".join(TemplateFiller._fill_template_part(part, values_dict) for part in self.template))
-        else:
-            values_dict = {k: v[0] for k, v in fields_dict.items() if v}
-            res.append(" ".join(TemplateFiller._fill_template_part(part, values_dict) for part in self.template))
-
-        return res
-
-    """@staticmethod
-    def fill_single_values(templ_part: TemplatePart, values_dict: Dict[str, str], strict: bool) -> Optional[str]:
-        res = ""
-        for subpart in templ_part.subpart_list():
-            if isinstance(subpart, str):
-                res += subpart
-            elif isinstance(subpart, TemplateField):
-                if subpart.name not in values_dict:
-                    if strict:
-                        return None
+                    if isinstance(fields_dict[name], list):
+                        values_dict[name] = fields_dict[name][i]
                     else:
-                        res += templ_part.value[subpart.pos[0]:subpart.pos[1]]
-
-                res += values_dict[subpart.name]
-        return res"""
+                        values_dict[name] = fields_dict[name]
+                res.append(" ".join(TemplateFiller._fill_template_part(part, values_dict) for part in self.template))
+        return res
 
 
 if __name__ == "__main__":
