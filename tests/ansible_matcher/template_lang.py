@@ -6,14 +6,19 @@ from src.ansible_matcher.template_lang import *
 
 class TestTemplateConstructor(unittest.TestCase):
 
+    RB = "<<"
+    LB = ">>"
+
     def setUp(self) -> None:
         self.templ_constr = TemplateConstructor()
 
     def test_template_word(self):
+        rb = self.RB
+        lb = self.LB
         words = [
             "Thequickbrownfoxjumpsoverthelazydog",
             "`1234567890-=~!@#$%^&*()_+[];'\\,./{}:\"|<>?",
-            "{}}{}}}{}}}}" # might add more complex test in the future
+            f"{rb[0]}{lb}{rb[0]}{lb}{lb[0]}{rb[0]}{lb}{lb}"  # might add more complex test in the future
             # see https://github.com/SegFaulti4/dockerfile-ansible-convert/issues/17
         ]
 
@@ -26,34 +31,36 @@ class TestTemplateConstructor(unittest.TestCase):
             assert t[0].value == w
 
     def test_template_field(self):
-        non_words = [
-            "{{}}",
-            "{{ }}",
-            "{{\t}}",
+        rb = self.RB
+        lb = self.LB
+        non_fields = [
+            f"{rb}{lb}",
+            f"{rb} {lb}",
+            f"{rb}\t{lb}",
         ] + [
-            "{{f" + c + "l}}" for c in "\t `-=~!@#$%^&*()+[];'\\,./{}:\"|<>?"
+            f"{rb}r{c}l{lb}" for c in "\t `-=~!@#$%^&*()+[];'\\,./{}:\"|<>?"
         ] + [
-            "{{f:om}}", "{{f:pm}}", "{{f:po}}"
+            f"{rb}r:om{lb}", f"{rb}r:pm{lb}", f"{rb}r:po{lb}"
         ]
-        for n in non_words:
+        for n in non_fields:
             t = self.templ_constr.from_str(n)
             assert t is None
 
-        words = [
-            "{{ " + c + " }}" for c in string.ascii_letters + "_"
+        fields = [
+            f"{rb}{c}{lb}" for c in string.ascii_letters + "_"
         ] + [
-            "{{ f" + c + " }}" for c in string.ascii_letters + string.digits + "_"
+            f"{rb}r{c}{lb}" for c in string.ascii_letters + string.digits + "_"
         ] + [
-            "{{ name : " + c + " }}"
+            f"{rb}name : {c}{lb}"
             for c in ["", "m", "o", "p"] + list(map(lambda x: "".join(x), itertools.combinations("mop", 2))) + ["mop"]
         ]
-        templates = [self.templ_constr.from_str(w) for w in words]
+        templates = [self.templ_constr.from_str(w) for w in fields]
 
         assert_values = [
             {"name": c, "pos": (0, 5), "spec_many": False, "spec_optional": False, "spec_path": False}
             for c in string.ascii_letters + "_"
         ] + [
-            {"name": "f" + c, "pos": (0, 6), "spec_many": False, "spec_optional": False, "spec_path": False}
+            {"name": "r" + c, "pos": (0, 6), "spec_many": False, "spec_optional": False, "spec_path": False}
             for c in string.ascii_letters + string.digits + "_"
         ] + [
             {"name": "name", "pos": (0, 9 + len(c)),
@@ -67,11 +74,22 @@ class TestTemplateConstructor(unittest.TestCase):
             assert len(t[0].parts) == 1
 
             field = t[0].parts[0]
+            print(field)
             for k, v in av.items():
+                print(k, v)
                 assert getattr(field, k) == v
 
     def test_template_part(self):
-        pass
+        rb = self.RB
+        lb = self.LB
+        non_parts = [
+            f"{rb}name{lb}{rb}eman{lb}",
+            f"something{rb} {lb}nothing"
+        ]
+        for n in non_parts:
+            t = self.templ_constr.from_str(n)
+            assert t is None
+
 
     def test_command_template(self):
         pass

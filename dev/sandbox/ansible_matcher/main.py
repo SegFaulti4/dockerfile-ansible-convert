@@ -15,6 +15,8 @@ if __name__ == "__main__":
     globalLog.setLevel(logging.DEBUG)
     shell_parser = SandboxShellParser()
     task_matcher = SandboxTaskMatcher()
+    cwd = "/"
+    usr = "root"
 
     SHOW_SOURCE = True
     SHOW_SHELL_PARSER = True
@@ -33,7 +35,7 @@ if __name__ == "__main__":
                 comm = script.parts[0]
                 if isinstance(comm, ShellCommandObject):
                     ext = task_matcher.extract_command(comm.parts)
-                    obj = task_matcher.match_command(comm.parts)
+                    obj = task_matcher.match_command(comm.parts, cwd=cwd, usr=usr)
                 else:
                     obj = None
 

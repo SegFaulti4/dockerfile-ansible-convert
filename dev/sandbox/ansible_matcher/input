@@ -1,1 +1,1 @@
-tar -xzf "node-v$NODE_VERSION-linux-armv7hf.tar.gz" -C /usr/local --strip-components=1
+rm -Rf /code
