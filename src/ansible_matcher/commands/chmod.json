@@ -1,6 +1,6 @@
 {
-    "apt": {
-        "entry": "apt <<parameters : m>>",
+    "chmod": {
+        "entry": "chmod <<parameters : m>>",
         "opts": {},
         "examples": {},
         "opts_postprocess": {}

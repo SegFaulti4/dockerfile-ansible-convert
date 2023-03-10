@@ -494,7 +494,7 @@ class RoleGenerator:
         # length of `sudo` command doesn't include length of "sudoed" command
         if self.collect_stats:
             sudo_words = [params[0].value] + opt_words
-            self.task_matcher.stats.length = sum(map(len, sudo_words)) + len(sudo_words) - 1
+            self.task_matcher.stats.length[-1] = sum(map(len, sudo_words)) + len(sudo_words) - 1
 
         # no `sudo` options are currently supported
         if opt_words:

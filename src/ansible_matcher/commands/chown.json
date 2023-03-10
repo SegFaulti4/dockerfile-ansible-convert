@@ -1,6 +1,6 @@
 {
-    "apt": {
-        "entry": "apt <<parameters : m>>",
+    "chown": {
+        "entry": "chown <<parameters : m>>",
         "opts": {},
         "examples": {},
         "opts_postprocess": {}

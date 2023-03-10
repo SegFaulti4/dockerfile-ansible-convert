@@ -1,3 +1,4 @@
+import logging
 import os.path
 import os
 import shutil
@@ -8,6 +9,7 @@ from src.shell.main import ShellCommandObject, ShellScript
 from src.shell.bashlex.main import BashlexShellParser
 from src.containerfile.main import RunDirective, DockerfileContent
 from src.containerfile.tpdockerfile.main import TPDockerfileParser
+from src.log import globalLog
 
 
 DEV_DIR = os.path.dirname(os.path.dirname(__file__))
@@ -19,6 +21,8 @@ CONTAINERFILES_DIR = os.path.join(DATA_DIR, 'files')
 UBUNTU_CONTAINERFILES_DIR = os.path.join(DATA_DIR, 'ubuntu_files')
 DEBIAN_CONTAINERFILES_DIR = os.path.join(DATA_DIR, 'debian_files')
 MINED_SHELL_COMMANDS_FILE = os.path.join(DATA_DIR, 'mined_commands')
+MINED_UBUNTU_SHELL_COMMANDS_FILE = os.path.join(DATA_DIR, 'mined_ubuntu_commands')
+MINED_DEBIAN_SHELL_COMMANDS_FILE = os.path.join(DATA_DIR, 'mined_debian_commands')
 COLLECTED_MATCHER_TESTS_FILE = os.path.join(DATA_DIR, "collected_matcher_tests")
 FILTERED_MATCHER_TESTS_FILE = os.path.join(DATA_DIR, "filtered_matcher_tests_0")
 
@@ -35,25 +39,15 @@ def setup_dir(directory: str) -> None:
     if not os.path.exists(directory):
         os.makedirs(directory)
 
-# Not supported since archive formate was changed
-#
-# def extract_containerfiles() -> None:
-#     with zipfile.ZipFile(CONTAINERFILES_ARCHIVE, 'r') as zipF:
-#         for member in tqdm(zipF.infolist(), desc="Extracting"):
-#             try:
-#                 zipF.extract(member, DATA_DIR)
-#             except zipfile.error as e:
-#                 pass
 
-
-def mine_shell_commands() -> None:
+def mine_shell_commands(files_dir: str, output_file: str) -> None:
     sh_parser = BashlexShellParser()
     cf_parser = TPDockerfileParser(shell_parser=sh_parser)
 
     commands = []
-    filenames = filenames_from_dir(CONTAINERFILES_DIR)
-    for i, name in tqdm(enumerate(filenames), desc="Mining shell"):
-        path = os.path.join(CONTAINERFILES_DIR, name)
+    filenames = filenames_from_dir(files_dir)
+    for name in tqdm(filenames, desc="Mining shell"):
+        path = os.path.join(files_dir, name)
         try:
             with open(path.strip(), "r") as cf:
                 source = "".join(cf.readlines())
@@ -73,7 +67,7 @@ def mine_shell_commands() -> None:
         except Exception:
             pass
 
-    with open(MINED_SHELL_COMMANDS_FILE, "w") as outF:
+    with open(output_file, "w") as outF:
         outF.writelines(commands)
 
 
@@ -83,4 +77,4 @@ def copy_files(paths: List[str], directory: str) -> None:
 
 
 if __name__ == "__main__":
-    pass
+    globalLog.setLevel(logging.ERROR)

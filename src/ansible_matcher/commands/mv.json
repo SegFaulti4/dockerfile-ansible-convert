@@ -1,6 +1,6 @@
 {
-    "apt": {
-        "entry": "apt <<parameters : m>>",
+    "mv": {
+        "entry": "mv <<parameters : m>>",
         "opts": {},
         "examples": {},
         "opts_postprocess": {}

@@ -1,0 +1,37 @@
+{
+    "c": {
+        "entry": "c <<parameters : m>>",
+        "opts": {
+            "a": {
+                "aliases": ["-a"],
+                "arg_required": false,
+                "many_args": false
+            },
+            "b": {
+                "aliases": ["-b"],
+                "arg_required": true,
+                "many_args": false
+            },
+            "c": {
+                "aliases": ["-c"],
+                "arg_required": false,
+                "many_args": true
+            },
+            "d": {
+                "aliases": ["-d"],
+                "arg_required": true,
+                "many_args": true
+            }
+        },
+        "examples": {
+            "c <<arg>>": {
+                "c": {
+                    "arg": "<<arg>>"
+                }
+            }
+        },
+        "opts_postprocess": {
+            "-a": {}
+        }
+    }
+}

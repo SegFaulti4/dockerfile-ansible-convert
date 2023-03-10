@@ -92,13 +92,13 @@ def save_containerfile_stats(generator_stats: RoleGeneratorStatistics, matcher_s
             outF.writelines(lines)
 
 
-def collect_containerfile_stats(dockerfile_parser: DockerfileParser, task_matcher: TaskMatcher)\
+def collect_containerfile_stats(files_dir: str, dockerfile_parser: DockerfileParser, task_matcher: TaskMatcher)\
         -> Tuple[RoleGeneratorStatistics, TaskMatcherStatistics]:
     generator_stats = RoleGeneratorStatistics()
 
-    filenames = filenames_from_dir(CONTAINERFILES_DIR)
+    filenames = filenames_from_dir(files_dir)
     for name in tqdm(filenames, desc="Collecting stats"):
-        path = os.path.join(CONTAINERFILES_DIR, name)
+        path = os.path.join(files_dir, name)
         try:
             with open(path.strip(), "r") as df:
                 source = "".join(df.readlines())
@@ -144,25 +144,29 @@ def collect_and_print_task_matcher_stats(commands_file: str = MINED_SHELL_COMMAN
     print_task_matcher_stats(matcher_stats)
 
 
-def collect_and_save_containerfile_stats():
+def collect_and_save_containerfile_stats(files_dir: str):
     shell_parser = BashlexShellParser()
     dockerfile_parser = TPDockerfileParser(shell_parser=shell_parser)
     task_matcher = TaskMatcher()
 
-    generator_stats, matcher_stats = collect_containerfile_stats(dockerfile_parser, task_matcher)
+    generator_stats, matcher_stats = collect_containerfile_stats(files_dir, dockerfile_parser, task_matcher)
     save_containerfile_stats(generator_stats, matcher_stats)
 
 
 def main():
     globalLog.setLevel(logging.ERROR)
-    # mine_shell_commands()
+    # mine_shell_commands(UBUNTU_CONTAINERFILES_DIR, MINED_UBUNTU_SHELL_COMMANDS_FILE)
 
-    # commands_file = MINED_SHELL_COMMANDS_FILE
+    # collect_and_print_task_matcher_stats(os.path.join(DATA_DIR, MINED_SHELL_COMMANDS_FILE))
+
+    # commands_file = MINED_UBUNTU_SHELL_COMMANDS_FILE
     # collect_and_print_task_matcher_stats(commands_file)
-    collect_and_save_containerfile_stats()
+
+    files_dir = UBUNTU_CONTAINERFILES_DIR
+    # files_dir = os.path.join(DATA_DIR, "test_files")
+    collect_and_save_containerfile_stats(files_dir)
 
 
 if __name__ == "__main__":
     globalLog.setLevel(logging.ERROR)
-    # collect_and_print_task_matcher_stats(os.path.join(DATA_DIR, MINED_SHELL_COMMANDS_FILE))
     main()
