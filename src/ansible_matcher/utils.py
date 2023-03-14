@@ -19,6 +19,7 @@ def visit_dict(d_dict: Dict[str, Any], predicate: Callable, proc: Callable):
 
 def merge_dicts(into_dict: Dict, from_dict: Dict):
     for k, v in from_dict.items():
+        # that's a simple case, if key is not presented in dict - just write new value
         if k not in into_dict:
             into_dict[k] = v
         else:
@@ -32,8 +33,10 @@ def merge_dicts(into_dict: Dict, from_dict: Dict):
                     into_dict[k].extend(v)
                 else:
                     into_dict[k] = [into_dict[k]] + v
+            elif isinstance(into_dict[k], list):
+                into_dict[k] = into_dict[k] + [v]
             else:
-                into_dict[k] = [into_dict[k]] + [v]
+                into_dict[k] = v
     return into_dict
 
 

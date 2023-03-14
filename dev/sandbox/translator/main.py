@@ -4,7 +4,7 @@ from dev.sandbox.shell.main import SandboxShellParser
 from dev.sandbox.containerfile.main import SandboxDockerfileParser
 from dev.sandbox.ansible_matcher.main import SandboxTaskMatcher
 from dev.sandbox.ansible_generator.main import SandboxRoleGenerator
-import dev.utils.data_utils as file_utils
+from dev.utils.data_utils import *
 import dev.sandbox.utils.ansible_utils as ansible_utils
 import dev.sandbox.utils.cloud_utils as cloud_utils
 
@@ -17,16 +17,14 @@ if __name__ == "__main__":
     dockerfile_parser = SandboxDockerfileParser(shell_parser=shell_parser)
     task_matcher = SandboxTaskMatcher()
 
+    FILES_DIR = UBUNTU_FILES_DIR
     PRINT_PATH = True
     PRINT_SOURCE = True
     PRINT_DOCKERFILE_PARSER = True
     PRINT_ROLE_GENERATOR = True
     EXECUTE_ROLE = False
 
-    for name, path in zip(
-            file_utils.filenames_from_dir(file_utils.CONTAINERFILES_DIR),
-            file_utils.filepaths_from_dir(file_utils.CONTAINERFILES_DIR)
-    ):
+    for name, path in zip(filenames_from_dir(FILES_DIR), filepaths_from_dir(FILES_DIR)):
         if PRINT_PATH:
             print('########')
             print("# PATH #")

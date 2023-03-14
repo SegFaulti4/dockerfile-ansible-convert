@@ -24,11 +24,13 @@
             }
         },
         "examples": {
-            "c <<arg>>": {
-                "c": {
-                    "arg": "<<arg>>"
+            "c <<arg>>": [
+                {
+                    "c": {
+                        "arg": "<<arg>>"
+                    }
                 }
-            }
+            ]
         },
         "opts_postprocess": {
             "-a": {}

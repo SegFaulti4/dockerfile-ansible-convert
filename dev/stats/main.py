@@ -56,8 +56,8 @@ def print_task_matcher_stats(matcher_stats: TaskMatcherStatistics):
     print(tabulate(matcher_table, headers='firstrow', numalign="left"))
 
 
-def save_containerfile_stats(generator_stats: RoleGeneratorStatistics, matcher_stats: TaskMatcherStatistics):
-    stats_dir = os.path.join(DATA_DIR, "containerfile_stats")
+def save_containerfile_stats(generator_stats: RoleGeneratorStatistics, matcher_stats: TaskMatcherStatistics,
+                             stats_dir: str):
     matched_dir = os.path.join(stats_dir, "supported_commands/matched")
     unmatched_dir = os.path.join(stats_dir, "supported_commands/unmatched")
 
@@ -120,7 +120,7 @@ def collect_containerfile_stats(files_dir: str, dockerfile_parser: DockerfilePar
 
 
 def collect_task_matcher_stats(shell_parser: ShellParser, task_matcher: TaskMatcher,
-                               commands_file: str = MINED_SHELL_COMMANDS_FILE) -> TaskMatcherStatistics:
+                               commands_file: str) -> TaskMatcherStatistics:
 
     with open(commands_file, "r") as inF:
         for line in tqdm(inF.readlines()):
@@ -136,7 +136,7 @@ def collect_task_matcher_stats(shell_parser: ShellParser, task_matcher: TaskMatc
     return matcher_stats
 
 
-def collect_and_print_task_matcher_stats(commands_file: str = MINED_SHELL_COMMANDS_FILE):
+def collect_and_print_task_matcher_stats(commands_file: str):
     shell_parser = BashlexShellParser()
     task_matcher = TaskMatcher()
 
@@ -144,27 +144,27 @@ def collect_and_print_task_matcher_stats(commands_file: str = MINED_SHELL_COMMAN
     print_task_matcher_stats(matcher_stats)
 
 
-def collect_and_save_containerfile_stats(files_dir: str):
+def collect_and_save_containerfile_stats(files_dir: str, stats_dir: str):
     shell_parser = BashlexShellParser()
     dockerfile_parser = TPDockerfileParser(shell_parser=shell_parser)
     task_matcher = TaskMatcher()
 
     generator_stats, matcher_stats = collect_containerfile_stats(files_dir, dockerfile_parser, task_matcher)
-    save_containerfile_stats(generator_stats, matcher_stats)
+    save_containerfile_stats(generator_stats, matcher_stats, stats_dir)
 
 
 def main():
     globalLog.setLevel(logging.ERROR)
-    # mine_shell_commands(UBUNTU_CONTAINERFILES_DIR, MINED_UBUNTU_SHELL_COMMANDS_FILE)
 
-    # collect_and_print_task_matcher_stats(os.path.join(DATA_DIR, MINED_SHELL_COMMANDS_FILE))
+    # mine_shell_commands(UBUNTU_FILES_DIR, UBUNTU_MINED_SHELL_COMMANDS_FILE)
+    # collect_and_print_task_matcher_stats(os.path.join(DATA_DIR, UBUNTU_MINED_SHELL_COMMANDS_FILE))
 
-    # commands_file = MINED_UBUNTU_SHELL_COMMANDS_FILE
+    # commands_file = UBUNTU_MINED_SHELL_COMMANDS_FILE
     # collect_and_print_task_matcher_stats(commands_file)
 
-    files_dir = UBUNTU_CONTAINERFILES_DIR
-    # files_dir = os.path.join(DATA_DIR, "test_files")
-    collect_and_save_containerfile_stats(files_dir)
+    # files_dir = UBUNTU_FILES_DIR
+    # stats_dir = UBUNTU_STATS_DIR
+    # collect_and_save_containerfile_stats(files_dir, stats_dir)
 
 
 if __name__ == "__main__":

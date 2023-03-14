@@ -1,8 +1,104 @@
 {
     "chmod": {
         "entry": "chmod <<parameters : m>>",
-        "opts": {},
-        "examples": {},
-        "opts_postprocess": {}
+        "opts": {
+            "changes": {
+                "aliases": [
+                    "--changes",
+                    "-c"
+                ],
+                "arg_required": false,
+                "many_args": false
+            },
+            "quiet": {
+                "aliases": [
+                    "--quiet",
+                    "--silent",
+                    "-f"
+                ],
+                "arg_required": false,
+                "many_args": false
+            },
+            "verbose": {
+                "aliases": [
+                    "--verbose",
+                    "-v"
+                ],
+                "arg_required": false,
+                "many_args": false
+            },
+            "no preserve root": {
+                "aliases": [
+                    "--no-preserve-root"
+                ],
+                "arg_required": false,
+                "many_args": false
+            },
+            "preserve root": {
+                "aliases": [
+                    "--preserve-root"
+                ],
+                "arg_required": false,
+                "many_args": false
+            },
+            "reference": {
+                "aliases": [
+                    "--reference"
+                ],
+                "arg_required": true,
+                "many_args": false
+            },
+            "recursive": {
+                "aliases": [
+                    "--recursive",
+                    "-R"
+                ],
+                "arg_required": false,
+                "many_args": false
+            },
+            "help": {
+                "aliases": [
+                    "--help"
+                ],
+                "arg_required": false,
+                "many_args": false
+            },
+            "version": {
+                "aliases": [
+                    "--version"
+                ],
+                "arg_required": false,
+                "many_args": false
+            }
+        },
+        "examples": {
+            "chmod <<mode>> <<path : p>>": [
+                {
+                    "file": {
+                        "path": "<<path>>",
+                        "mode": "<<mode>>"
+                    }
+                }
+            ],
+            "chmod <<mode>> <<path : mp>>": [
+                {
+                    "file": {
+                        "path": "{{ item }}",
+                        "mode": "<<mode>>"
+                    },
+                    "loop": "<<path>>"
+                }
+            ]
+        },
+        "opts_postprocess": {
+            "--recursive": {
+                "file": {
+                    "recursive": "yes"
+                }
+            },
+            "--verbose": {},
+            "--changes": {},
+            "--quiet": {}
+        }
     }
 }
