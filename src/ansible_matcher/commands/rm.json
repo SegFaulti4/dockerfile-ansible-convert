@@ -51,6 +51,7 @@
             }
         },
         "opts_postprocess": {
+            "-r": {},
             "-f": {},
             "-I": {},
             "-i": {},
@@ -58,7 +59,7 @@
             "-v": {}
         },
         "examples": {
-            "rm -r << files : mp >>": [
+            "rm << files : mp >>": [
                 {
                     "shell": "ls -1d <<files>>",
                     "register": "ls_reg"

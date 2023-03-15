@@ -1,8 +1,170 @@
 {
     "wget": {
         "entry": "wget <<parameters : m>>",
-        "opts": {},
-        "examples": {},
-        "opts_postprocess": {}
+        "opts": {
+            "output document": {
+                "aliases": [ "-O", "--output-document"],
+                "arg_required": true,
+                "many_args": false
+            },
+            "output file": {
+                "aliases": [ "-o", "--output-file"],
+                "arg_required": true,
+                "many_args": false
+            },
+            "no check certificate": {
+                "aliases": ["--no-check-certificate"],
+                "arg_required": false,
+                "many_args": false
+            },
+            "no clobber": {
+                "aliases": ["-nc", "--no-clobber"],
+                "arg_required": false,
+                "many_args": false
+            },
+            "header": {
+                "aliases": [ "--header"],
+                "arg_required": true,
+                "many_args": false
+            },
+            "relative": {
+                "aliases": ["-L", "--relative"],
+                "arg_required": false,
+                "many_args": false
+            },
+            "prefix": {
+                "aliases": ["-P", "--directory-prefix"],
+                "arg_required": true,
+                "many_args": false
+            },
+            "continue": {
+                "aliases": ["-c", "--continue"],
+                "arg_required": false,
+                "many_args": false
+            },
+            "recursive": {
+                "aliases": ["-r", "--recursive"],
+                "arg_required": false,
+                "many_args": false
+            },
+            "no parent": {
+                "aliases": ["-np", "--no-parent"],
+                "arg_required": false,
+                "many_args": false
+            },
+            "no cookies": {
+                "aliases": ["--no-cookies"],
+                "arg_required": false,
+                "many_args": false
+            },
+            "span hosts": {
+                "aliases": ["-H", "--span-hosts"],
+                "arg_required": false,
+                "many_args": false
+            },
+            "cur dirs": {
+                "aliases": ["--cur-dirs"],
+                "arg_required": true,
+                "many_args": false
+            },
+            "local encoding": {
+                "aliases": ["--local-encoding"],
+                "arg_required": true,
+                "many_args": false
+            },
+            "timestamping": {
+                "aliases": ["-N", "--timestamping"],
+                "arg_required": false,
+                "many_args": false
+            },
+            "content disposition": {
+                "aliases": ["--content-disposition"],
+                "arg_required": false,
+                "many_args": false
+            },
+            "accept": {
+                "aliases": ["-A", "--accept"],
+                "arg_required": false,
+                "many_args": false
+            },
+            "tries": {
+                "aliases": ["-t", "--tries"],
+                "arg_required": false,
+                "many_args": false
+            },
+            "progress": {
+                "aliases": [ "--progress"],
+                "arg_required": true,
+                "many_args": false
+            },
+            "no verbose": {
+                "aliases": ["-nv", "--no-verbose"],
+                "arg_required": false,
+                "many_args": false
+            },
+            "quiet": {
+                "aliases": ["-q", "--quiet"],
+                "arg_required": false,
+                "many_args": false
+            },
+            "help": {
+                "aliases": ["-h", "--help"],
+                "arg_required": false,
+                "many_args": false
+            },
+            "version": {
+                "aliases": ["-v", "--version"],
+                "arg_required": false,
+                "many_args": false
+            }
+        },
+        "examples": {
+            "wget <<url>>": [
+                {
+                    "get_url": {
+                        "url": "<<url>>",
+                        "dest": "<<cwd>>",
+                        "force": true,
+                        "decompress": false
+                    }
+                }
+            ],
+            "wget --tries <<tries>> <<url>>": [
+                {
+                    "get_url": {
+                        "url": "<<url>>",
+                        "dest": "<<cwd>>",
+                        "force": true,
+                        "decompress": false
+                    },
+                    "retries": "<<tries>>"
+                }
+            ]
+        },
+        "opts_postprocess": {
+            "-O <<file : p>>": {
+                "get_url": {
+                    "dest": "<<file>>"
+                }
+            },
+            "--no-check-certificate": {
+                "get_url": {
+                    "validate_certs": false
+                }
+            },
+            "--no-clobber": {
+                "get_url": {
+                    "force": false
+                }
+            },
+            "-P <<file : p>>": {
+                "get_url": {
+                    "dest": "<<file>>"
+                }
+            },
+            "--progress <<type>>": {},
+            "--no-verbose": {},
+            "--quiet": {}
+        }
     }
 }

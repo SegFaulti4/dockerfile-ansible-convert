@@ -5,21 +5,32 @@
             "apt-get install << packages : m >>": [
                 {
                     "apt": {
-                        "name": "<< packages >>"
+                        "name": "<< packages >>",
+                        "force_apt_get": true
                     }
                 }
             ],
             "apt-get autoclean": [
                 {
                     "apt": {
-                        "autoclean": "yes"
+                        "autoclean": true,
+                        "force_apt_get": true
+                    }
+                }
+            ],
+            "apt-get clean": [
+                {
+                    "apt": {
+                        "clean": true,
+                        "force_apt_get": true
                     }
                 }
             ],
             "apt-get autoremove": [
                 {
                     "apt": {
-                        "autoremove": "yes"
+                        "autoremove": "yes",
+                        "force_apt_get": true
                     }
                 }
             ],
@@ -27,35 +38,40 @@
                 {
                     "apt": {
                         "name": "<< packages >>",
-                        "state": "build-dep"
+                        "state": "build-dep",
+                        "force_apt_get": true
                     }
                 }
             ],
             "apt-get dist-upgrade": [
                 {
                     "apt": {
-                        "upgrade": "dist"
+                        "upgrade": "dist",
+                        "force_apt_get": true
                     }
                 }
             ],
             "apt-get remove": [
                 {
                     "apt": {
-                        "state": "absent"
+                        "state": "absent",
+                        "force_apt_get": true
                     }
                 }
             ],
             "apt-get update": [
                 {
                     "apt": {
-                        "update_cache": "yes"
+                        "update_cache": "yes",
+                        "force_apt_get": true
                     }
                 }
             ],
             "apt-get upgrade": [
                 {
                     "apt": {
-                        "upgrade": "yes"
+                        "upgrade": "yes",
+                        "force_apt_get": true
                     }
                 }
             ]
@@ -416,31 +432,56 @@
             }
         },
         "opts_postprocess": {
+            "--force-yes": {
+                "apt": {
+                    "force": "yes"
+                }
+            },
+            "--allow-unauthenticated --allow-downgrades": {
+                "apt": {
+                    "force": "yes"
+                }
+            },
+            "--allow-change-held-packages": {
+                "apt": {
+                    "--allow-change-held-packages": "yes"
+                }
+            },
+            "--allow-downgrades": {
+                "apt": {
+                    "allow_downgrade": "yes"
+                }
+            },
             "--allow-unauthenticated": {
                 "apt": {
                     "allow_unauthenticated": "yes"
                 }
             },
-            "--assume-yes": {},
             "--autoremove": {
                 "apt": {
-                    "autoremove": "yes"
+                    "autoremove": true
                 }
             },
+            "--assume-yes": {},
             "--default-release << value >>": {
                 "apt": {
                     "default_release": "<< value >>"
                 }
             },
-            "--force-yes --allow-unauthenticated --allow-downgrades --allow-remove-essential --allow-change-held-packages": {
+            "-o Dpkg::Options::=<< value >>": {
                 "apt": {
-                    "force": "yes"
+                    "dpkg_options": "<< value >>,"
+                }
+            },
+            "--no-remove": {
+                "apt": {
+                    "fail_on_autoremove": true
                 }
             },
             "--list-cleanup": {},
             "--no-install-recommends": {
                 "apt": {
-                    "install_recommends": "no"
+                    "install_recommends": false
                 }
             },
             "--no-list-cleanup": {},
@@ -457,12 +498,7 @@
                 }
             },
             "--quiet": {},
-            "--verbose-versions": {},
-            "-o Dpkg::Options::=<< value >>": {
-                "apt": {
-                    "option": "<< value >>"
-                }
-            }
+            "--verbose-versions": {}
         }
     }
 }

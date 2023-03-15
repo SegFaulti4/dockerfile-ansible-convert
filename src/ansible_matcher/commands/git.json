@@ -1,0 +1,8 @@
+{
+    "git": {
+        "entry": "git <<parameters : m>>",
+        "opts": {},
+        "examples": {},
+        "opts_postprocess": {}
+    }
+}

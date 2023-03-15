@@ -1,6 +1,6 @@
 {
     "make": {
-        "entry": "make <<parameters : m>>",
+        "entry": "make <<parameters : mo>>",
         "opts": {
             "silent": {
                 "aliases": ["-s", "--silent", "--quiet"],
@@ -24,6 +24,21 @@
             }
         },
         "examples": {
+            "make": [
+                {
+                    "make": {
+                        "chdir": "<<cwd>>"
+                    }
+                }
+            ],
+            "make <<param : m>>=<<value : m>>": [
+                {
+                    "make": {
+                        "chdir": "<<cwd>>",
+                        "params": "{ <<param>>:<<value>>, }"
+                    }
+                }
+            ],
             "make <<target>>": [
                 {
                     "make": {
@@ -58,45 +73,14 @@
                         "params": "{ <<pre_param>>:<<pre_value>>, <<post_param>>:<<post_value>>, }"
                     }
                 }
-            ],
-
-            "make -C <<dir : p>> <<target>>": [
-                {
-                    "make": {
-                        "chdir": "<<dir>>",
-                        "target": "<<target>>"
-                    }
-                }
-            ],
-            "make -C <<dir : p>> <<target>> <<param : m>>=<<value : m>>": [
-                {
-                    "make": {
-                        "chdir": "<<dir>>",
-                        "target": "<<target>>",
-                        "params": "{ <<param>>:<<value>>, }"
-                    }
-                }
-            ],
-            "make -C <<dir : p>> <<param : m>>=<<value : m>> <<target>>": [
-                {
-                    "make": {
-                        "chdir": "<<dir>>",
-                        "target": "<<target>>",
-                        "params": "{ <<param>>:<<value>>, }"
-                    }
-                }
-            ],
-            "make -C <<dir : p>> <<pre_param : m>>=<<pre_value : m>> <<target>> <<post_param : m>>=<<post_value : m>>": [
-                {
-                    "make": {
-                        "chdir": "<<dir>>",
-                        "target": "<<target>>",
-                        "params": "{ <<pre_param>>:<<pre_value>>, <<post_param>>:<<post_value>>, }"
-                    }
-                }
             ]
         },
         "opts_postprocess": {
+            "-C <<dir : p>>": {
+                "make": {
+                    "chdir": "<<dir>>"
+                }
+            },
             "-j <<n_jobs>>": {
                 "make": {
                     "jobs": "<<n_jobs>>"

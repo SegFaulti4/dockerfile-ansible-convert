@@ -235,7 +235,7 @@ class TaskMatcher:
     @staticmethod
     def _merge_task_templates(into_templ: Dict[str, Any], from_templ: Dict[str, Any]) -> Dict[str, Any]:
         tmp = copy.deepcopy(into_templ)
-        return merge_dicts(tmp, from_templ)
+        return merge_dicts(tmp, from_templ, override=False)
 
     @staticmethod
     def _merge_postprocess_task_template(task_templates: List[Dict[str, Any]], pp_task_templ: Dict[str, Any]) \
@@ -245,7 +245,7 @@ class TaskMatcher:
             res.append(copy.deepcopy(templ))
             for module in pp_task_templ:
                 if module in templ:
-                    merge_dicts(res[-1], {module: pp_task_templ[module]})
+                    merge_dicts(res[-1], {module: pp_task_templ[module]}, override=True)
 
         return res
 

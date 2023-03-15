@@ -49,9 +49,16 @@ class JsonCommandConfigLoader:
             self._configs.extend(configs)
 
     def load(self, comm: CommandCallParts) -> Optional[CommandConfig]:
+        matches = []
         for config in self._configs:
             if JsonCommandConfigLoader._check_entry(config, comm):
-                return config
+                matches.append(config)
+
+        if len(matches) > 1:
+            globalLog.info(f"Found more that one config for {comm} - choosing one with the longest entry")
+            return max(matches, key=lambda x: len(x.entry))
+        elif matches:
+            return matches[0]
         return None
 
     @staticmethod

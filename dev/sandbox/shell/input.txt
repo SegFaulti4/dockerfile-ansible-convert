@@ -1,1 +1,1 @@
-(sudo dpkg -i /tmp/google-chrome-stable_current_amd64.deb || sudo apt-get -fy install)
+wget --no-check-certificate --header "Cookie: oraclelicense=accept-securebackup-cookie" http://download.oracle.com/otn-pub/java/jdk/7u67-b01/jdk-7u67-linux-x64.tar.gz
