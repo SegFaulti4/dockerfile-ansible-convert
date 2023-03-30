@@ -68,6 +68,9 @@ def filter_containerfiles_worker(args: Tuple[List[str], int, bool, str]) -> List
             except subprocess.TimeoutExpired:
                 success = False
                 build_stdout, build_stderr = "", "Time limit exceeded"
+            except UnicodeDecodeError:
+                success = False
+                build_stdout, build_stderr = "", "Unicode shenanigans"
             if success:
                 res.append(path)
 
@@ -99,6 +102,7 @@ def filter_containerfiles(paths: List[str], n_proc: int, log_dir: str) -> List[s
         per_proc = pool.map(filter_containerfiles_worker,
                             [(list(span), idx, echo, log_dir) for span, idx in zip(spans, range(n_proc))])
         res = [good_run for p in per_proc for good_run in p]
+    # res = filter_containerfiles_worker((paths, 0, echo, log_dir))
     return res
 
 
@@ -145,13 +149,16 @@ def main():
     # collect_containerfiles()
 
     pulped_dir = os.path.join(UBUNTU_DATA_DIR, "pulped")
-    setup_dir(pulped_dir)
 
     in_dir = pulped_dir
     # in_dir = UBUNTU_FILES_DIR
     out_dir = UBUNTU_FILTERED_FILES_DIR
     log_dir = UBUNTU_FILTERED_FILES_LOG_DIR
     n_proc = 4
+
+    setup_dir(pulped_dir)
+    setup_dir(out_dir)
+    setup_dir(log_dir)
 
     # pulpify_containerfiles(filenames_from_dir(UBUNTU_FILES_DIR), UBUNTU_FILES_DIR, pulped_dir)
     filter_and_copy_containerfiles(in_dir=in_dir, out_dir=out_dir, log_dir=log_dir, n_proc=n_proc)

@@ -1,5 +1,6 @@
 import logging
 import csv
+import os
 from collections import defaultdict
 from tabulate import tabulate
 
@@ -162,9 +163,9 @@ def main():
     # commands_file = UBUNTU_MINED_SHELL_COMMANDS_FILE
     # collect_and_print_task_matcher_stats(commands_file)
 
-    # files_dir = UBUNTU_FILES_DIR
-    # stats_dir = UBUNTU_STATS_DIR
-    # collect_and_save_containerfile_stats(files_dir, stats_dir)
+    files_dir = UBUNTU_FILTERED_FILES_DIR
+    stats_dir = os.path.join(UBUNTU_DATA_DIR, "filtered_files_stats")
+    collect_and_save_containerfile_stats(files_dir, stats_dir)
 
 
 if __name__ == "__main__":

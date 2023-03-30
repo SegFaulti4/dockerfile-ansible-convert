@@ -45,7 +45,7 @@
             "key": {
                 "aliases": ["-K", "--key"],
                 "arg_required": true,
-                "many_args": false
+                "many_args": true
             },
             "no log init": {
                 "aliases": ["-l", "--no-log-init"],
@@ -93,7 +93,104 @@
                 "many_args": false
             }
         },
-        "examples": {},
-        "opts_postprocess": {}
+        "examples": {
+            "useradd <<name>>": [
+                {
+                    "user": {
+                        "state": "present",
+                        "name": "{{ username }}",
+                        "group": "{{ username }}",
+                        "create_home": false
+                    },
+                    "vars": {
+                        "username": "<<name>>"
+                    }
+                }
+            ],
+            "useradd --no-user-group <<name>>": [
+                {
+                    "user": {
+                        "state": "present",
+                        "name": "{{ username }}",
+                        "create_home": false
+                    },
+                    "vars": {
+                        "username": "<<name>>"
+                    }
+                }
+            ]
+        },
+        "opts_postprocess": {
+            "--base-dir <<dir : p>>": {
+                "user": {
+                    "home": "{{ (<<dir>>, username) | path_join }}"
+                }
+            },
+            "--comment <<comment>>": {
+                "user": {
+                    "comment": "<<comment>>"
+                }
+            },
+            "--create-home": {
+                "user": {
+                    "create_home": true
+                }
+            },
+            "--home-dir <<dir : p>>": {
+                "user": {
+                    "home": "<<dir>>"
+                }
+            },
+            "--gid <<group>>": {
+                "user": {
+                    "group": "<<group>>"
+                }
+            },
+            "--groups <<groups>>": {
+                "user": {
+                    "groups": "<<groups>>"
+                }
+            },
+            "--skel <<dir : p>>": {
+                "user": {
+                    "skeleton": "<<dir>>"
+                }
+            },
+            "--no-create-home": {
+                "user": {
+                    "create_home": false
+                }
+            },
+            "--system": {
+                "user": {
+                    "system": true
+                }
+            },
+            "--shell <<shell>>": {
+                "user": {
+                    "shell": "<<shell>>"
+                }
+            },
+            "--user-group": {
+                "user": {
+                    "group": "{{ username }}"
+                }
+            },
+            "--non-unique": {
+                "user": {
+                    "non_unique": true
+                }
+            },
+            "--uid <<uid>>": {
+                "user": {
+                    "uid": "<<uid>>"
+                }
+            },
+            "--password <<password>>": {
+                "user": {
+                    "password": "<<password>>"
+                }
+            }
+        }
     }
 }
