@@ -1,8 +1,135 @@
 {
     "ln": {
         "entry": "ln <<parameters : m>>",
-        "opts": {},
-        "examples": {},
-        "opts_postprocess": {}
+        "opts": {
+            "force": {
+                "arg_required": false,
+                "many_args": false,
+                "aliases": ["-f", "--force"]
+            },
+            "symbolic": {
+                "arg_required": false,
+                "many_args": false,
+                "aliases": ["-s", "--symbolic"]
+            },
+            "no dereference": {
+                "arg_required": false,
+                "many_args": false,
+                "aliases": ["-n", "--no-dereference"]
+            },
+            "directory": {
+                "arg_required": false,
+                "many_args": false,
+                "aliases": ["-d", "-F", "--directory"]
+            },
+            "no target directory": {
+                "arg_required": false,
+                "many_args": false,
+                "aliases": ["-T", "--no-target-directory"]
+            },
+            "verbose": {
+                "arg_required": false,
+                "many_args": false,
+                "aliases": ["-v", "--verbose"]
+            }
+        },
+        "examples": {
+            "ln -s <<src>> <path>>": [
+                {
+                    "shell": "ls -1d <<src>>",
+                    "chdir": "<<cwd>>",
+                    "register": "ls_src_reg"
+                },
+                {
+                    "shell": "ls -1d <<path>>",
+                    "chdir": "<<cwd>>",
+                    "register": "ls_path_reg"
+                },
+                {
+                    "file": {
+                        "state": "link",
+                        "src": "{{ ls_src_reg.stdout_lines[-1] }}",
+                        "path": "{{ ls_path_reg.stdout_lines[-1] }}"
+                    }
+                }
+            ],
+            "ln -s <<globs : m>>": [
+                {
+                    "shell": "ls -1d <<globs>>",
+                    "chdir": "<<cwd>>",
+                    "register": "ls_reg"
+                },
+                {
+                    "file": {
+                        "state": "link",
+                        "src": "{{ src }}",
+                        "path": "{{ ( <<cwd>>, src | basename ) | path_join }}"
+                    },
+                    "vars": {
+                        "src": "{{ ls_reg.stdout_lines[-1] }}"
+                    },
+                    "when": "ls_reg.stdout_lines | length == 1"
+                },
+                {
+                    "block": [
+                        {
+                            "stat": {
+                                "follow": true,
+                                "path": "{{ ls_reg.stdout_lines[-1] }}"
+                            },
+                            "register": "st_reg"
+                        },
+                        {
+                            "file": {
+                                "state": "link",
+                                "src": "{{ item }}",
+                                "path": "{{ ( dir, item | basename ) | path_join }}"
+                            },
+                            "loop": "{{ ls_reg.stdout_lines[:-1] }}",
+                            "vars": {
+                                "dir": "{{ ls_reg.stdout_lines[-1] }}"
+                            },
+                            "when": "st_reg.stat.isdir is defined and st_reg.stat.isdir"
+                        },
+                        {
+                            "block": [
+                                {
+                                    "file": {
+                                        "state": "link",
+                                        "src": "{{ ls_reg.stdout_lines[0] }}",
+                                        "path": "{{ ls_reg.stdout_lines[-1] }}"
+                                    },
+                                    "when": "ls_reg.stdout_lines | length == 2"
+                                },
+                                {
+                                    "fail": {
+                                        "msg": "Failed to create symlink - last item is not a directory"
+                                    },
+                                    "when": "ls_reg.stdout_lines | length > 2"
+                                }
+                            ],
+                            "when": "st_reg.stat.isdir is undefined and st_reg.stat.isdir == False"
+                        }
+                    ],
+                    "when": "ls_reg.stdout_lines | length > 1"
+                }
+            ]
+        },
+        "opts_postprocess": {
+            "--force": {
+                "file": {
+                    "force": true
+                }
+            },
+            "--no-dereference": {
+                "file": {
+                    "follow": false
+                },
+                "stat": {
+                    "follow": false
+                }
+            },
+            "--verbose": {}
+        }
     }
 }

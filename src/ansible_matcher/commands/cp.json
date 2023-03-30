@@ -1,8 +1,139 @@
 {
     "cp": {
         "entry": "cp <<parameters : m>>",
-        "opts": {},
-        "examples": {},
-        "opts_postprocess": {}
+        "opts": {
+            "archive": {
+                "aliases": ["--archive", "-a"],
+                "arg_required": false,
+                "many_args": false
+            },
+            "force": {
+                "arg_required": false,
+                "many_args": false,
+                "aliases": ["-f",  "--force"]
+            },
+            "recursive": {
+                "aliases": ["--recursive", "-R", "-r"],
+                "arg_required": false,
+                "many_args": false
+            },
+            "verbose": {
+                "aliases": [ "--verbose",  "-v"],
+                "arg_required": false,
+                "many_args": false
+            },
+            "backup": {
+                "aliases": [ "--backup"],
+                "arg_required": false,
+                "many_args": false
+            },
+            "no dereference reserve links": {
+                "aliases": [ "-d"],
+                "arg_required": false,
+                "many_args": false
+            },
+            "no clobber": {
+                "aliases": ["-n", "--no-clobber"],
+                "arg_required": false,
+                "many_args": false
+            },
+            "preserve mode ownership timestamps": {
+                "aliases": ["-p"],
+                "arg_required": false,
+                "many_args": false
+            },
+            "dereference": {
+                "aliases": ["-L", "--dereference"],
+                "arg_required": false,
+                "many_args": false
+            },
+            "symbolic": {
+                "arg_required": false,
+                "many_args": false,
+                "aliases": ["-s", "--symbolic-link"]
+            },
+            "target directory": {
+                "arg_required": true,
+                "many_args": false,
+                "aliases": ["-t", "--target-directory"]
+            }
+        },
+        "examples": {
+            "cp -s <<globs : m>>": [
+                {
+                    "shell": "ls -1d <<globs>>",
+                    "chdir": "<<cwd>>",
+                    "register": "ls_reg"
+                },
+                {
+                    "fail": {
+                        "msg": "Failed to copy file - destination is required"
+                    },
+                    "when": "ls_reg.stdout_lines | length <= 1"
+                },
+                {
+                    "block": [
+                        {
+                            "stat": {
+                                "follow": true,
+                                "path": "{{ ls_reg.stdout_lines[-1] }}"
+                            },
+                            "register": "st_reg"
+                        },
+                        {
+                            "copy": {
+                                "src": "{{ item | regex_replace('/$') }}",
+                                "path": "{{ ( dir, item | basename ) | path_join }}",
+                                "force": false
+                            },
+                            "loop": "{{ ls_reg.stdout_lines[:-1] }}",
+                            "vars": {
+                                "dir": "{{ ls_reg.stdout_lines[-1] }}"
+                            },
+                            "when": "st_reg.stat.isdir is defined and st_reg.stat.isdir"
+                        },
+                        {
+                            "block": [
+                                {
+                                    "copy": {
+                                        "src": "{{ ls_reg.stdout_lines[0] | regex_replace('/$') }}",
+                                        "path": "{{ ls_reg.stdout_lines[-1] }}",
+                                        "force": false
+                                    },
+                                    "when": "ls_reg.stdout_lines | length == 2"
+                                },
+                                {
+                                    "fail": {
+                                        "msg": "Failed to create symlink - last item is not a directory"
+                                    },
+                                    "when": "ls_reg.stdout_lines | length > 2"
+                                }
+                            ],
+                            "when": "st_reg.stat.isdir is undefined and st_reg.stat.isdir == False"
+                        }
+                    ],
+                    "when": "ls_reg.stdout_lines | length > 1"
+                }
+            ]
+        },
+        "opts_postprocess": {
+            "--force": {
+                "copy": {
+                    "force": true
+                }
+            },
+            "--recursive": {},
+            "--verbose": {},
+            "--backup": {
+                "copy": {
+                    "backup": true
+                }
+            },
+            "--dereference": {
+                "copy": {
+                    "follow": true
+                }
+            }
+        }
     }
 }

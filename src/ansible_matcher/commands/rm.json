@@ -68,7 +68,7 @@
                         "state": "absent",
                         "path": "{{ item }}"
                     },
-                    "loop": "{{ find_reg.stdout_lines }}"
+                    "loop": "{{ ls_reg.stdout_lines }}"
                 }
             ]
         }

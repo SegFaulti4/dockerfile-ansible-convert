@@ -1,8 +1,132 @@
 {
     "apt": {
         "entry": "apt <<parameters : m>>",
-        "opts": {},
-        "examples": {},
-        "opts_postprocess": {}
+        "opts": {
+            "allow-unauthenticated": {
+                "aliases": ["--allow-unauthenticated"],
+                "arg_required": false,
+                "many_args": false
+            },
+            "assume-yes": {
+                "aliases": ["-y", "--yes", "--assume-yes"],
+                "arg_required": false,
+                "many_args": false
+            },
+            "autoremove": {
+                "aliases": ["--auto-remove", "--autoremove"],
+                "arg_required": false,
+                "many_args": false
+            },
+            "fix-broken": {
+                "aliases": ["-f", "--fix-broken"],
+                "arg_required": false,
+                "many_args": false
+            },
+            "fix-missing": {
+                "aliases": ["-m", "--ignore-missing", "--fix-missing"],
+                "arg_required": false,
+                "many_args": false
+            },
+            "no-install-recommends": {
+                "aliases": ["--no-install-recommends"],
+                "arg_required": false,
+                "many_args": false
+            },
+            "option": {
+                "aliases": [ "-o",  "--option"],
+                "arg_required": true,
+                "many_args": true
+            },
+            "purge": {
+                "aliases": ["--purge"],
+                "arg_required": false,
+                "many_args": false
+            },
+            "quiet": {
+                "aliases": ["-q", "--quiet"],
+                "arg_required": false,
+                "many_args": false
+            }
+        },
+        "examples": {
+            "apt install <<packages : m>>": [
+                {
+                    "apt": {
+                        "name": ["<< packages >>"],
+                        "force_apt_get": true
+                    }
+                }
+            ],
+            "apt update": [
+                {
+                    "apt": {
+                        "update_cache": "yes",
+                        "force_apt_get": true
+                    }
+                }
+            ],
+            "apt autoremove": [
+                {
+                    "apt": {
+                        "autoremove": "yes",
+                        "force_apt_get": true
+                    }
+                }
+            ],
+            "apt clean": [
+                {
+                    "apt": {
+                        "clean": true,
+                        "force_apt_get": true
+                    }
+                }
+            ],
+            "apt upgrade": [
+                {
+                    "apt": {
+                        "upgrade": "yes",
+                        "force_apt_get": true
+                    }
+                }
+            ],
+            "apt remove <<pkg :m>>": [
+                {
+                    "apt": {
+                        "name":["<<pkg>>"],
+                        "state": "absent",
+                        "force_apt_get": true
+                    }
+                }
+            ]
+        },
+        "opts_postprocess": {
+            "--allow-unauthenticated": {
+                "apt": {
+                    "allow_unauthenticated": "yes"
+                }
+            },
+            "--assume-yes": {},
+            "--autoremove": {
+                "apt": {
+                    "autoremove": true
+                }
+            },
+            "--no-install-recommends": {
+                "apt": {
+                    "install_recommends": false
+                }
+            },
+            "-o Dpkg::Options::=<< value >>": {
+                "apt": {
+                    "dpkg_options": "<< value >>,"
+                }
+            },
+            "--purge": {
+                "apt": {
+                    "purge": "yes"
+                }
+            },
+            "--quiet": {}
+        }
     }
 }

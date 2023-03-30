@@ -229,7 +229,6 @@
                     "state": "latest"
                 }
             },
-
             "--build <<build_arg>>": {
                 "pip": {
                     "extra_args": "--build <<build_arg>> "
@@ -270,9 +269,9 @@
                     "extra_args": "--index-url <<index_url_arg>> "
                 }
             },
-            "--no-binary <<no_binary_arg>>": {
+            "--no-binary <<no_binary_arg : m>>": {
                 "pip": {
-                    "extra_args": "--no-binary <<no_binary_arg>> "
+                    "extra_args": "--no-binary=<<no_binary_arg>> "
                 }
             },
             "--only-binary <<only_binary_arg>>": {

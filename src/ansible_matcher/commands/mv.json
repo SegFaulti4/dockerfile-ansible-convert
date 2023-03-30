@@ -1,8 +1,109 @@
 {
     "mv": {
         "entry": "mv <<parameters : m>>",
-        "opts": {},
-        "examples": {},
-        "opts_postprocess": {}
+        "opts": {
+            "force": {
+                "arg_required": false,
+                "many_args": false,
+                "aliases": ["-f",  "--force"]
+            },
+            "verbose": {
+                "aliases": [ "--verbose",  "-v"],
+                "arg_required": false,
+                "many_args": false
+            },
+            "no clobber": {
+                "aliases": ["-n", "--no-clobber"],
+                "arg_required": false,
+                "many_args": false
+            },
+            "target directory": {
+                "arg_required": true,
+                "many_args": false,
+                "aliases": ["-t", "--target-directory"]
+            }
+        },
+        "examples": {
+            "mv -s <<globs : m>>": [
+                {
+                    "shell": "ls -1d <<globs>>",
+                    "chdir": "<<cwd>>",
+                    "register": "ls_reg"
+                },
+                {
+                    "fail": {
+                        "msg": "Failed to copy file - destination is required"
+                    },
+                    "when": "ls_reg.stdout_lines | length <= 1"
+                },
+                {
+                    "block": [
+                        {
+                            "stat": {
+                                "follow": true,
+                                "path": "{{ ls_reg.stdout_lines[-1] }}"
+                            },
+                            "register": "st_reg"
+                        },
+                        {
+                            "block": [
+                                {
+                                    "copy": {
+                                        "src": "{{ item | regex_replace('/$') }}",
+                                        "path": "{{ ( dir, item | basename ) | path_join }}",
+                                        "force": false
+                                    }
+                                },
+                                {
+                                    "file": {
+                                        "path": "{{ item | regex_replace('/$') }}",
+                                        "state": "absent"
+                                    }
+                                }
+                            ],
+                            "loop": "{{ ls_reg.stdout_lines[:-1] }}",
+                            "vars": {
+                                "dir": "{{ ls_reg.stdout_lines[-1] }}"
+                            },
+                            "when": "st_reg.stat.isdir is defined and st_reg.stat.isdir"
+                        },
+                        {
+                            "block": [
+                                {
+                                    "copy": {
+                                        "src": "{{ ls_reg.stdout_lines[0] | regex_replace('/$') }}",
+                                        "path": "{{ ls_reg.stdout_lines[-1] }}",
+                                        "force": false
+                                    },
+                                    "when": "ls_reg.stdout_lines | length == 2"
+                                },
+                                {
+                                    "file": {
+                                        "path": "{{ ls_reg.stdout_lines[0] | regex_replace('/$') }}",
+                                        "state": "absent"
+                                    }
+                                },
+                                {
+                                    "fail": {
+                                        "msg": "Failed to create symlink - last item is not a directory"
+                                    },
+                                    "when": "ls_reg.stdout_lines | length > 2"
+                                }
+                            ],
+                            "when": "st_reg.stat.isdir is undefined and st_reg.stat.isdir == False"
+                        }
+                    ],
+                    "when": "ls_reg.stdout_lines | length > 1"
+                }
+            ]
+        },
+        "opts_postprocess": {
+            "--force": {
+                "copy": {
+                    "force": true
+                }
+            },
+            "--verbose": {}
+        }
     }
 }

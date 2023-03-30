@@ -1,7 +1,98 @@
 {
     "useradd": {
         "entry": "useradd <<parameters : m>>",
-        "opts": {},
+        "opts": {
+            "base dir": {
+                "aliases": ["-b", "--base-dir"],
+                "arg_required": true,
+                "many_args": false
+            },
+            "comment": {
+                "aliases": ["-c", "--comment"],
+                "arg_required": true,
+                "many_args": false
+            },
+            "create home": {
+                "aliases": ["-m", "--create-home"],
+                "arg_required": false,
+                "many_args": false
+            },
+            "home dir":{
+                "aliases": ["-d", "--home-dir", "--home"],
+                "arg_required": true,
+                "many_args": false
+            },
+            "default": {
+                "aliases": ["-D", "--defaults"],
+                "arg_required": false,
+                "many_args": false
+            },
+            "primary group": {
+                "aliases": ["-g", "--gid"],
+                "arg_required": true,
+                "many_args": false
+            },
+            "supplementary groups": {
+                "aliases": ["-G", "--groups"],
+                "arg_required": true,
+                "many_args": false
+            },
+            "skeleton directory": {
+                "aliases": ["-k", "--skel"],
+                "arg_required": true,
+                "many_args": false
+            },
+            "key": {
+                "aliases": ["-K", "--key"],
+                "arg_required": true,
+                "many_args": false
+            },
+            "no log init": {
+                "aliases": ["-l", "--no-log-init"],
+                "arg_required": false,
+                "many_args": false
+            },
+            "no create home": {
+                "aliases": ["-M", "--no-create-home"],
+                "arg_required": false,
+                "many_args": false
+            },
+            "system": {
+                "aliases": ["-r", "--system"],
+                "arg_required": false,
+                "many_args": false
+            },
+            "shell": {
+                "aliases": ["-s", "--shell"],
+                "arg_required": true,
+                "many_args": false
+            },
+            "user group": {
+                "aliases": ["-U", "--user-group"],
+                "arg_required": false,
+                "many_args": false
+            },
+            "no user group": {
+                "aliases": ["-N", "--no-user-group"],
+                "arg_required": false,
+                "many_args": false
+            },
+            "non unique": {
+                "aliases": ["-o", "--non-unique"],
+                "arg_required": false,
+                "many_args": false
+            },
+            "uid": {
+                "aliases": ["-u", "--uid"],
+                "arg_required": true,
+                "many_args": false
+            },
+            "password": {
+                "aliases": ["-p", "--password"],
+                "arg_required": true,
+                "many_args": false
+            }
+        },
         "examples": {},
         "opts_postprocess": {}
     }

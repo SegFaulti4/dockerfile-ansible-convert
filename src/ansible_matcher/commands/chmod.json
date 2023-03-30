@@ -72,21 +72,17 @@
             }
         },
         "examples": {
-            "chmod <<mode>> <<path : p>>": [
+            "chmod <<mode>> <<files : m>>": [
                 {
-                    "file": {
-                        "path": "<<path>>",
-                        "mode": "<<mode>>"
-                    }
-                }
-            ],
-            "chmod <<mode>> <<path : mp>>": [
+                    "shell": "ls -1d <<files>>",
+                    "register": "ls_reg"
+                },
                 {
                     "file": {
                         "path": "{{ item }}",
                         "mode": "<<mode>>"
                     },
-                    "loop": "<<path>>"
+                    "loop": "{{ ls_reg.stdout_lines }}"
                 }
             ]
         },
