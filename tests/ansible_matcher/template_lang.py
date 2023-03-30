@@ -2,6 +2,8 @@ import unittest
 import string
 import logging
 
+from src.shell.bashlex.main import BashlexShellParser
+
 from src.ansible_matcher.template_lang import *
 from src.log import globalLog
 
@@ -79,9 +81,9 @@ class TestTemplateConstructor(unittest.TestCase):
             field = t[0].parts[0]
             globalLog.info(field)
             for k, v in av.items():
-                globalLog.info(k, v)
+                globalLog.info("%s %s", k, v)
                 assert getattr(field, k) == v
-            globalLog.info()
+            globalLog.info("")
 
     def test_template_part(self):
         rb = self.RB
@@ -128,14 +130,14 @@ class TestTemplateConstructor(unittest.TestCase):
 
             part: TemplatePart = t[0]
             globalLog.info(part)
-            globalLog.info()
+            globalLog.info("")
             assert part.value == av["value"]
             for f, af, ar in zip(part.parts, av["parts"], afr):
-                globalLog.info(f, af, ar)
+                globalLog.info("%s %s %s", f, af, ar)
                 assert f.name == af["name"]
                 assert f.pos == af["pos"]
                 assert part.value[f.pos[0]:f.pos[1]] == ar
-            globalLog.info()
+            globalLog.info("")
 
     def test_command_template(self):
         rb = self.RB
@@ -149,13 +151,73 @@ class TestTemplateConstructor(unittest.TestCase):
             globalLog.info(t)
             assert t is None
 
+        templates_str = [
+            "a "  # this one tests template postfix
+        ]
+        templates = [self.templ_constr.from_str(t) for t in templates_str]
+
+        assert_values = [
+            [{"value": "a", "parts": []}, {"value": "", "parts": []}]
+        ]
+        for t, av, in zip(templates, assert_values):
+            assert isinstance(t, list)
+            assert len(t) == len(av)
+            assert all(isinstance(p, TemplatePart) for p in t)
+
+            for p, pav in zip(t, av):
+                assert p.value == pav["value"]
+                assert len(p.parts) == len(pav["parts"])
+                assert all(isinstance(f, TemplateField) for f in p.parts)
+
 
 class TestTemplateTweaks(unittest.TestCase):
     pass
 
 
 class TestCommandTemplateMatcher(unittest.TestCase):
-    pass
+
+    """
+    что хотелось бы отловить в этих тестах:
+    1) матчинг совпадающих строк
+    2) матчинг строк с простыми полями
+    3) матчинг полей с флагами
+    4) неполное совпадение
+    5) мерджинг двух результатов
+
+    """
+
+    def setUp(self):
+        globalLog.setLevel(logging.INFO)
+        self.templ_constr = TemplateConstructor()
+        self.shell_parser = BashlexShellParser()
+
+    def test_constants(self):
+        # basic test
+        template_str = "a"
+        template = self.templ_constr.from_str(template_str)
+        matcher = CommandTemplateMatcher(template=template)
+
+        shell_str = "a"
+        words = self.shell_parser.parse_as_script(shell_str).parts[0].parts
+
+        match = matcher.match(words)
+        full_match = matcher.full_match(words)
+
+        print(words)
+        pass
+
+    def test_basic_fields(self):
+        template = self.templ_constr.from_str("<<b>>")
+        pass
+
+    def test_field_options(self):
+        pass
+
+    def test_non_full_match(self):
+        pass
+
+    def test_results_merging(self):
+        pass
 
 
 class TestTemplateFiller(unittest.TestCase):

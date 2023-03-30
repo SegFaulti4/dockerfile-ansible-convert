@@ -1,4 +1,5 @@
 import logging
+import yaml
 
 from src.ansible_matcher.main import *
 from dev.sandbox.shell.main import SandboxShellParser
@@ -12,7 +13,7 @@ def print_header(s):
 
 
 if __name__ == "__main__":
-    globalLog.setLevel(logging.DEBUG)
+    globalLog.setLevel(logging.INFO)
     shell_parser = SandboxShellParser()
     task_matcher = SandboxTaskMatcher()
     cwd = "/"

@@ -76,21 +76,31 @@ class TemplateConstructor(CommandTemplateParserVisitor):
 
     def visitCommand_template(self, ctx: CommandTemplateParser.Command_templateContext) \
             -> Optional[CommandTemplateParts]:
-        obj_contexts = ctx.template_part()
-        if obj_contexts is None or not obj_contexts:
+        parts = ctx.template_part()
+        if parts is None or not parts:
             return None
 
         objects = []
-        for obj_ctx in obj_contexts:
-            if isinstance(obj_ctx, CommandTemplateParser.Template_partContext):
-                obj = self.visitTemplate_part(obj_ctx)
-                if obj is None:
-                    return None
-                objects.append(obj)
+        for part_ctx in parts:
+            if isinstance(part_ctx, CommandTemplateParser.Template_partContext):
+                obj = self.visitTemplate_part(part_ctx)
             else:
+                obj = None
+            if obj is None:
                 return None
+            objects.append(obj)
+
+        prefix = ctx.template_postfix()
+        if prefix is not None:
+            obj = self.visitTemplate_postfix(prefix)
+            if obj is None:
+                return None
+            objects.append(obj)
 
         return objects
+
+    def visitTemplate_postfix(self, ctx: CommandTemplateParser.Template_postfixContext) -> Optional[TemplatePart]:
+        return None if ctx.SPACE() is None else TemplatePart(parts=[], value="")
 
     def visitTemplate_part(self, ctx: CommandTemplateParser.Template_partContext) -> Optional[TemplatePart]:
         if ctx.children is None or not ctx.children or \

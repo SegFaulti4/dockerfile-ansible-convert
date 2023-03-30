@@ -2,7 +2,7 @@ import dataclasses
 import json
 import glob
 import os
-from typing import Optional, Dict
+from typing import Optional, Dict, Union
 
 from src.shell.main import *
 from src.ansible_matcher.template_lang import \
@@ -87,18 +87,29 @@ class JsonCommandConfigLoader:
             def __init__(self):
                 self.success = True
 
-            def __call__(self, s: str):
+            def __call__(self, s: Union[str, List[str]]):
                 if not self.success:
                     return ""
 
-                new_s = TemplateConstructor().from_str(s)
-                if new_s is None:
+                if isinstance(s, str):
+                    new_val = TemplateConstructor().from_str(s)
+                elif isinstance(s, list) and all(isinstance(i, str) for i in s):
+                    new_val = [TemplateConstructor().from_str(i) for i in s]
+                    if any(i is None for i in new_val):
+                        new_val = None
+                else:
+                    new_val = None
+
+                if new_val is None:
                     self.success = False
                     return ""
-                return new_s
+                return new_val
 
         templater = TaskTemplater()
-        task_templ = visit_dict(task, lambda x: isinstance(x, str), templater)
+        task_templ = visit_dict(task,
+                                lambda x: isinstance(x, str) or
+                                isinstance(x, list) and all(isinstance(i, str) for i in x),
+                                templater)
 
         if not templater.success:
             globalLog.warn("Failed to create task template")
@@ -181,16 +192,19 @@ class JsonCommandConfigLoader:
     def _load_opts_postprocess(opts_post: Optional[Dict[str, Dict]], name: str) \
             -> Optional[List[Tuple[CommandTemplateParts, Dict]]]:
         if opts_post is None or not isinstance(opts_post, dict):
-            globalLog.warn(f"Command config '{JsonCommandConfigLoader.OPTS_POSTPROCESS}' is not set properly for {name}")
+            globalLog.warn(
+                f"Command config '{JsonCommandConfigLoader.OPTS_POSTPROCESS}' is not set properly for {name}")
             return None
 
         res = []
         for opts, task in opts_post.items():
             if not isinstance(opts, str):
-                globalLog.warn(f"Wrong type of opts template in '{JsonCommandConfigLoader.OPTS_POSTPROCESS}' for {name}")
+                globalLog.warn(
+                    f"Wrong type of opts template in '{JsonCommandConfigLoader.OPTS_POSTPROCESS}' for {name}")
                 continue
             if not isinstance(task, dict):
-                globalLog.warn(f"Wrong type of task template in '{JsonCommandConfigLoader.OPTS_POSTPROCESS}' for {name}")
+                globalLog.warn(
+                    f"Wrong type of task template in '{JsonCommandConfigLoader.OPTS_POSTPROCESS}' for {name}")
                 continue
 
             opts_templ = TemplateConstructor().from_str(opts)

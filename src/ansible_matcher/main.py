@@ -245,7 +245,7 @@ class TaskMatcher:
             res.append(copy.deepcopy(templ))
             for module in pp_task_templ:
                 if module in templ:
-                    merge_dicts(res[-1], {module: pp_task_templ[module]}, override=True)
+                    merge_dicts(res[-1][module], pp_task_templ[module], override=True)
 
         return res
 

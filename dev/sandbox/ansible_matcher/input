@@ -1,1 +1,1 @@
-make install -j12
+apt-get install -y --no-install-recommends gcc libc6-dev ca-certificates gcc-mips-linux-gnu libc6-dev-mips-cross binfmt-support qemu-user-static qemu-system-mips
