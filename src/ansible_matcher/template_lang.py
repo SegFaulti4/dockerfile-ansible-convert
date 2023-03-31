@@ -73,6 +73,7 @@ class TemplateConstructor(CommandTemplateParserVisitor):
                 or templ.stop.stop != len(template_str) - 1:
             return None
         return self.visitCommand_template(templ)
+        # TODO: check that all duplicate fields have same options
 
     def visitCommand_template(self, ctx: CommandTemplateParser.Command_templateContext) \
             -> Optional[CommandTemplateParts]:
@@ -249,12 +250,13 @@ class CommandTemplateMatcher:
         return fr"(?P<field_{template_field.name}>[^{CommandTemplateMatcher._RE_SHELL_WORD_SEP}]*)"
 
     @staticmethod
-    def _gen_template_part_regex(template_part: TemplatePart) -> Tuple[str, List[TemplateField], bool]:
+    def _gen_template_part_regex(template_part: TemplatePart) -> Tuple[str, List[TemplateField], bool, bool]:
         subpart_list = template_part.subpart_list()
         res_str = ""
         res_list = []
 
         many_flag = False
+        optional_flag = False
 
         for subpart in subpart_list:
             if isinstance(subpart, str):
@@ -263,8 +265,9 @@ class CommandTemplateMatcher:
                 res_str += CommandTemplateMatcher._gen_template_field_regex(subpart)
                 res_list.append(subpart)
                 many_flag = many_flag or subpart.spec_many
+                optional_flag = optional_flag or subpart.spec_optional
 
-        return res_str, res_list, many_flag
+        return res_str, res_list, many_flag, optional_flag
 
     @staticmethod
     def _gen_command_template_regex(command_template: CommandTemplateParts) -> Tuple[str, List[TemplateField]]:
@@ -272,16 +275,15 @@ class CommandTemplateMatcher:
         res_str = ""
         res_list = []
 
-        for part in command_template[:-1]:
-            regex_str, field_list, many_flag = CommandTemplateMatcher._gen_template_part_regex(part)
+        for part in command_template:
+            regex_str, field_list, many_flag, optional_flag = CommandTemplateMatcher._gen_template_part_regex(part)
             part_regex = f"{regex_str}{sep}"
 
-            res_str += f"({part_regex})*" if many_flag else part_regex
-            res_list.extend(field_list)
+            part_regex = f"({part_regex})*" if many_flag else part_regex
+            part_regex = f"({part_regex})?" if optional_flag else part_regex
 
-        last_str, last_list, last_flag = CommandTemplateMatcher._gen_template_part_regex(command_template[-1])
-        res_str += f"({last_str}{sep})*({last_str})?" if last_flag else last_str
-        res_list.extend(last_list)
+            res_str += part_regex
+            res_list.extend(field_list)
 
         return res_str, res_list
 
@@ -306,7 +308,7 @@ class CommandTemplateMatcher:
 
         return CommandTemplateMatcher._RE_SHELL_WORD_SEP.join(
             prep[0] for prep in preprocessed
-        ), [
+        ) + CommandTemplateMatcher._RE_SHELL_WORD_SEP, [
             w for prep in preprocessed for w in prep[1]
         ]
 
