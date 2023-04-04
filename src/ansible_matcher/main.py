@@ -127,7 +127,10 @@ class TaskMatcher:
         if postprocess_res is None:
             return None
         opt_fields, postprocess_task_template = postprocess_res
+
         fields_dict = CommandTemplateMatcher.merge_match_results(parameter_fields, opt_fields)
+        if fields_dict is None:
+            return None
 
         # needed for referencing current working directory and current user
         fields_dict = self._merge_special_fields(fields_dict)
@@ -161,6 +164,9 @@ class TaskMatcher:
         opt_fields, unmatched_opts = opt_match
 
         fields_dict = CommandTemplateMatcher.merge_match_results(param_fields, opt_fields)
+        if fields_dict is None:
+            return None
+
         return fields_dict, unmatched_opts
 
     def match_opts(self, call_opts: Dict[str, CommandCallParts], templ_opts: Dict[str, CommandTemplateParts]) \
@@ -187,6 +193,9 @@ class TaskMatcher:
             tmp_fields, unmatched = opt_match
 
             opt_fields = CommandTemplateMatcher.merge_match_results(opt_fields, tmp_fields)
+            if opt_fields is None:
+                return None
+
             if not unmatched:
                 del unmatched_opts[k]
             else:
@@ -210,6 +219,9 @@ class TaskMatcher:
             opt_fields, unmatched_opts = opt_match
 
             fields_dict = CommandTemplateMatcher.merge_match_results(fields_dict, opt_fields)
+            if fields_dict is None:
+                return None
+
             opts_dict = unmatched_opts
             task_template = TaskMatcher._merge_task_templates(task_template, opt_task_template)
 

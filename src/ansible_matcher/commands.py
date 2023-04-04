@@ -12,6 +12,7 @@ from src.ansible_matcher.opts_extraction import CommandOpt
 from src.ansible_matcher.utils import visit_dict
 
 from src.log import globalLog
+from src.exception import CommandConfigLoaderException
 
 
 @dataclasses.dataclass
@@ -40,12 +41,16 @@ class JsonCommandConfigLoader:
     OPT_ARG_REQUIRED = "arg_required"
     OPT_MANY_ARGS = "many_args"
 
-    def __init__(self):
+    def __init__(self, skip_config_fails: bool):
         self._configs = []
         commands_glob = os.path.join(os.path.dirname(__file__), "commands/*.json")
 
         for path in glob.glob(commands_glob):
             configs = JsonCommandConfigLoader._load_config_from_json(path)
+            if not skip_config_fails and any(c is None for c in configs):
+                globalLog.error(f"Failed to load command configurations from {path}")
+                raise CommandConfigLoaderException(f"Failed to load command configurations from {path}")
+
             self._configs.extend(configs)
 
     def load(self, comm: CommandCallParts) -> Optional[CommandConfig]:
@@ -219,7 +224,7 @@ class JsonCommandConfigLoader:
         return res
 
     @staticmethod
-    def _load_config_from_json(path: str) -> Optional[List[CommandConfig]]:
+    def _load_config_from_json(path: str) -> List[Optional[CommandConfig]]:
         try:
             with open(path, "r") as inF:
                 config = json.load(inF)
@@ -236,17 +241,22 @@ class JsonCommandConfigLoader:
                     )
 
                     if entry is None or examples is None or opts is None or opts_post is None:
-                        globalLog.warn(f"Could not create command config for {name}")
-                        continue
-                    res.append(CommandConfig(
-                        entry=entry, examples=examples,
-                        opts=opts, opts_postprocess=opts_post
-                    ))
+                        globalLog.warn(f"Could not create command config for {name} in {path} - skipping it")
+                        res.append(None)
+                    else:
+                        res.append(CommandConfig(
+                            entry=entry, examples=examples,
+                            opts=opts, opts_postprocess=opts_post
+                        ))
             return res
 
         except OSError:
             globalLog.warn(f"Failed to read config from file - {path}")
-            return None
+            return [None]
 
 
-init_command_config_loader = JsonCommandConfigLoader()
+init_command_config_loader = JsonCommandConfigLoader(skip_config_fails=False)
+
+
+if __name__ == "__main__":
+    pass

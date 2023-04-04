@@ -204,12 +204,11 @@ class CommandTemplateMatcher:
     _RE_SHELL_WORD_SEP = "ω"
 
     @staticmethod
-    def merge_match_results(d1: TemplateMatchResult, d2: TemplateMatchResult) -> TemplateMatchResult:
+    def merge_match_results(d1: TemplateMatchResult, d2: TemplateMatchResult) -> Optional[TemplateMatchResult]:
         for k, v in d2.items():
-            if isinstance(v, list):
-                if k not in d1:
-                    d1[k] = []
-                d1[k].extend(v)
+            if k in d1:
+                globalLog.debug("Couldn't merge match results - found two values for the same key")
+                return None
             else:
                 d1[k] = v
         return d1

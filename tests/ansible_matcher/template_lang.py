@@ -170,38 +170,29 @@ class TestTemplateTweaks(unittest.TestCase):
 
 class TestCommandTemplateMatcher(unittest.TestCase):
 
-    """
-    что хотелось бы отловить в этих тестах:
-    2) матчинг строк с простыми полями
-    3) матчинг полей с флагами
-    4) неполное совпадение
-    5) мерджинг двух результатов
-
-    """
-
     def setUp(self):
         globalLog.setLevel(logging.INFO)
         self.templ_constr = TemplateConstructor()
         self.shell_parser = BashlexShellParser()
 
     def _match_strings(self, templ_str: str, shell_str: str) -> Optional[TemplateMatchResult]:
-        template = self.templ_constr.from_str(templ_str)
-        matcher = CommandTemplateMatcher(template=template)
+        t = self.templ_constr.from_str(templ_str)
+        m = CommandTemplateMatcher(template=t)
 
         words = self.shell_parser.parse_as_script(shell_str)
         words = words.parts[0].parts
-        return matcher.full_match(words)
+        return m.full_match(words)
 
     def _partial_match_strings(self, templ_str: str, shell_str: str) -> Optional[Tuple[TemplateMatchResult, str]]:
-        template = self.templ_constr.from_str(templ_str)
-        matcher = CommandTemplateMatcher(template=template)
+        t = self.templ_constr.from_str(templ_str)
+        m = CommandTemplateMatcher(template=t)
 
         words = self.shell_parser.parse_as_script(shell_str)
         words = words.parts[0].parts
-        res = matcher.match(words)
-        if res is None:
-            return res
-        return res[0], " ".join(w.value for w in res[1])
+        r = m.match(words)
+        if r is None:
+            return r
+        return r[0], " ".join(w.value for w in r[1])
 
     def _test_matching(self, matching: Dict, partial: bool = False):
         for i, items in enumerate(matching.items()):
@@ -241,6 +232,7 @@ class TestCommandTemplateMatcher(unittest.TestCase):
             (f"pre{LB}field{RB}post", "prepost"):
                 {"field": ""},
             # 5) fields should absorb the longest possible string inside non-parameterized word
+            # multiple fields can be used in single a template word
             (f"{LB}field1{RB} pre{LB}field2{RB}mid{LB}field3{RB}post", "pre_var1_post pre_var2_mid_var3_mid_var4_post"):
                 {"field1": "pre_var1_post", "field2": "_var2_mid_var3_", "field3": "_var4_"},
             # 6) fields should absorb single vars...
@@ -331,18 +323,48 @@ class TestCommandTemplateMatcher(unittest.TestCase):
         self._test_matching(matching)
 
     def test_non_full_match(self):
+        # partial match should allow for matching the template
+        # with only first words of command
+        # the last remaining words should be returned
+        # as a result of matching process
         matching = {
             ("var1", "var1 var2"):
                 ({}, "var2"),
             (f"{LB}field1{RB}1", "var1 var2"):
                 ({"field1": "var"}, "var2"),
             (f"{LB}field1:m{RB}1 {LB}field2{RB}1", "var1 var1 var1 var2 var3"):
-                ({"field1": ["var", "var"], "field2": "var"}, "var2 var3")
+                ({"field1": ["var", "var"], "field2": "var"}, "var2 var3"),
+            (f"{LB}field1:m{RB}1 {LB}field2{RB}1", "${VAR1}1 ${VAR2}1 ${VAR3}1 ${VAR4}2 var3"):
+                ({"field1": ["${VAR1}", "${VAR2}"], "field2": "${VAR3}"}, "${VAR4}2 var3"),
         }
         self._test_matching(matching, partial=True)
 
+        # partial match still requires whole template to be matched,
+        # not just some parts of the template
+        non_matching = [
+            ("var1 var2", "var1"),
+            (f"{LB}field1{RB} {LB}field2{RB} {LB}field3{RB}", "var1 $VAR2"),
+            (f"pre{LB}field1{RB} {LB}field2:m{RB}post", "pre$VAR1 pre$VAR2")
+        ]
+        self._test_non_matching(non_matching)
+
     def test_results_merging(self):
-        pass
+        res1 = {"field1": "var1", "field2": "var2"}
+        res2 = {"field3": "var3", "field4": "var4"}
+        assert CommandTemplateMatcher.merge_match_results(res1, res2) == \
+               {"field1": "var1", "field2": "var2", "field3": "var3", "field4": "var4"}
+
+        # merging doesn't allow the same field name
+        # to be presented in both match results
+        res1 = {"field1": "var1", "field2": "var2"}
+        res2 = {"field1": "var1", "field3": "var3"}
+        assert CommandTemplateMatcher.merge_match_results(res1, res2) is None
+
+    def test_dev(self):
+        # here you can put any tests that don't (yet) know where to put
+        matching = {
+        }
+        self._test_matching(matching, partial=False)
 
 
 class TestTemplateFiller(unittest.TestCase):
