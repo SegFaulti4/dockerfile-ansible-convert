@@ -184,29 +184,41 @@ class TestCommandTemplateMatcher(unittest.TestCase):
         self.templ_constr = TemplateConstructor()
         self.shell_parser = BashlexShellParser()
 
-    def _match_strings(self, templ_str: str, shell_str: str, partial: bool = False) -> Optional[TemplateMatchResult]:
+    def _match_strings(self, templ_str: str, shell_str: str) -> Optional[TemplateMatchResult]:
         template = self.templ_constr.from_str(templ_str)
         matcher = CommandTemplateMatcher(template=template)
 
         words = self.shell_parser.parse_as_script(shell_str)
         words = words.parts[0].parts
-        if partial:
-            return matcher.match(words)
         return matcher.full_match(words)
+
+    def _partial_match_strings(self, templ_str: str, shell_str: str) -> Optional[Tuple[TemplateMatchResult, str]]:
+        template = self.templ_constr.from_str(templ_str)
+        matcher = CommandTemplateMatcher(template=template)
+
+        words = self.shell_parser.parse_as_script(shell_str)
+        words = words.parts[0].parts
+        res = matcher.match(words)
+        if res is None:
+            return res
+        return res[0], " ".join(w.value for w in res[1])
 
     def _test_matching(self, matching: Dict, partial: bool = False):
         for i, items in enumerate(matching.items()):
             s, assert_res = items
             templ_str, shell_str = s
-            match = self._match_strings(templ_str, shell_str, partial=partial)
+            if partial:
+                match = self._partial_match_strings(templ_str, shell_str)
+            else:
+                match = self._match_strings(templ_str, shell_str)
 
             if match is None or match != assert_res:
                 globalLog.warning(f"Failed to match on example {i}")
                 assert False
 
-    def _test_non_matching(self, non_matching: List, partial: bool = False):
+    def _test_non_matching(self, non_matching: List):
         for templ_str, shell_str in non_matching:
-            match = self._match_strings(templ_str, shell_str, partial=partial)
+            match = self._match_strings(templ_str, shell_str)
             assert match is None
 
     def test_basic_fields(self):
@@ -259,8 +271,8 @@ class TestCommandTemplateMatcher(unittest.TestCase):
             # only fields can absorb vars
             (f"{LB}field1{RB}${{VAR1}}{LB}field2{RB}", "pre${VAR1}post")
         ]
-        self._test_matching(matching, partial=False)
-        self._test_non_matching(non_matching, partial=False)
+        self._test_matching(matching)
+        self._test_non_matching(non_matching)
 
     def test_field_options(self):
         matching = {
@@ -316,10 +328,18 @@ class TestCommandTemplateMatcher(unittest.TestCase):
              "pre_PRE${VAR1}POST mid_${VAR2}_mid_PRE${VAR3}POST_post"):
                 {"field1": "_PRE${VAR1}POST", "field2": "_${VAR2}_mid_PRE${VAR3}POST_"},
         }
-        self._test_matching(matching, partial=False)
+        self._test_matching(matching)
 
     def test_non_full_match(self):
-        pass
+        matching = {
+            ("var1", "var1 var2"):
+                ({}, "var2"),
+            (f"{LB}field1{RB}1", "var1 var2"):
+                ({"field1": "var"}, "var2"),
+            (f"{LB}field1:m{RB}1 {LB}field2{RB}1", "var1 var1 var1 var2 var3"):
+                ({"field1": ["var", "var"], "field2": "var"}, "var2 var3")
+        }
+        self._test_matching(matching, partial=True)
 
     def test_results_merging(self):
         pass
