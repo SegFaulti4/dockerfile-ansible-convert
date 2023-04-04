@@ -19,7 +19,7 @@
             }
         },
         "examples": {
-            "pip install <<packages : m>>": [
+            "pip uninstall <<packages : m>>": [
                 {
                     "pip": {
                         "name": ["<<packages>>"],
@@ -28,7 +28,7 @@
                     }
                 }
             ],
-            "pip install -r <<requirement : p>>": [
+            "pip uninstall -r <<requirement : p>>": [
                 {
                     "pip": {
                         "requirement": "<<requirement>>",

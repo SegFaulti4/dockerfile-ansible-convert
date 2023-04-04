@@ -1,6 +1,6 @@
 {
     "rm": {
-        "entry": "rm << param : m >>",
+        "entry": "rm <<param : m>>",
         "opts": {
             "force": {
                 "arg_required": false,
@@ -59,7 +59,7 @@
             "-v": {}
         },
         "examples": {
-            "rm << files : mp >>": [
+            "rm <<files : mp>>": [
                 {
                     "shell": "ls -1d <<files>>",
                     "register": "ls_reg"

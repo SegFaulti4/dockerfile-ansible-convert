@@ -52,7 +52,7 @@
             "apt install <<packages : m>>": [
                 {
                     "apt": {
-                        "name": ["<< packages >>"],
+                        "name": ["<<packages>>"],
                         "force_apt_get": true
                     }
                 }
@@ -116,9 +116,9 @@
                     "install_recommends": false
                 }
             },
-            "-o Dpkg::Options::=<< value >>": {
+            "-o Dpkg::Options::=<<value>>": {
                 "apt": {
-                    "dpkg_options": "<< value >>,"
+                    "dpkg_options": "<<value>>,"
                 }
             },
             "--purge": {

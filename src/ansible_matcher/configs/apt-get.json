@@ -1,11 +1,11 @@
 {
     "apt": {
-        "entry": "apt-get << parameters : m >>",
+        "entry": "apt-get <<parameters : m>>",
         "examples": {
-            "apt-get install << packages : m >>": [
+            "apt-get install <<packages : m>>": [
                 {
                     "apt": {
-                        "name": ["<< packages >>"],
+                        "name": ["<<packages>>"],
                         "force_apt_get": true
                     }
                 }
@@ -34,10 +34,10 @@
                     }
                 }
             ],
-            "apt-get build-dep << packages : m >>": [
+            "apt-get build-dep <<packages : m>>": [
                 {
                     "apt": {
-                        "name": ["<< packages >>"],
+                        "name": ["<<packages>>"],
                         "state": "build-dep",
                         "force_apt_get": true
                     }
@@ -464,14 +464,14 @@
                 }
             },
             "--assume-yes": {},
-            "--default-release << value >>": {
+            "--default-release <<value>>": {
                 "apt": {
-                    "default_release": "<< value >>"
+                    "default_release": "<<value>>"
                 }
             },
-            "-o Dpkg::Options::=<< value >>": {
+            "-o Dpkg::Options::=<<value>>": {
                 "apt": {
-                    "dpkg_options": "<< value >>,"
+                    "dpkg_options": "<<value>>,"
                 }
             },
             "--no-remove": {

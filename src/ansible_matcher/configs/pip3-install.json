@@ -1,6 +1,6 @@
 {
     "pip install": {
-        "entry": "pip install <<parameters : m>>",
+        "entry": "pip3 install <<parameters : m>>",
         "opts": {
             "default timeout": {
                 "aliases": ["--default-timeout", "timeout"],

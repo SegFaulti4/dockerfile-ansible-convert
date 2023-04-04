@@ -3,70 +3,47 @@
         "entry": "chmod <<parameters : m>>",
         "opts": {
             "changes": {
-                "aliases": [
-                    "--changes",
-                    "-c"
-                ],
+                "aliases": ["--changes", "-c"],
                 "arg_required": false,
                 "many_args": false
             },
             "quiet": {
-                "aliases": [
-                    "--quiet",
-                    "--silent",
-                    "-f"
-                ],
+                "aliases": [ "--quiet", "--silent", "-f"],
                 "arg_required": false,
                 "many_args": false
             },
             "verbose": {
-                "aliases": [
-                    "--verbose",
-                    "-v"
-                ],
+                "aliases": ["--verbose",  "-v"],
                 "arg_required": false,
                 "many_args": false
             },
             "no preserve root": {
-                "aliases": [
-                    "--no-preserve-root"
-                ],
+                "aliases": ["--no-preserve-root"],
                 "arg_required": false,
                 "many_args": false
             },
             "preserve root": {
-                "aliases": [
-                    "--preserve-root"
-                ],
+                "aliases": ["--preserve-root"],
                 "arg_required": false,
                 "many_args": false
             },
             "reference": {
-                "aliases": [
-                    "--reference"
-                ],
+                "aliases": ["--reference"],
                 "arg_required": true,
                 "many_args": false
             },
             "recursive": {
-                "aliases": [
-                    "--recursive",
-                    "-R"
-                ],
+                "aliases": ["--recursive", "-R"],
                 "arg_required": false,
                 "many_args": false
             },
             "help": {
-                "aliases": [
-                    "--help"
-                ],
+                "aliases": ["--help"],
                 "arg_required": false,
                 "many_args": false
             },
             "version": {
-                "aliases": [
-                    "--version"
-                ],
+                "aliases": ["--version"],
                 "arg_required": false,
                 "many_args": false
             }
@@ -84,14 +61,32 @@
                     },
                     "loop": "{{ ls_reg.stdout_lines }}"
                 }
+            ],
+
+            "chmod -R <<mode>> <<files : m>>": [
+                {
+                    "shell": "ls -1d <<files>>",
+                    "register": "ls_reg"
+                },
+                {
+                    "stat": {
+                        "follow": true,
+                        "path": "{{ item }}"
+                    },
+                    "loop": "{{ ls_reg.stdout_lines }}"
+                },
+                {
+                    "file": {
+                        "state": "{{ ( item.stat.isdir is defined and item.stat.isdir ) | ternary('directory', 'file') }}",
+                        "recurse":  "{{ ( item.stat.isdir is defined and item.stat.isdir ) | ternary(true, false) }}",
+                        "path": "{{ item.stat.path }}",
+                        "mode": "<<mode>>"
+                    },
+                    "loop": "{{ st_reg.results }}"
+                }
             ]
         },
         "opts_postprocess": {
-            "--recursive": {
-                "file": {
-                    "recursive": "yes"
-                }
-            },
             "--verbose": {},
             "--changes": {},
             "--quiet": {}

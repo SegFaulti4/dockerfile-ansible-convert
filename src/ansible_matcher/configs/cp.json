@@ -59,10 +59,12 @@
             }
         },
         "examples": {
-            "cp -s <<globs : m>>": [
+            "cp <<globs : m>>": [
                 {
-                    "shell": "ls -1d <<globs>>",
-                    "chdir": "<<cwd>>",
+                    "shell": {
+                        "cmd": "ls -1d <<globs>>",
+                        "chdir": "<<cwd>>"
+                    },
                     "register": "ls_reg"
                 },
                 {
@@ -84,6 +86,7 @@
                             "copy": {
                                 "src": "{{ item | regex_replace('/$') }}",
                                 "path": "{{ ( dir, item | basename ) | path_join }}",
+                                "remote_src": true,
                                 "force": false
                             },
                             "loop": "{{ ls_reg.stdout_lines[:-1] }}",
@@ -98,13 +101,14 @@
                                     "copy": {
                                         "src": "{{ ls_reg.stdout_lines[0] | regex_replace('/$') }}",
                                         "path": "{{ ls_reg.stdout_lines[-1] }}",
+                                        "remote_src": true,
                                         "force": false
                                     },
                                     "when": "ls_reg.stdout_lines | length == 2"
                                 },
                                 {
                                     "fail": {
-                                        "msg": "Failed to create symlink - last item is not a directory"
+                                        "msg": "Failed to copy file - last item is not a directory"
                                     },
                                     "when": "ls_reg.stdout_lines | length > 2"
                                 }

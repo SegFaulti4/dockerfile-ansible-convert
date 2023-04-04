@@ -1,0 +1,219 @@
+{
+    "tar": {
+        "entry": "tar <<parameters : m>>",
+        "opts": {
+            "extract": {
+                "arg_required": false,
+                "many_args": false,
+                "aliases": ["-x", "--extract", "--get"]
+            },
+            "file": {
+                "arg_required": true,
+                "many_args": false,
+                "aliases": ["-f",  "--file"]
+            },
+            "directory": {
+                "arg_required": true,
+                "many_args": false,
+                "aliases": ["-C", "--directory"]
+            },
+            "gzip": {
+                "arg_required": false,
+                "many_args": false,
+                "aliases": ["-z", "--gzip"]
+            },
+            "bzip2": {
+                "arg_required": false,
+                "many_args": false,
+                "aliases": ["-j", "--bzip"]
+            },
+            "xz": {
+                "arg_required": false,
+                "many_args": false,
+                "aliases": ["-J", "--xz"]
+            },
+
+            "absolute names": {
+                "arg_required": false,
+                "many_args": false,
+                "aliases": ["--absolute-names", "-P"]
+            },
+            "auto compress": {
+                "arg_required": false,
+                "many_args": false,
+                "aliases": ["-a", "--auto-compress"]
+            },
+            "verbose": {
+                "arg_required": false,
+                "many_args": false,
+                "aliases": ["-v", "--verbose"]
+            },
+            "create": {
+                "arg_required": false,
+                "many_args": false,
+                "aliases": ["-c", "--create"]
+            },
+            "exclude": {
+                "arg_required": true,
+                "many_args": false,
+                "aliases": ["--exclude"]
+            },
+            "no same owner": {
+                "arg_required": false,
+                "many_args": false,
+                "aliases": ["--no-same-owner"]
+            },
+            "preserve permissions": {
+                "arg_required": false,
+                "many_args": false,
+                "aliases": ["-p", "--preserve-permissions"]
+            },
+            "strip components": {
+                "arg_required": true,
+                "many_args": false,
+                "aliases": ["--strip", "--strip-components"]
+            }
+        },
+        "opts_postprocess": {
+            "-z": {},
+            "-j": {},
+            "-J": {},
+            "--strip-components=<<num>>": {
+                "unarchive": {
+                    "extra-opts": [
+                        "--strip-components=<<num>>"
+                    ]
+                }
+            },
+            "-v": {}
+        },
+        "examples": {
+            "tar -x -f <<file : p>>": [
+                {
+                    "unarchive": {
+                        "src": "<<file>>",
+                        "dest": "<<cwd>>",
+                        "remote_src": "yes"
+                    }
+                }
+            ],
+            "tar -x -f <<file : p>> -C <<dir : p>>": [
+                {
+                    "unarchive": {
+                        "src": "<<file>>",
+                        "dest": "<<dir>>",
+                        "remote_src": "yes"
+                    }
+                }
+            ],
+            "tar zxf <<file : p>>": [
+                {
+                    "unarchive": {
+                        "src": "<<file>>",
+                        "dest": "<<cwd>>",
+                        "remote_src": "yes"
+                    }
+                }
+            ],
+            "tar xzf <<file : p>>": [
+                {
+                    "unarchive": {
+                        "src": "<<file>>",
+                        "dest": "<<cwd>>",
+                        "remote_src": "yes"
+                    }
+                }
+            ],
+            "tar zxf <<file : p>> -C <<dir : p>>": [
+                {
+                    "unarchive": {
+                        "src": "<<file>>",
+                        "dest": "<<dir>>",
+                        "remote_src": "yes"
+                    }
+                }
+            ],
+            "tar xzf <<file : p>> -C <<dir : p>>": [
+                {
+                    "unarchive": {
+                        "src": "<<file>>",
+                        "dest": "<<dir>>",
+                        "remote_src": "yes"
+                    }
+                }
+            ],
+            "tar zxvf <<file : p>>": [
+                {
+                    "unarchive": {
+                        "src": "<<file>>",
+                        "dest": "<<cwd>>",
+                        "remote_src": "yes"
+                    }
+                }
+            ],
+            "tar xzvf <<file : p>>": [
+                {
+                    "unarchive": {
+                        "src": "<<file>>",
+                        "dest": "<<cwd>>",
+                        "remote_src": "yes"
+                    }
+                }
+            ],
+            "tar zxvf <<file : p>> -C <<dir : p>>": [
+                {
+                    "unarchive": {
+                        "src": "<<file>>",
+                        "dest": "<<dir>>",
+                        "remote_src": "yes"
+                    }
+                }
+            ],
+            "tar xzvf <<file : p>> -C <<dir : p>>": [
+                {
+                    "unarchive": {
+                        "src": "<<file>>",
+                        "dest": "<<dir>>",
+                        "remote_src": "yes"
+                    }
+                }
+            ],
+            "tar zvxf <<file : p>>": [
+                {
+                    "unarchive": {
+                        "src": "<<file>>",
+                        "dest": "<<cwd>>",
+                        "remote_src": "yes"
+                    }
+                }
+            ],
+            "tar xvzf <<file : p>>": [
+                {
+                    "unarchive": {
+                        "src": "<<file>>",
+                        "dest": "<<cwd>>",
+                        "remote_src": "yes"
+                    }
+                }
+            ],
+            "tar zvxf <<file : p>> -C <<dir : p>>": [
+                {
+                    "unarchive": {
+                        "src": "<<file>>",
+                        "dest": "<<dir>>",
+                        "remote_src": "yes"
+                    }
+                }
+            ],
+            "tar xvzf <<file : p>> -C <<dir : p>>": [
+                {
+                    "unarchive": {
+                        "src": "<<file>>",
+                        "dest": "<<dir>>",
+                        "remote_src": "yes"
+                    }
+                }
+            ]
+        }
+    }
+}

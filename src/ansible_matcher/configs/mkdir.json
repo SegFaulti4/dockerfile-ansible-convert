@@ -1,6 +1,6 @@
 {
     "mkdir": {
-        "entry": "mkdir << parameters : m >>",
+        "entry": "mkdir <<parameters : m>>",
         "opts": {
             "mode": {
                 "arg_required": false,
@@ -28,27 +28,27 @@
             }
         },
         "examples": {
-            "mkdir -p << directories : mp >>": [
+            "mkdir -p <<directories : mp>>": [
                 {
                     "file": {
-                        "path": "<< directories >>",
+                        "path": "<<directories>>",
                         "state": "directory"
                     }
                 }
             ],
-            "mkdir << directories : mp >>": [
+            "mkdir <<directories : mp>>": [
                 {
                     "file": {
-                        "path": "<< directories >>",
+                        "path": "<<directories>>",
                         "state": "directory"
                     }
                 }
             ]
         },
         "opts_postprocess": {
-            "-m << mode >>": {
+            "-m <<mode>>": {
                 "file": {
-                    "mode": "<< mode >>"
+                    "mode": "<<mode>>"
                 }
             },
             "-v": {}

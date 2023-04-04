@@ -21,7 +21,7 @@ def parse_arguments():
 
 def main():
     fh = logging.FileHandler('./log')
-    fh.setLevel(logging.WARNING)
+    fh.setLevel(logging.DEBUG)
     globalLog.handlers.clear()
     globalLog.addHandler(fh)
 

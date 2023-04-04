@@ -12,7 +12,28 @@ def print_header(s):
     print(f"\033[4m\033[97m{s}\033[0m\033[0m")
 
 
+class MyDumper(yaml.Dumper):
+    # HACK: insert blank lines between top-level objects
+    # inspired by https://stackoverflow.com/a/44284819/3786245
+    def write_line_break(self, data=None):
+        super().write_line_break(data)
+
+        if len(self.indents) == 1:
+            super().write_line_break()
+
+
+# some black magic - https://stackoverflow.com/a/40044739
+def represent_str(self, data):
+    tag = u'tag:yaml.org,2002:str'
+    style = None
+    if '{{' in data and '}}' in data or "'" in data:
+        style = '"'
+    return self.represent_scalar(tag, data, style=style)
+
+
 if __name__ == "__main__":
+    yaml.add_representer(str, represent_str)
+
     globalLog.setLevel(logging.INFO)
     shell_parser = SandboxShellParser()
     task_matcher = SandboxTaskMatcher()
@@ -48,7 +69,10 @@ if __name__ == "__main__":
                     print(f"{comm}\n")
                 if SHOW_TASK_MATCHER:
                     print_header("TASK MATCHER:")
-                    print(f"{obj}\n")
+                    s = yaml.dump(obj, sort_keys=False, Dumper=MyDumper,
+                                  default_flow_style=False, explicit_start=True,
+                                  canonical=False, width=1000000000)
+                    print(f"{s}\n")
                 print(f"{ext}\n")
 
             except IOError as exc:

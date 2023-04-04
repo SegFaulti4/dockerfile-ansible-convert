@@ -24,15 +24,17 @@
             }
         },
         "examples": {
-            "mv -s <<globs : m>>": [
+            "mv <<globs : m>>": [
                 {
-                    "shell": "ls -1d <<globs>>",
-                    "chdir": "<<cwd>>",
+                    "shell": {
+                        "cmd": "ls -1d <<globs>>",
+                        "chdir": "<<cwd>>"
+                    },
                     "register": "ls_reg"
                 },
                 {
                     "fail": {
-                        "msg": "Failed to copy file - destination is required"
+                        "msg": "Failed to move file - destination is required"
                     },
                     "when": "ls_reg.stdout_lines | length <= 1"
                 },
@@ -51,20 +53,25 @@
                                     "copy": {
                                         "src": "{{ item | regex_replace('/$') }}",
                                         "path": "{{ ( dir, item | basename ) | path_join }}",
+                                        "remote_src": true,
                                         "force": false
+                                    },
+                                    "loop": "{{ ls_reg.stdout_lines[:-1] }}",
+                                    "vars": {
+                                        "dir": "{{ ls_reg.stdout_lines[-1] }}"
                                     }
                                 },
                                 {
                                     "file": {
                                         "path": "{{ item | regex_replace('/$') }}",
                                         "state": "absent"
+                                    },
+                                    "loop": "{{ ls_reg.stdout_lines[:-1] }}",
+                                    "vars": {
+                                        "dir": "{{ ls_reg.stdout_lines[-1] }}"
                                     }
                                 }
                             ],
-                            "loop": "{{ ls_reg.stdout_lines[:-1] }}",
-                            "vars": {
-                                "dir": "{{ ls_reg.stdout_lines[-1] }}"
-                            },
                             "when": "st_reg.stat.isdir is defined and st_reg.stat.isdir"
                         },
                         {
@@ -73,6 +80,7 @@
                                     "copy": {
                                         "src": "{{ ls_reg.stdout_lines[0] | regex_replace('/$') }}",
                                         "path": "{{ ls_reg.stdout_lines[-1] }}",
+                                        "remote_src": true,
                                         "force": false
                                     },
                                     "when": "ls_reg.stdout_lines | length == 2"
@@ -85,7 +93,7 @@
                                 },
                                 {
                                     "fail": {
-                                        "msg": "Failed to create symlink - last item is not a directory"
+                                        "msg": "Failed to move file - last item is not a directory"
                                     },
                                     "when": "ls_reg.stdout_lines | length > 2"
                                 }
@@ -103,7 +111,8 @@
                     "force": true
                 }
             },
-            "--verbose": {}
+            "--verbose": {},
+            "--recursive": {}
         }
     }
 }

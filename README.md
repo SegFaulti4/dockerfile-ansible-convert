@@ -45,7 +45,7 @@ Resulting AST of Containerfile contents after parsing are supplemented with AST 
 
 After parsing of shell scripts translator uses its collection of command templates to match any given command with corresponding Ansible task.
 
-Configurations of supported commands are stored [here](src/ansible_matcher/commands). For each supported command there is a JSON file with the following content:
+Configurations of supported commands are stored [here](src/ansible_matcher/configs). For each supported command there is a JSON file with the following content:
 
 * General template - any command that matches this template will be compared with examples from the same configuration file
 * Examples - each example contains a command template and task template, if any given command matches command template it will be translated into corresponding task

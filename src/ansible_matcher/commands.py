@@ -43,7 +43,7 @@ class JsonCommandConfigLoader:
 
     def __init__(self, skip_config_fails: bool):
         self._configs = []
-        commands_glob = os.path.join(os.path.dirname(__file__), "commands/*.json")
+        commands_glob = os.path.join(os.path.dirname(__file__), "configs/*.json")
 
         for path in glob.glob(commands_glob):
             configs = JsonCommandConfigLoader._load_config_from_json(path)

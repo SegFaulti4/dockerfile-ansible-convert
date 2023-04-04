@@ -1,6 +1,6 @@
 {
-    "set": {
-        "entry": "set << parameters : m >>",
+    "sudo": {
+        "entry": "sudo <<parameters : m>>",
         "opts": {},
         "examples": {},
         "opts_postprocess": {}

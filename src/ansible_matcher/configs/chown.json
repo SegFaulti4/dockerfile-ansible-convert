@@ -1,0 +1,103 @@
+{
+    "chown": {
+        "entry": "chown <<parameters : m>>",
+        "opts": {
+            "quiet": {
+                "aliases": ["--quiet", "--silent", "-f"],
+                "arg_required": false,
+                "many_args": false
+            },
+            "recursive": {
+                "aliases": ["--recursive", "-R"],
+                "arg_required": false,
+                "many_args": false
+            },
+            "no dereference": {
+                "arg_required": false,
+                "many_args": false,
+                "aliases": ["-h", "--no-dereference"]
+            },
+            "verbose": {
+                "aliases": [ "--verbose",  "-v"],
+                "arg_required": false,
+                "many_args": false
+            }
+        },
+        "examples": {
+            "chown <<owner>>:<<group>> <<files : m>>": [
+                {
+                    "shell": "ls -1d <<files>>",
+                    "register": "ls_reg"
+                },
+                {
+                    "file": {
+                        "path": "{{ item }}",
+                        "owner": "<<owner>>",
+                        "group": "<<group>>"
+                    },
+                    "loop": "{{ ls_reg.stdout_lines }}"
+                }
+            ],
+            "chown <<owner>> <<files : m>>": [
+                {
+                    "shell": "ls -1d <<files>>",
+                    "register": "ls_reg"
+                },
+                {
+                    "file": {
+                        "path": "{{ item }}",
+                        "owner": "<<owner>>"
+                    },
+                    "loop": "{{ ls_reg.stdout_lines }}"
+                }
+            ],
+
+            "chown -R <<owner>>:<<group>> <<files : m>>": [
+                {
+                    "shell": "ls -1d <<files>>",
+                    "register": "ls_reg"
+                },
+                {
+                    "stat": {
+                        "follow": true,
+                        "path": "{{ item }}"
+                    },
+                    "loop": "{{ ls_reg.stdout_lines }}"
+                },
+                {
+                    "file": {
+                        "state": "{{ ( item.stat.isdir is defined and item.stat.isdir ) | ternary('directory', 'file') }}",
+                        "recurse":  "{{ ( item.stat.isdir is defined and item.stat.isdir ) | ternary(true, false) }}",
+                        "path": "{{ item.stat.path }}",
+                        "owner": "<<owner>>",
+                        "group": "<<group>>"
+                    },
+                    "loop": "{{ st_reg.results }}"
+                }
+            ],
+            "chown -R <<owner>> <<files : m>>": [
+                {
+                    "shell": "ls -1d <<files>>",
+                    "register": "ls_reg"
+                },
+                {
+                    "stat": {
+                        "follow": true,
+                        "path": "{{ item }}"
+                    },
+                    "loop": "{{ ls_reg.stdout_lines }}"
+                },
+                {
+                    "file": {
+                        "state": "{{ ( item.stat.isdir is defined and item.stat.isdir ) | ternary('directory', 'file') }}",
+                        "recurse":  "{{ ( item.stat.isdir is defined and item.stat.isdir ) | ternary(true, false) }}",
+                        "path": "{{ item.stat.path }}",
+                        "owner": "<<owner>>"
+                    },
+                    "loop": "{{ st_reg.results }}"
+                }
+            ]
+        },
+        "opts_postprocess": {}
+    }
+}

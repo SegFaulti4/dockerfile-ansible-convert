@@ -1,6 +1,6 @@
 {
     "cd": {
-        "entry": "cd << parameters : m >>",
+        "entry": "cd <<parameters : m>>",
         "opts": {
             "links": {
                 "aliases": [
