@@ -1,1 +1,1 @@
-cp go-expanse/build/bin/gexp /gexp
+curl -LOs http://download.osgeo.org/proj/proj-datumgrid-north-america-latest.zip

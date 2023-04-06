@@ -51,13 +51,13 @@ class AnsiblePlayContext:
             -> Optional[Tuple[List[ShellWordObject], Dict[str, str]]]:
         words = []
         local_vars = {}
-        for word in command.parts:
-            resolved = self.resolve_shell_word(word)
+        for part in command.parts:
+            resolved = self.resolve_shell_word(part)
             if resolved is None:
                 return None
 
-            word, word_local_vars = resolved
-            words.append(word)
+            part_word, word_local_vars = resolved
+            words.append(part_word)
             local_vars = {**local_vars, **word_local_vars}
 
         return words, local_vars
@@ -69,8 +69,8 @@ class AnsiblePlayContext:
                 resolved = self.resolve_shell_command(part)
                 if resolved is None:
                     return None
-                words, _ = resolved
-                words.extend(words)
+                part_words, _ = resolved
+                words.extend(part_words)
             else:
                 return None
 

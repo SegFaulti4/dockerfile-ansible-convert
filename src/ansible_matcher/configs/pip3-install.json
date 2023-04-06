@@ -1,5 +1,5 @@
 {
-    "pip install": {
+    "pip3 install": {
         "entry": "pip3 install <<parameters : m>>",
         "opts": {
             "default timeout": {
