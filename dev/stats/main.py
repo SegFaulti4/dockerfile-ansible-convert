@@ -160,12 +160,12 @@ def main():
     # mine_shell_commands(UBUNTU_FILES_DIR, UBUNTU_MINED_SHELL_COMMANDS_FILE)
     # collect_and_print_task_matcher_stats(os.path.join(DATA_DIR, UBUNTU_MINED_SHELL_COMMANDS_FILE))
 
-    # commands_file = UBUNTU_MINED_SHELL_COMMANDS_FILE
-    # collect_and_print_task_matcher_stats(commands_file)
+    commands_file = UBUNTU_MATCHER_TESTS_FILTERED_FILE
+    collect_and_print_task_matcher_stats(commands_file)
 
-    files_dir = UBUNTU_FILES_DIR
-    stats_dir = UBUNTU_STATS_DIR
-    collect_and_save_containerfile_stats(files_dir, stats_dir)
+    # files_dir = UBUNTU_FILES_DIR
+    # stats_dir = UBUNTU_STATS_DIR
+    # collect_and_save_containerfile_stats(files_dir, stats_dir)
 
 
 if __name__ == "__main__":

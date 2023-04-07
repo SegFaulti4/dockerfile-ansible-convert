@@ -3,7 +3,6 @@ import parts
 import multiprocessing
 import subprocess
 import time
-# import p_tqdm
 from subprocess import PIPE
 
 from src.ansible_generator.main import *
@@ -24,7 +23,7 @@ def flag_print(*args, **kwargs):
 
 
 def mine_matcher_tests(df_parser: DockerfileParser, task_matcher: TaskMatcher,
-                       filepaths: List[str], tests_file: str, n_proc: int) -> List[str]:
+                       filepaths: List[str], tests_file: str) -> List[str]:
     matcher_tests = []
 
     def worker(filepath: str) -> List[str]:
@@ -65,36 +64,38 @@ def filter_tests_worker(args: Tuple[List[str], int, bool, str]) -> List[str]:
 
     log_path = os.path.join(log_dir, f"filter-tests-{idx}")
     with open(log_path, "w") as logF:
-        for test in tqdm(tests, desc=f"Filtering test set {idx}", smoothing=1.0):
-            container_name = f"ubuntu-test-{idx}"
-            run_comm = f'docker run --name={container_name} ubuntu-test-stand bash -c "{test}"'
-            inspect_comm = f'docker inspect {container_name} --format="{{{{.State.ExitCode}}}}"'
-            stop_rm_comm = f'docker stop {container_name} && docker rm {container_name}'
+        with tqdm(total=len(tests), position=idx, desc=f"Loop {idx}") as pbar:
+            for i, test in enumerate(tests):
+                container_name = f"ubuntu-test-{idx}-{i}"
+                run_comm = f'docker run --name={container_name} ubuntu-test-stand bash -c "{test}"'
+                inspect_comm = f'docker inspect {container_name} --format="{{{{.State.ExitCode}}}}"'
+                stop_rm_comm = f'docker stop {container_name} && docker rm {container_name}'
 
-            try:
-                flag_print(run_comm, echo=echo)
-                run_result = subprocess.run(['/bin/bash', '-c', run_comm],
-                                            stdout=PIPE, stderr=PIPE, text=True, timeout=120)
-                flag_print(inspect_comm, echo=echo)
-                inspect_result = subprocess.run(['/bin/bash', '-c', inspect_comm], stdout=PIPE, stderr=PIPE, text=True)
+                try:
+                    flag_print(run_comm, echo=echo)
+                    run_result = subprocess.run(['/bin/bash', '-c', run_comm],
+                                                stdout=PIPE, stderr=PIPE, text=True, timeout=120)
+                    flag_print(inspect_comm, echo=echo)
+                    inspect_result = subprocess.run(['/bin/bash', '-c', inspect_comm], stdout=PIPE, stderr=PIPE, text=True)
 
-                success = True if not inspect_result.stderr and inspect_result.stdout.strip() == "0" else False
-                run_stdout, run_stderr = run_result.stdout, run_result.stderr
-            except subprocess.TimeoutExpired:
-                success = False
-                run_stdout, run_stderr = "", "Time limit exceeded"
+                    success = True if not inspect_result.stderr and inspect_result.stdout.strip() == "0" else False
+                    run_stdout, run_stderr = run_result.stdout, run_result.stderr
+                except subprocess.TimeoutExpired:
+                    success = False
+                    run_stdout, run_stderr = "", "Time limit exceeded"
+                if success:
+                    filtered.append(test)
 
-            if success:
-                filtered.append(test)
-            logF.writelines([
-                log_header("run command") + f"{run_comm}\n\n",
-                log_header("run stdout") + f"{run_stdout}\n\n",
-                log_header("run stderr") + f"{run_stderr}\n\n",
-                log_header("success") + f"{success}\n\n"
-            ])
+                flag_print(stop_rm_comm, echo=echo)
+                subprocess.run(['/bin/bash', '-c', stop_rm_comm], stdout=PIPE, stderr=PIPE, text=True)
 
-            flag_print(stop_rm_comm, echo=echo)
-            subprocess.run(['/bin/bash', '-c', stop_rm_comm], stdout=PIPE, stderr=PIPE, text=True)
+                logF.writelines([
+                    log_header("run command") + f"{run_comm}\n\n",
+                    log_header("run stdout") + f"{run_stdout}\n\n",
+                    log_header("run stderr") + f"{run_stderr}\n\n",
+                    log_header("success") + f"{success}\n\n"
+                ])
+                pbar.update(1)
 
     return filtered
 
@@ -110,21 +111,15 @@ def filter_matcher_tests(matcher_tests: List[str], n_proc: int, log_dir: str) ->
 
 
 def main():
-    files_dir = UBUNTU_FILES_DIR
-    mined_tests_file = UBUNTU_MINED_MATCHER_TESTS_FILE
-    log_dir = UBUNTU_FILTERED_MATCHER_TESTS_LOG_DIR
-    filtered_tests_file = UBUNTU_FILTERED_MATCHER_TESTS_FILE
+    files_dir = UBUNTU_FILES_FILTERED_DIR
+    mined_tests_file = UBUNTU_MATCHER_TESTS_MINED_FILE
+    log_dir = UBUNTU_LOG_MATCHER_TESTS_FILTERED_DIR
+    filtered_tests_file = UBUNTU_MATCHER_TESTS_FILTERED_FILE
     setup_dir(log_dir)
 
-    shell_parser = BashlexShellParser()
-    dockerfile_parser = TPDockerfileParser(shell_parser=shell_parser)
-    task_matcher = TaskMatcher()
-
-    n_proc = 6
-    # collected_matcher_tests = mine_matcher_tests(df_parser=dockerfile_parser, task_matcher=task_matcher,
-    #                                              filepaths=filepaths_from_dir(files_dir),
-    #                                              tests_file=mined_tests_file, n_proc=n_proc,)
-    collected_matcher_tests = read_matcher_tests(mined_tests_file)[1000:2000]
+    n_proc = 2
+    # collected_matcher_tests = mine_matcher_tests(df_parser=TPDockerfileParser(shell_parser=BashlexShellParser()), task_matcher=TaskMatcher(), filepaths=filepaths_from_dir(files_dir), tests_file=mined_tests_file)
+    collected_matcher_tests = read_matcher_tests(mined_tests_file)
     filtered_matcher_tests = filter_matcher_tests(collected_matcher_tests, n_proc=n_proc, log_dir=log_dir)
 
     with open(filtered_tests_file, "w") as outF:
@@ -133,4 +128,4 @@ def main():
 
 if __name__ == "__main__":
     globalLog.setLevel(logging.ERROR)
-    # main()
+    main()
