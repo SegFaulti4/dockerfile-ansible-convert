@@ -131,7 +131,7 @@ def diff_images(image1: str, image2: str, echo: bool = True) -> Dict[str, Any]:
     return json.loads(diff_res.stdout)[0]
 
 
-def main():
+def run_single_test():
     # TODO: add commands for net creation somewhere
     """
     docker network rm test-net
@@ -155,4 +155,4 @@ def main():
 
 
 if __name__ == "__main__":
-    main()
+    run_single_test()

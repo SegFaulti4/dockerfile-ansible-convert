@@ -3,6 +3,7 @@ import sys
 import yaml
 import logging
 from typing import List, Dict, Any
+from io import TextIOWrapper
 
 from src.shell.bashlex.main import BashlexShellParser as MainShellParser
 from src.containerfile.tpdockerfile.main import TPDockerfileParser as MainDockerfileParser
@@ -14,9 +15,9 @@ from src.log import globalLog
 
 def parse_arguments():
     parser = argparse.ArgumentParser()
-    parser.add_argument('dockerfile', action='store', help='Path to dockerfile')
+    parser.add_argument('containerfile', action='store', help='Path to containerfile')
     parser.add_argument('-o', '--output', action='store',
-                        help='Path to resulting tasks file, if not provided stdout will be used')
+                        help='Path to resulting playbook file, if not provided stdout will be used')
     return parser.parse_args()
 
 
@@ -37,7 +38,7 @@ class TasksDumper(yaml.Dumper):
             super().write_line_break()
 
 
-def dump_tasks(tasks: List[Dict[str, Any]]) -> str:
+def dump_ansible(tasks: List[Dict[str, Any]]) -> str:
     yaml.add_representer(str, represent_str)
     return "---\n" + yaml.dump(
         tasks,
@@ -50,20 +51,26 @@ def dump_tasks(tasks: List[Dict[str, Any]]) -> str:
     )
 
 
+def generate(containerfile_path: str, output=sys.stdout) -> None:
+    dockerfile_content = MainDockerfileParser(shell_parser=MainShellParser()).from_path(containerfile_path)
+    tasks = MainRoleGenerator(dc=dockerfile_content, tm=MainTaskMatcher()).generate()
+    plays = [
+        {
+            "hosts": "all",
+            "tasks": tasks
+        }
+    ]
+
+    s = dump_ansible(plays)
+    output.write(s)
+
+
 def main():
-    # fh = logging.FileHandler('./log')
-    # fh.setLevel(logging.DEBUG)
-    # globalLog.handlers.clear()
-    # globalLog.addHandler(fh)
     globalLog.setLevel(logging.DEBUG)
 
     args = parse_arguments()
-    dp = args.dockerfile
-    out_s = open(args.output, 'w') if args.output else sys.stdout
+    cp = args.containerfile
+    out = open(args.output, 'w') if args.output else sys.stdout
 
-    dockerfile_content = MainDockerfileParser(shell_parser=MainShellParser()).from_path(dp)
-    tasks = MainRoleGenerator(dc=dockerfile_content, tm=MainTaskMatcher()).generate()
-
-    s = dump_tasks(tasks)
-    out_s.write(s)
-    out_s.close()
+    generate(containerfile_path=cp, output=out)
+    out.close()
