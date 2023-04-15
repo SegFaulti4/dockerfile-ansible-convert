@@ -18,7 +18,7 @@ class AnsiblePlayContext:
     global_user: Optional[str] = None
     local_user: Optional[str] = None
 
-    def resolve_shell_word(self, word: ShellWordObject) -> Optional[Tuple[ShellWordObject, Dict[str, str]]]:
+    def resolve_shell_word(self, word: ShellWordObject, strict: bool = True) -> Optional[Tuple[ShellWordObject, Dict[str, str]]]:
         if not word.parts:
             return word, {}
 
@@ -34,8 +34,10 @@ class AnsiblePlayContext:
                 local_vars = {param_name: param_val}
             elif param_name in self.global_env:
                 param_val = self.global_env[param_name]
-            else:
+            elif strict:
                 return None
+            else:
+                param_val = word.value[param.pos[0]:param.pos[1]]
 
             value += word.value[slice_start:param.pos[0]]
             part_pos = len(value), len(value) + len(param_val)
@@ -47,12 +49,12 @@ class AnsiblePlayContext:
 
         return ShellWordObject(value=value, parts=parts), local_vars
 
-    def resolve_shell_command(self, command: ShellCommandObject) \
+    def resolve_shell_command(self, command: ShellCommandObject, strict: bool = True) \
             -> Optional[Tuple[List[ShellWordObject], Dict[str, str]]]:
         words = []
         local_vars = {}
         for part in command.parts:
-            resolved = self.resolve_shell_word(part)
+            resolved = self.resolve_shell_word(part, strict)
             if resolved is None:
                 return None
 
@@ -62,11 +64,11 @@ class AnsiblePlayContext:
 
         return words, local_vars
 
-    def shell_expression_value(self, expr: ShellExpression) -> Optional[str]:
+    def shell_expression_value(self, expr: ShellExpression, strict: bool = True) -> Optional[str]:
         words: List[ShellWordObject] = []
         for part in expr.parts:
             if isinstance(part, ShellCommandObject):
-                resolved = self.resolve_shell_command(part)
+                resolved = self.resolve_shell_command(part, strict)
                 if resolved is None:
                     return None
                 part_words, _ = resolved

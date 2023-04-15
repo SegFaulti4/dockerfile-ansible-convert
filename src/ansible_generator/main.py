@@ -182,15 +182,20 @@ class RoleGenerator:
 
     @supported_directive
     def _handle_workdir(self, directive: WorkdirDirective) -> None:
-        val = self._context.shell_expression_value(directive.path)
+        val = self._context.shell_expression_value(directive.path, strict=False)
         if val is None:
             task = self._create_echo_task(directive.path.line)
             register = self._add_echo_register(task)
             self._add_task(task, user=self._context.get_user(), environment=self._context.get_environment(),
                            set_condition=False)
-            self._context.set_global_workdir("{{ " + register + " }}")
+
+            path = "{{ " + register + "}}"
         else:
-            self._context.set_global_workdir(path=val)
+            path = val
+
+        mkdir_task = self._create_mkdir_task(path)
+        self._add_task(mkdir_task, user=self._context.get_user(), set_condition=False)
+        self._context.set_global_workdir(path)
 
     @supported_directive
     def _handle_add(self, directive: AddDirective) -> None:
@@ -308,6 +313,20 @@ class RoleGenerator:
         task = self._create_set_fact_task(fact_name=fact_name, value=val)
         self._add_task(task, set_condition=False)
         return fact_name
+
+    #############################
+    # WORKDIR DIRECTIVE METHODS #
+    #############################
+
+    @staticmethod
+    def _create_mkdir_task(path: str) -> Dict:
+        task = {
+            "file": {
+                "state": "directory",
+                "path": path
+            }
+        }
+        return task
 
     #########################
     # RUN DIRECTIVE METHODS #
