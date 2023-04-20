@@ -170,15 +170,14 @@ class RoleGenerator:
 
     @supported_directive
     def _handle_env(self, directive: EnvDirective) -> None:
-        for name, value in zip(directive.names, directive.values):
-            fact_name = self._add_fact(name, value)
+        fact_names = self._add_facts(directive.names, directive.values)
+        for name, fact_name in zip(directive.names, fact_names):
             self._context.add_global_env(name=name, value="{{ " + fact_name + " }}")
 
     @supported_directive
     def _handle_arg(self, directive: ArgDirective) -> None:
-        name = directive.name
-        fact_name = self._add_fact(name, directive.value)
-        self._context.add_global_env(name=name, value="{{ " + fact_name + " }}")
+        fact_name = self._add_fact(directive.name, directive.value)
+        self._context.add_global_env(name=directive.name, value="{{ " + fact_name + " }}")
 
     @supported_directive
     def _handle_user(self, directive: UserDirective) -> None:
@@ -286,15 +285,6 @@ class RoleGenerator:
     #################################
 
     @staticmethod
-    def _create_set_fact_task(fact_name: str, value: str) -> Dict[str, Any]:
-        task = {
-            "set_fact": {
-                fact_name: value
-            }
-        }
-        return task
-
-    @staticmethod
     def _create_etc_env_task(name: str, value: str) -> Dict[str, Any]:
         task = {
             "lineinfile": {
@@ -316,7 +306,7 @@ class RoleGenerator:
         fact_name = s.strip().lower().replace('-', '_') + "_fact"
         return fact_name
 
-    def _add_fact(self, name: str, value: ShellExpression) -> str:
+    def _define_fact(self, name: str, value: ShellExpression) -> Tuple[str, str]:
         fact_name = self._fact_name_wrapper(name)
         val = self._context.shell_expression_value(value)
         if val is None:
@@ -326,10 +316,19 @@ class RoleGenerator:
             val = "{{ " + register + " }}"
         else:
             self._context.set_fact(fact_name, val)
+        return fact_name, val
 
-        task = self._create_set_fact_task(fact_name=fact_name, value=val)
+    def _add_facts(self, names: List[str], values: List[ShellExpression]) -> List[str]:
+        facts = {}
+        for name, value in zip(names, values):
+            fact_name, val = self._define_fact(name, value)
+            facts[fact_name] = val
+        task = {"set_fact": facts}
         self._add_task(task, set_condition=False)
-        return fact_name
+        return list(facts.keys())
+
+    def _add_fact(self, name: str, value: ShellExpression) -> str:
+        return self._add_facts([name], [value])[0]
 
     #############################
     # WORKDIR DIRECTIVE METHODS #

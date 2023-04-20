@@ -186,7 +186,10 @@ class AnsiblePlayContext:
     def path_str_wrapper(self, path: str) -> str:
         if path.startswith("~"):
             path = "/home/" + self.get_user() + path[1:]
-        return os.path.join(self.get_workdir(), path)
+        workdir = self.get_workdir()
+        if workdir is None:
+            workdir = "/"
+        return os.path.join(workdir, path)
 
     @staticmethod
     def _local_var_name_wrapper(name: str) -> str:

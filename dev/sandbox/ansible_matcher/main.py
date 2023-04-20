@@ -69,9 +69,9 @@ if __name__ == "__main__":
                     print(f"{comm}\n")
                 if SHOW_TASK_MATCHER:
                     print_header("TASK MATCHER:")
-                    s = yaml.dump(obj, sort_keys=False, Dumper=MyDumper,
-                                  default_flow_style=False, explicit_start=True,
-                                  canonical=False, width=1000000000)
+                    s = "---\n" + yaml.dump(obj, sort_keys=False, Dumper=MyDumper,
+                                            default_flow_style=False, explicit_start=False,
+                                            canonical=False, width=1000000000)
                     print(f"{s}\n")
                 print(f"{ext}\n")
 

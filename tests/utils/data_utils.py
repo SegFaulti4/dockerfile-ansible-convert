@@ -1,5 +1,6 @@
 import shutil
 import os.path
+from typing import List
 
 
 TESTS_DIR = os.path.dirname(os.path.dirname(__file__))
@@ -17,3 +18,7 @@ def copy_file(src: str, dst: str) -> None:
 def setup_dir(directory: str) -> None:
     if not os.path.exists(directory):
         os.makedirs(directory)
+
+
+def filenames_from_dir(directory: str) -> List[str]:
+    return [f for f in os.listdir(directory) if os.path.isfile(os.path.join(directory, f))]

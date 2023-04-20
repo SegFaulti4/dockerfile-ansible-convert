@@ -30,10 +30,11 @@ def flag_print(*args, **kwargs):
 
 def prepare_containerfile_image(file_name: str, idx: int, echo: bool) -> Optional[str]:
     path = os.path.join(GENERATOR_TESTS_DIR, file_name)
+    file_basename = file_name[:file_name.find('.')]
     cf_path = os.path.join(TMP_DIR, file_name)
     copy_file(path, cf_path)
 
-    image_name = f"docker-test-{idx}"
+    image_name = f"docker-test-{file_basename}"
     build_comm = f"docker build -t {image_name} --file={cf_path} ."
 
     try:
@@ -69,7 +70,8 @@ def prepare_containerfile_image(file_name: str, idx: int, echo: bool) -> Optiona
 
 def prepare_ansible_image(file_name: str, idx: int, echo: bool) -> Optional[str]:
     path = os.path.join(GENERATOR_TESTS_DIR, file_name)
-    file_name = file_name[:file_name.find('.')] + ".yml"
+    file_basename = file_name[:file_name.find('.')]
+    file_name = file_basename + ".yml"
     pb_path = os.path.join(TMP_DIR, file_name)
 
     with open(pb_path, "w") as outF:
@@ -77,7 +79,7 @@ def prepare_ansible_image(file_name: str, idx: int, echo: bool) -> Optional[str]
 
     # TODO: fix ip addr abomination
     ip_addr = f"172.18.0.{idx + 2}"
-    image_name = f"ansible-test-{idx}"
+    image_name = f"ansible-test-{file_basename}"
     container_name = f"{image_name}-container"
 
     run_comm = f"docker run -d --net {DOCKER_NET_NAME} --ip {ip_addr} -p {8000 + idx}:22 " \
@@ -137,7 +139,7 @@ def prepare_ansible_image(file_name: str, idx: int, echo: bool) -> Optional[str]
 
 
 def diff_images(image1: Optional[str], image2: Optional[str], idx: int, echo: bool = True):
-    log_path = os.path.join(LOG_DIR, f"diff-{str(idx)}.json")
+    log_path = os.path.join(LOG_DIR, f"diff-{image1}.json")
     if image1 is None or image2 is None:
         with open(log_path, "w") as outF:
             outF.write("[]")
@@ -169,8 +171,8 @@ def collect_ansible_diff_worker(args: Tuple[List[str], int, bool]):
             ans_image = prepare_ansible_image(name, idx, echo)
             diff_images(cf_image, ans_image, idx, echo)
 
-            #rm_image(cf_image)
-            #rm_image(ans_image)
+            rm_image(cf_image)
+            rm_image(ans_image)
             pbar.update(1)
 
 
@@ -188,8 +190,8 @@ def main():
     globalLog.setLevel(logging.ERROR)
     setup_dir(LOG_DIR)
 
-    containerfile_name = "0a651c75a68111ad0a81b03fa9a7f120445d1d1d.Dockerfile"
-    collect_ansible_diff([containerfile_name], 1)
+    filenames = filenames_from_dir(GENERATOR_TESTS_DIR)
+    collect_ansible_diff(filenames, 1)
 
 
 if __name__ == "__main__":
