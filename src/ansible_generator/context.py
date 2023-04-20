@@ -1,10 +1,10 @@
 from src.shell.main import *
 
-import re
+import os.path
 import jinja2
 import jinja2.meta
-from typing import Union, Dict, Optional
-from dataclasses import dataclass, field
+from typing import Dict, Optional
+from dataclasses import dataclass
 
 
 @dataclass
@@ -17,8 +17,14 @@ class AnsiblePlayContext:
     local_workdir: Optional[str] = None
     global_user: Optional[str] = None
     local_user: Optional[str] = None
+    global_old_workdir: Optional[str] = None
+    local_old_workdir: Optional[str] = None
 
-    def resolve_shell_word(self, word: ShellWordObject, strict: bool = True) -> Optional[Tuple[ShellWordObject, Dict[str, str]]]:
+    _WORKDIR_KEY = 'PWD'
+    _OLD_WORKDIR_KEY = 'OLDPWD'
+
+    def resolve_shell_word(self, word: ShellWordObject, strict: bool = True) \
+            -> Optional[Tuple[ShellWordObject, Dict[str, str]]]:
         if not word.parts:
             return word, {}
 
@@ -64,7 +70,8 @@ class AnsiblePlayContext:
 
         return words, local_vars
 
-    def shell_expression_value(self, expr: ShellExpression, strict: bool = True) -> Optional[str]:
+    def shell_expression_value(self, expr: ShellExpression, strict: bool = True) \
+            -> Optional[str]:
         words: List[ShellWordObject] = []
         for part in expr.parts:
             if isinstance(part, ShellCommandObject):
@@ -81,38 +88,58 @@ class AnsiblePlayContext:
     def get_environment(self):
         return {**self.global_env, **self.local_env}
 
-    def get_workdir(self) -> Union[str, None]:
-        local_wd = self.get_local_workdir()
-        if local_wd is None:
-            return self.get_global_workdir()
-        return local_wd
-
-    def get_global_workdir(self) -> Union[str, None]:
-        return self.global_workdir
-
-    def get_local_workdir(self) -> Union[str, None]:
-        return self.local_workdir
-
-    def get_user(self) -> Union[str, None]:
+    def get_user(self) -> Optional[str]:
         local_usr = self.get_local_user()
         if local_usr is None:
             return self.get_global_user()
         return local_usr
 
-    def get_global_user(self) -> Union[str, None]:
+    def get_global_user(self) -> Optional[str]:
         return self.global_user
 
-    def get_local_user(self) -> Union[str, None]:
+    def get_local_user(self) -> Optional[str]:
         return self.local_user
 
+    def get_workdir(self) -> Optional[str]:
+        local_wd = self.get_local_workdir()
+        if local_wd is None:
+            return self.get_global_workdir()
+        return local_wd
+
+    def get_old_workdir(self) -> Optional[str]:
+        local_old_wd = self.get_local_old_workdir()
+        if local_old_wd is None:
+            return self.get_global_old_workdir()
+        return local_old_wd
+
+    def get_global_workdir(self) -> Optional[str]:
+        return self.global_env.get(self._WORKDIR_KEY, None)
+
+    def get_local_workdir(self) -> Optional[str]:
+        return self.local_env.get(self._WORKDIR_KEY, None)
+
+    def get_global_old_workdir(self) -> Optional[str]:
+        return self.global_env.get(self._OLD_WORKDIR_KEY, None)
+
+    def get_local_old_workdir(self) -> Optional[str]:
+        return self.local_env.get(self._OLD_WORKDIR_KEY, None)
+
+    def set_global_old_workdir(self, value: str) -> None:
+        self.global_env[self._WORKDIR_KEY] = value
+
+    def set_local_old_workdir(self, value: str) -> None:
+        self.local_env[self._WORKDIR_KEY] = value
+
     def set_global_workdir(self, path: str) -> None:
-        self.global_workdir = self._path_str_wrapper(path)
+        self.set_global_old_workdir(self.get_global_workdir())
+        self.global_env[self._WORKDIR_KEY] = self.path_str_wrapper(path)
+
+    def set_local_workdir(self, path: str) -> None:
+        self.set_local_old_workdir(self.get_local_workdir())
+        self.local_env[self._WORKDIR_KEY] = self.path_str_wrapper(path)
 
     def set_global_user(self, name: str) -> None:
         self.global_user = name
-
-    def set_local_workdir(self, path: str) -> None:
-        self.local_workdir = self._path_str_wrapper(path)
 
     def add_global_env(self, name: str, value: str) -> None:
         self.global_env[name] = value
@@ -120,11 +147,15 @@ class AnsiblePlayContext:
     def add_local_env(self, name: str, value: str) -> None:
         self.local_env[name] = value
 
+    # only for detection of true global var value
+    # useful for matcher tests collection
     def set_fact(self, name: str, value: str) -> None:
         val = self._str_true_value(value)
         if val is not None:
             self.facts[name] = val
 
+    # only for detection of true local var value
+    # useful for matcher tests collection
     def set_var(self, name: str, value: str) -> None:
         val = self._str_true_value(value)
         if val is not None:
@@ -152,12 +183,10 @@ class AnsiblePlayContext:
             return None
         return rendered
 
-    def _path_str_wrapper(self, path: str) -> str:
-        if re.fullmatch(r'\.(/.*)?', path):
-            return self.get_workdir() + path[1:]
-        if re.fullmatch(r'~(/.*)?', path):
-            return "/home/" + self.get_user() + path[1:]
-        return path
+    def path_str_wrapper(self, path: str) -> str:
+        if path.startswith("~"):
+            path = "/home/" + self.get_user() + path[1:]
+        return os.path.join(self.get_workdir(), path)
 
     @staticmethod
     def _local_var_name_wrapper(name: str) -> str:

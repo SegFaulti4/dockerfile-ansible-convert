@@ -118,7 +118,7 @@ class CommandOptsExtractor:
         word = self._rt.words.pop(0)
 
         # try to match whole word as an option name (e.g. `gcc -dumpspecs`)
-        opt = self._opt_match("-" + word.value)
+        opt = self._opt_match(word.value)
         if opt is not None:
             if not opt.arg_required:
                 self._rt.opts.append((opt, None))

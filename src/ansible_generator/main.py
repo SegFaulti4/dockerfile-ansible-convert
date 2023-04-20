@@ -44,6 +44,8 @@ class RoleGenerator:
     stats: Optional[RoleGeneratorStatistics]
     matcher_tests: Optional[List[str]]
 
+    _DEFAULT_PATH = "/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin"
+
     _df_content: DockerfileContent
     _context: Union[AnsiblePlayContext, None] = None
     _runtime: Union[_Runtime, None] = None
@@ -89,6 +91,8 @@ class RoleGenerator:
                                            global_user=self.default_user,
                                            global_workdir=self.default_workdir,
                                            facts=dict(), vars=dict())
+        self._add_default_context_vars()
+
         for directive in self._df_content.directives:
             handle_map[type(directive)](directive=directive)
 
@@ -104,6 +108,14 @@ class RoleGenerator:
         self._runtime.local = _LocalRuntime()
 
         return self._runtime.general.role_tasks
+
+    def _add_default_context_vars(self):
+        default_vars = {
+            "PATH": self._DEFAULT_PATH,
+            "HOME": self._context.path_str_wrapper("~")
+        }
+        for name, value in default_vars.items():
+            self._context.add_global_env(name, value)
 
     def _add_task(self, task: Dict,
                   user: str = "",
@@ -299,8 +311,13 @@ class RoleGenerator:
         task = self._add_task(task, set_condition=False)
         task["become"] = "yes"
 
+    @staticmethod
+    def _fact_name_wrapper(s: str) -> str:
+        fact_name = s.strip().lower().replace('-', '_') + "_fact"
+        return fact_name
+
     def _add_fact(self, name: str, value: ShellExpression) -> str:
-        fact_name = name.strip().lower().replace('-', '_') + "_fact"
+        fact_name = self._fact_name_wrapper(name)
         val = self._context.shell_expression_value(value)
         if val is None:
             task = self._create_echo_task(value.line)
@@ -539,5 +556,8 @@ class RoleGenerator:
         # mark `cd` command as covered
         if self.collect_stats:
             self.task_matcher.stats.coverage[-1] = 1.
+        if extracted_call.params[1].value == '-':
+            self._context.set_local_workdir(self._context.get_old_workdir())
+            return _ScriptPartType.NONE, None
         self._context.set_local_workdir(extracted_call.params[1].value)
         return _ScriptPartType.NONE, None
