@@ -38,7 +38,7 @@ class DockerfileCommandTransformer:
     def transform_user(directive) -> Tuple[Type, Dict]:
         value = directive.value[0].strip('"')
         name = value[:value.find(':')] if ':' in value else value
-        group = value[value.find(':'):] if ':' in value else '""'
+        group = value[value.find(':') + 1:] if ':' in value else ""
         return UserDirective, {"name": name, "group": group}
 
     @staticmethod
@@ -48,13 +48,31 @@ class DockerfileCommandTransformer:
 
     @staticmethod
     def transform_add(directive) -> Tuple[Type, Dict]:
-        source, destinations = directive.value[0], directive.value[1:]
-        return AddDirective, {"source": source, "destinations": destinations}
+        sources, destination = directive.value[:-1], directive.value[-1]
+        chown_name, chown_group = "", ""
+
+        for flag in directive.flags:
+            if flag.startswith("--chown="):
+                value = flag[len("--chown="):].strip('"')
+                chown_name = value[:value.find(':')] if ':' in value else value
+                chown_group = value[value.find(':') + 1:] if ':' in value else ""
+
+        return AddDirective, {"sources": sources, "destination": destination,
+                              "chown_name": chown_name, "chown_group": chown_group}
 
     @staticmethod
     def transform_copy(directive) -> Tuple[Type, Dict]:
-        source, destinations = directive.value[0], directive.value[1:]
-        return CopyDirective, {"source": source, "destinations": destinations}
+        sources, destination = directive.value[:-1], directive.value[-1]
+        chown_name, chown_group = "", ""
+
+        for flag in directive.flags:
+            if flag.startswith("--chown="):
+                value = flag[len("--chown="):].strip('"')
+                chown_name = value[:value.find(':')] if ':' in value else value
+                chown_group = value[value.find(':') + 1:] if ':' in value else ""
+
+        return CopyDirective, {"sources": sources, "destination": destination,
+                               "chown_name": chown_name, "chown_group": chown_group}
 
     @staticmethod
     def transform_from(directive) -> Tuple[Type, Dict]:

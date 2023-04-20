@@ -1,1 +1,1 @@
-curl -LOs http://download.osgeo.org/proj/proj-datumgrid-north-america-latest.zip
+pip install -r requirements.txt

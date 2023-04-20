@@ -9,6 +9,7 @@ from dev.sandbox.ansible_matcher.main import SandboxTaskMatcher
 from src.containerfile.main import *
 from src.ansible_generator.main import RoleGenerator as SandboxRoleGenerator
 import dev.utils.data_utils as data_utils
+from cli.main import dump_ansible
 
 from src.log import globalLog
 
@@ -51,5 +52,5 @@ if __name__ == "__main__":
                 print(f"{rep}\n")
             if SHOW_ROLE_GENERATOR:
                 print_header("ROLE GENERATOR:")
-                yaml.safe_dump(tasks, sys.stdout)
+                print(dump_ansible(tasks))
                 print()

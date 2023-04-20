@@ -23,7 +23,7 @@ class AnsiblePlayContext:
     _WORKDIR_KEY = 'PWD'
     _OLD_WORKDIR_KEY = 'OLDPWD'
 
-    def resolve_shell_word(self, word: ShellWordObject, strict: bool = True) \
+    def resolve_shell_word(self, word: ShellWordObject, strict: bool = True, empty_missing: bool = False) \
             -> Optional[Tuple[ShellWordObject, Dict[str, str]]]:
         if not word.parts:
             return word, {}
@@ -42,6 +42,8 @@ class AnsiblePlayContext:
                 param_val = self.global_env[param_name]
             elif strict:
                 return None
+            elif empty_missing:
+                param_val = ""
             else:
                 param_val = word.value[param.pos[0]:param.pos[1]]
 
@@ -55,12 +57,12 @@ class AnsiblePlayContext:
 
         return ShellWordObject(value=value, parts=parts), local_vars
 
-    def resolve_shell_command(self, command: ShellCommandObject, strict: bool = True) \
+    def resolve_shell_command(self, command: ShellCommandObject, strict: bool = True, empty_missing: bool = False) \
             -> Optional[Tuple[List[ShellWordObject], Dict[str, str]]]:
         words = []
         local_vars = {}
         for part in command.parts:
-            resolved = self.resolve_shell_word(part, strict)
+            resolved = self.resolve_shell_word(part, strict, empty_missing)
             if resolved is None:
                 return None
 
@@ -70,12 +72,12 @@ class AnsiblePlayContext:
 
         return words, local_vars
 
-    def shell_expression_value(self, expr: ShellExpression, strict: bool = True) \
+    def resolve_shell_expression(self, expr: ShellExpression, strict: bool = True, empty_missing: bool = False) \
             -> Optional[str]:
         words: List[ShellWordObject] = []
         for part in expr.parts:
             if isinstance(part, ShellCommandObject):
-                resolved = self.resolve_shell_command(part, strict)
+                resolved = self.resolve_shell_command(part, strict, empty_missing)
                 if resolved is None:
                     return None
                 part_words, _ = resolved

@@ -1,5 +1,6 @@
 from enum import Enum
 import itertools
+import validators
 
 from src.ansible_matcher.main import *
 from src.containerfile.main import *
@@ -138,12 +139,23 @@ class RoleGenerator:
         self._runtime.general.role_tasks.append(task)
         return self._runtime.general.role_tasks[-1]
 
+    def _shell_expr_values(self, exps: List[ShellExpression], strict: bool = True, empty_missing: bool = False) \
+            -> List[str]:
+        res = []
+        for expr in exps:
+            val = self._context.resolve_shell_expression(expr, strict, empty_missing)
+            if val is None:
+                task = self._create_echo_task(expr.line)
+                register = self._add_echo_register(task)
+                self._add_task(task, user="root", environment=self._context.get_environment(), set_condition=False)
+                res.append("{{ " + register + " }}")
+            else:
+                res.append(val)
+        return res
+
     ###################
     # HANDLER METHODS #
     ###################
-
-    # def _handle_directive(self, directive: DockerfileDirective) -> None:
-    #    getattr(self, "_handle_" + type(directive).__name__.replace('Node', '').lower())(directive)
 
     @staticmethod
     def _handle_default(directive) -> None:
@@ -181,60 +193,52 @@ class RoleGenerator:
 
     @supported_directive
     def _handle_user(self, directive: UserDirective) -> None:
-        val = self._context.shell_expression_value(directive.name)
-        if val is None:
-            task = self._create_echo_task(directive.name.line)
-            register = self._add_echo_register(task)
-            self._add_task(task, user=self._context.get_user(), environment=self._context.get_environment(),
-                           set_condition=False)
-            self._context.set_global_user("{{ " + register + " }}")
-        else:
-            self._context.set_global_user(name=val)
+        name = self._shell_expr_values([directive.name], strict=False, empty_missing=True)[0]
+        group = self._shell_expr_values([directive.group], strict=False, empty_missing=True)[0]
+
+        task = {
+            "user": {
+                "name": name,
+                "group": group if group else "root",
+                "state": "present"
+            }
+        }
+        self._add_task(task, set_condition=False)
+        self._context.set_global_user(name=name)
 
     @supported_directive
     def _handle_workdir(self, directive: WorkdirDirective) -> None:
-        val = self._context.shell_expression_value(directive.path, strict=False)
-        if val is None:
-            task = self._create_echo_task(directive.path.line)
-            register = self._add_echo_register(task)
-            self._add_task(task, user=self._context.get_user(), environment=self._context.get_environment(),
-                           set_condition=False)
-
-            path = "{{ " + register + "}}"
-        else:
-            path = val
-
+        path = self._shell_expr_values([directive.path], strict=False)[0]
         mkdir_task = self._create_mkdir_task(path)
         self._add_task(mkdir_task, user=self._context.get_user(), set_condition=False)
         self._context.set_global_workdir(path)
 
     @supported_directive
     def _handle_add(self, directive: AddDirective) -> None:
-        paths = [directive.source] + [dest for dest in directive.destinations]
-        vals = []
-        for path in paths:
-            val = self._context.shell_expression_value(path)
-            if val is None:
-                task = self._create_echo_task(path.line)
-                register = self._add_echo_register(task)
-                self._add_task(task, user=self._context.get_user(), environment=self._context.get_environment(),
-                               set_condition=False)
-                val = "{{ " + register + " }}"
-            vals.append(val)
+        sources, destination = self._prepare_sources_and_destination(directive)
+        name, group = directive.chown_name.line, directive.chown_group.line
 
-        for dest in vals[1:]:
-            task = {
-                "copy": {
-                    "src": vals[0],
-                    "dest": dest
-                }
-            }
-            self._add_task(task, user=self._context.get_user(), set_condition=False)
+        urls, archives, files = [], [], []
+        for source in sources:
+            if self._is_url(source):
+                urls.append(source)
+            elif self._is_archive(source):
+                archives.append(source)
+            else:
+                files.append(source)
+
+        tasks = self._create_add_directive_tasks(urls, archives, files, destination, name=name, group=group)
+        for task in tasks:
+            self._add_task(task, user="root", set_condition=False)
 
     @supported_directive
     def _handle_copy(self, directive: CopyDirective) -> None:
-        return self._handle_add(directive=AddDirective(source=directive.source,
-                                                       destinations=directive.destinations))
+        sources, destination = self._prepare_sources_and_destination(directive)
+        name, group = directive.chown_name.line, directive.chown_group.line
+
+        tasks = self._create_file_copy_tasks(sources, destination, name=name, group=group)
+        for task in tasks:
+            self._add_task(task, user="root", set_condition=False)
 
     @unsupported_directive
     def _handle_from(self, directive) -> None:
@@ -285,30 +289,17 @@ class RoleGenerator:
     #################################
 
     @staticmethod
-    def _create_etc_env_task(name: str, value: str) -> Dict[str, Any]:
-        task = {
-            "lineinfile": {
-                "dest": "/etc/environment",
-                "state": "present",
-                "regexp": f"^{name}=",
-                "line": f"{name}={value}"
-            }
-        }
-        return task
-
-    def _add_permanent_env(self, name: str, value: str):
-        task = self._create_etc_env_task(name, value)
-        task = self._add_task(task, set_condition=False)
-        task["become"] = "yes"
-
-    @staticmethod
     def _fact_name_wrapper(s: str) -> str:
         fact_name = s.strip().lower().replace('-', '_') + "_fact"
         return fact_name
 
     def _define_fact(self, name: str, value: ShellExpression) -> Tuple[str, str]:
         fact_name = self._fact_name_wrapper(name)
-        val = self._context.shell_expression_value(value)
+
+        # self._shell_expr_values is not used
+        # because behaviour depends on whether expression value
+        # is available without calling of "echo" task
+        val = self._context.resolve_shell_expression(value, strict=True)
         if val is None:
             task = self._create_echo_task(value.line)
             register = self._add_echo_register(task)
@@ -343,6 +334,152 @@ class RoleGenerator:
             }
         }
         return task
+
+    ##################################
+    # ADD and COPY DIRECTIVE METHODS #
+    ##################################
+
+    @staticmethod
+    def _is_url(s: str) -> bool:
+        return validators.url(s)
+
+    @staticmethod
+    def _is_archive(s: str) -> bool:
+        ends = [".tar", ".tar.gz", ".tar.bz2", ".tar.xz"]
+        return any(s.endswith(end) for end in ends)
+
+    def _prepare_sources_and_destination(self, directive: Union[CopyDirective, AddDirective]) -> Tuple[List[str], str]:
+        paths = [source for source in directive.sources] + [directive.destination]
+        vals = self._shell_expr_values(paths, strict=True, empty_missing=True)
+        vals = [self._context.path_str_wrapper(val) for val in vals]
+        sources, destination = [v.rstrip("/") for v in vals[:-1]], vals[-1]
+        return sources, destination
+
+    @staticmethod
+    def _create_file_copy_tasks(sources: List[str], destination: str,
+                                name: str = "", group: str = "") -> List[Dict]:
+        if not destination.endswith("/"):
+            tasks = [
+                {
+                    "file": {
+                        "state": "directory",
+                        "path": "{{ dest | dirname }}"
+                    },
+                    "vars": {
+                        "dest": destination
+                    }
+                },
+                {
+                    "copy": {
+                        "src": "{{ item }}",
+                        "dest": destination,
+                        "mode": "0755",
+                        "remote_src": False
+                    },
+                    "with_fileglob": sources
+                }
+            ]
+            if name:
+                tasks[-1]["copy"]["owner"] = name
+            if group:
+                tasks[-1]["copy"]["group"] = group
+        else:
+            tasks = [
+                {
+                    "stat": {
+                        "path": "{{ item }}"
+                    },
+                    "with_fileglob": sources,
+                    "register": "st_reg",
+                    "delegate_to": "localhost"
+                },
+                {
+                    "copy": {
+                        "src": "{{ item.stat.path + '/' if ( item.stat.isdir is defined and item.stat.isdir ) else "
+                               "item.stat.path }}",
+                        "dest": destination,
+                        "mode": "0755",
+                        "remote_src": False
+                    },
+                    "loop": "{{ st_reg.results }}"
+                }
+            ]
+            if name:
+                tasks[-1]["copy"]["owner"] = name
+            if group:
+                tasks[-1]["copy"]["group"] = group
+        return tasks
+
+    @staticmethod
+    def _create_url_copy_tasks(urls: List[str], destination: str,
+                               name: str = "", group: str = "") -> List[Dict]:
+        if not urls:
+            return []
+
+        if len(urls) > 1:
+            tasks = [{
+                "get_url": {
+                    "url": "{{ item }}",
+                    "decompress": False,
+                    "dest": destination
+                },
+                "loop": urls
+            }]
+            if name:
+                tasks[-1]["get_url"]["owner"] = name
+            if group:
+                tasks[-1]["get_url"]["group"] = group
+        else:
+            tasks = [{
+                "get_url": {
+                    "url": urls[0],
+                    "decompress": False,
+                    "dest": destination
+                }
+            }]
+            if name:
+                tasks[-1]["get_url"]["owner"] = name
+            if group:
+                tasks[-1]["get_url"]["group"] = group
+        return tasks
+
+    @staticmethod
+    def _create_archive_copy_tasks(archives: List[str], destination: str,
+                                   name: str = "", group: str = "") -> List[Dict]:
+        if not archives:
+            return []
+
+        tasks = [
+            {
+                "file": {
+                    "state": "directory",
+                    "path": destination
+                }
+            },
+            {
+                "unarchive": {
+                    "src": "{{ item }}",
+                    "dest": destination,
+                    "remote_src": False
+                },
+                "with_fileglob": archives
+            }
+        ]
+        if name:
+            tasks[-1]["unarchive"]["owner"] = name
+        if group:
+            tasks[-1]["unarchive"]["group"] = group
+        return tasks
+
+    @staticmethod
+    def _create_add_directive_tasks(urls: List[str], archives: List[str],
+                                    files: List[str], destination: str,
+                                    name: str = "", group: str = "") -> List[Dict]:
+        tasks = []
+        tasks.extend(RoleGenerator._create_file_copy_tasks(files, destination, name=name, group=group))
+        tasks.extend(RoleGenerator._create_url_copy_tasks(urls, destination, name=name, group=group))
+        tasks.extend(RoleGenerator._create_archive_copy_tasks(archives, destination, name=name, group=group))
+        return tasks
 
     #########################
     # RUN DIRECTIVE METHODS #
@@ -485,7 +622,10 @@ class RoleGenerator:
         return handle_map[comm_name](extracted_call, local_vars, line)
 
     def _handle_run_assignment(self, obj: ShellAssignmentObject) -> (_ScriptPartType, Any):
-        value = self._context.shell_expression_value(obj.value)
+        # self._shell_expr_values is not used
+        # because behaviour depends on whether expression value
+        # is available without calling of "echo" task
+        value = self._context.resolve_shell_expression(obj.value, strict=True)
         if value is None:
             task = self._create_echo_task(obj.value.line)
             register = self._add_echo_register(task)

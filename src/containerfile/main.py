@@ -58,20 +58,26 @@ class WorkdirDirective(DockerfileDirective):
 
 @dataclass
 class AddDirective(DockerfileDirective):
-    source: ShellExpression
-    destinations: List[ShellExpression]
+    sources: List[ShellExpression]
+    destination: ShellExpression
+    chown_name: ShellExpression
+    chown_group: ShellExpression
 
     def __len__(self):
-        return 5 + len(self.source.line) + sum(1 + len(d.line) for d in self.destinations)
+        # TODO: add len of chown_name and chown_group
+        return 5 + len(self.destination.line) + sum(1 + len(d.line) for d in self.sources)
 
 
 @dataclass
 class CopyDirective(DockerfileDirective):
-    source: ShellExpression
-    destinations: List[ShellExpression]
+    sources: List[ShellExpression]
+    destination: ShellExpression
+    chown_name: ShellExpression
+    chown_group: ShellExpression
 
     def __len__(self):
-        return 6 + len(self.source.line) + sum(1 + len(d.line) for d in self.destinations)
+        # TODO: add len of chown_name and chown_group
+        return 6 + len(self.destination.line) + sum(1 + len(d.line) for d in self.sources)
 
 
 @dataclass
@@ -210,22 +216,47 @@ class DockerfileParser:
 
     def _generate_user(self, name: str, group: str) -> UserDirective:
         name_expr = self.shell_parser.parse_as_expression(name)
-        group_expr = self.shell_parser.parse_as_expression(group)
+        if group:
+            group_expr = self.shell_parser.parse_as_expression(group)
+        else:
+            group_expr = ShellExpression(line="", parts=[])
         return UserDirective(name=name_expr, group=group_expr)
 
     def _generate_workdir(self, path: str) -> WorkdirDirective:
         path_expr = self.shell_parser.parse_as_expression(path)
         return WorkdirDirective(path=path_expr)
 
-    def _generate_add(self, source: str, destinations: List[str]) -> AddDirective:
-        source_expr = self.shell_parser.parse_as_expression(source)
-        destinations_expr = [self.shell_parser.parse_as_expression(dest) for dest in destinations]
-        return AddDirective(source=source_expr, destinations=destinations_expr)
+    def _generate_add(self, sources: List[str], destination: str, chown_name: str, chown_group: str) -> AddDirective:
+        sources_expr = [self.shell_parser.parse_as_expression(source) for source in sources]
+        destination_expr = self.shell_parser.parse_as_expression(destination)
 
-    def _generate_copy(self, source: str, destinations: List[str]) -> CopyDirective:
-        source_expr = self.shell_parser.parse_as_expression(source)
-        destinations_expr = [self.shell_parser.parse_as_expression(dest) for dest in destinations]
-        return CopyDirective(source=source_expr, destinations=destinations_expr)
+        if chown_name:
+            chown_name_expr = self.shell_parser.parse_as_expression(chown_name)
+        else:
+            chown_name_expr = ShellExpression(line="", parts=[])
+        if chown_group:
+            chown_group_expr = self.shell_parser.parse_as_expression(chown_group)
+        else:
+            chown_group_expr = ShellExpression(line="", parts=[])
+
+        return AddDirective(sources=sources_expr, destination=destination_expr,
+                            chown_name=chown_name_expr, chown_group=chown_group_expr)
+
+    def _generate_copy(self, sources: List[str], destination: str, chown_name: str, chown_group: str) -> CopyDirective:
+        sources_expr = [self.shell_parser.parse_as_expression(source) for source in sources]
+        destination_expr = self.shell_parser.parse_as_expression(destination)
+
+        if chown_name:
+            chown_name_expr = self.shell_parser.parse_as_expression(chown_name)
+        else:
+            chown_name_expr = ShellExpression(line="", parts=[])
+        if chown_group:
+            chown_group_expr = self.shell_parser.parse_as_expression(chown_group)
+        else:
+            chown_group_expr = ShellExpression(line="", parts=[])
+
+        return CopyDirective(sources=sources_expr, destination=destination_expr,
+                             chown_name=chown_name_expr, chown_group=chown_group_expr)
 
     def _generate_from(self, values: List[str]) -> FromDirective:
         return FromDirective(values=values)
