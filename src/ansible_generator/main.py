@@ -39,11 +39,16 @@ class _Runtime:
 
 class RoleGenerator:
     task_matcher: TaskMatcher
-    collect_stats: bool
     default_user: str
     default_workdir: str
+
     stats: Optional[RoleGeneratorStatistics]
     matcher_tests: Optional[List[str]]
+
+    # stat flags
+    collect_stats: bool = False
+    collect_matcher_tests: bool = False
+    stat_id: int = -1
 
     _DEFAULT_PATH = "/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin"
 
@@ -51,14 +56,12 @@ class RoleGenerator:
     _context: Union[AnsiblePlayContext, None] = None
     _runtime: Union[_Runtime, None] = None
 
-    def __init__(self, dc: DockerfileContent, tm: TaskMatcher, default_user: str = "root", default_workdir: str = "/",
-                 collect_stats: bool = False, collect_matcher_tests: bool = False):
+    def __init__(self, dc: DockerfileContent, tm: TaskMatcher, default_user: str = "root", default_workdir: str = "/"):
         self._df_content = dc
         self.task_matcher = tm
-        self.collect_stats = collect_stats
-        self.collect_matcher_tests = collect_matcher_tests
         self.default_user = default_user
         self.default_workdir = default_workdir
+
         self.stats = None
         self.matcher_tests = None
 
@@ -590,9 +593,7 @@ class RoleGenerator:
         cwd = self._context.get_workdir() if cwd is None else cwd
         line = " ".join(x.value for x in words)
 
-        # ATTENTION: "collect_stats" parameter is passed to matcher
-        # collected stats might then be altered `_handle_run_command_extracted`
-        tasks = self.task_matcher.match_command(words, cwd=cwd, usr=usr, collect_stats=self.collect_stats)
+        tasks = self.task_matcher.match_command(words, cwd=cwd, usr=usr)
         if tasks is not None:
             if self.collect_matcher_tests:
                 values = [self._context.word_true_value(w) for w in words]
@@ -667,7 +668,7 @@ class RoleGenerator:
             opt_words.append(p.value)
 
         # length of `sudo` command doesn't include length of "sudoed" command
-        if self.collect_stats:
+        if self.task_matcher.collect_stats:
             sudo_words = [params[0].value] + opt_words
             self.task_matcher.stats.length[-1] = sum(map(len, sudo_words)) + len(sudo_words) - 1
 
@@ -677,7 +678,7 @@ class RoleGenerator:
             return self._handle_run_command_shell(line=line, local_vars=local_vars)
 
         # `sudo` command is covered, "sudoed" command might not be covered
-        if self.collect_stats:
+        if self.task_matcher.collect_stats:
             self.task_matcher.stats.coverage[-1] = 1.0
         return self._handle_run_command_resolved(words=params[1:],
                                                  local_vars=local_vars, usr="root")
@@ -693,7 +694,7 @@ class RoleGenerator:
             return self._handle_run_command_shell(line=line, local_vars=local_vars)
 
         # mark `cd` command as covered
-        if self.collect_stats:
+        if self.task_matcher.collect_stats:
             self.task_matcher.stats.coverage[-1] = 1.
         if extracted_call.params[1].value == '-':
             self._context.set_local_workdir(self._context.get_old_workdir())

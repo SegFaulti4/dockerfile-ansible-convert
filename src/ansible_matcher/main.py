@@ -13,28 +13,36 @@ from src.ansible_matcher.statistics import *
 class TaskMatcher:
     stats = TaskMatcherStatistics()
 
+    # stat flags
+    collect_stats: bool = False
+    stat_id: int = -1
+
     _tweaks: TemplateTweaks
     _config_loader: CommandConfigLoader
 
     def __init__(self, config_loader: CommandConfigLoader = init_command_config_loader):
         self._config_loader = config_loader
 
-    def match_command(self, comm: CommandCallParts, cwd: Optional[str] = None, usr: Optional[str] = None,
-                      collect_stats: bool = False) \
+    def match_command(self, comm: CommandCallParts, cwd: Optional[str] = None, usr: Optional[str] = None) \
             -> Optional[List[Dict[str, Any]]]:
+        if cwd is None:
+            cwd = "/"
+        if usr is None:
+            usr = "root"
+
         if not TaskMatcher._check_requirements(comm):
             return None
 
         command_config = self._config_loader.load(comm)
         if command_config is None:
-            self._stat_unknown(comm, collect_stats)
+            self._stat_unknown(comm)
             return None
 
         self._tweaks = TemplateTweaks(cwd=cwd, usr=usr)
 
         extracted_call = TaskMatcher._extract_command_call(command_config, comm)
         if extracted_call is None:
-            self._stat_unmatched(comm, command_config, collect_stats)
+            self._stat_unmatched(comm, command_config)
             return None
 
         for command_template, task_templates in command_config.examples:
@@ -43,10 +51,10 @@ class TaskMatcher:
             if task_calls is None:
                 continue
 
-            self._stat_matched(comm, command_config, collect_stats)
+            self._stat_matched(comm, command_config)
             return task_calls
 
-        self._stat_unmatched(comm, command_config, collect_stats)
+        self._stat_unmatched(comm, command_config)
         return None
 
     def extract_command(self, comm: CommandCallParts) -> Optional[ExtractedCommandCall]:
@@ -60,39 +68,36 @@ class TaskMatcher:
         extracted_call = TaskMatcher._extract_command_call(command_config, comm)
         return extracted_call
 
-    def _stat_unknown(self, comm: CommandCallParts, collect_stat: bool) -> None:
-        if not collect_stat:
+    def _stat_unknown(self, comm: CommandCallParts) -> None:
+        if not self.collect_stats:
             return
         self.stats.name.append(comm[0].value)
-        self.stats.supported.append(False)
-        self.stats.coverage.append(0.)
+        self.stats.supported.append(False), self.stats.coverage.append(0.)
         line = " ".join(map(lambda x: x.value, comm))
-        self.stats.length.append(len(line))
-        self.stats.line.append(line)
+        self.stats.length.append(len(line)), self.stats.line.append(line)
+        self.stats.stat_id.append(self.stat_id)
 
-    def _stat_unmatched(self, comm: CommandCallParts, command_config: CommandConfig, collect_stat: bool) -> None:
-        if not collect_stat:
+    def _stat_unmatched(self, comm: CommandCallParts, command_config: CommandConfig) -> None:
+        if not self.collect_stats:
             return
         self.stats.name.append(" ".join(
             map(lambda x: x.value, filter(lambda x: not x.parts, command_config.entry))
         ))
-        self.stats.supported.append(True)
-        self.stats.coverage.append(0.)
+        self.stats.supported.append(True), self.stats.coverage.append(0.)
         line = " ".join(map(lambda x: x.value, comm))
-        self.stats.length.append(len(line))
-        self.stats.line.append(line)
+        self.stats.length.append(len(line)), self.stats.line.append(line)
+        self.stats.stat_id.append(self.stat_id)
 
-    def _stat_matched(self, comm: CommandCallParts, command_config: CommandConfig, collect_stat: bool) -> None:
-        if not collect_stat:
+    def _stat_matched(self, comm: CommandCallParts, command_config: CommandConfig) -> None:
+        if not self.collect_stats:
             return
         self.stats.name.append(" ".join(
             map(lambda x: x.value, filter(lambda x: not x.parts, command_config.entry))
         ))
-        self.stats.supported.append(True)
-        self.stats.coverage.append(1.)
+        self.stats.supported.append(True), self.stats.coverage.append(1.)
         line = " ".join(map(lambda x: x.value, comm))
-        self.stats.length.append(len(line))
-        self.stats.line.append(line)
+        self.stats.length.append(len(line)), self.stats.line.append(line)
+        self.stats.stat_id.append(self.stat_id)
 
     @staticmethod
     def _check_requirements(comm: CommandCallParts) -> bool:

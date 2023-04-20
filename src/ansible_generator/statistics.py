@@ -8,6 +8,7 @@ class RoleGeneratorStatistics:
     supported: List[bool] = field(default_factory=list)
     coverage: List[float] = field(default_factory=list)
     length: List[int] = field(default_factory=list)
+    stat_id: List[int] = field(default_factory=list)
 
 
 def unsupported_directive(func):
@@ -20,6 +21,7 @@ def unsupported_directive(func):
             stats.supported.append(False)
             stats.coverage.append(0.)
             stats.length.append(len(kwargs['directive']))
+            stats.stat_id.append(args[0].stat_id)
         return res
 
     return new_func
@@ -35,6 +37,7 @@ def supported_directive(func):
             stats.supported.append(True)
             stats.coverage.append(1.)
             stats.length.append(len(kwargs['directive']))
+            stats.stat_id.append(args[0].stat_id)
         return res
 
     return new_func
