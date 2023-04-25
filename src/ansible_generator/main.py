@@ -2,6 +2,7 @@ from enum import Enum
 import itertools
 import validators
 
+from src.shell.main import *
 from src.ansible_matcher.main import *
 from src.containerfile.main import *
 from src.ansible_generator.context import *
@@ -17,15 +18,6 @@ class _ScriptPartType(Enum):
     NONE = 4
 
 
-class _LocalRuntime:
-    prev_part_type: _ScriptPartType
-    prev_part_value: Union[Dict, None]
-
-    def __init__(self):
-        self.prev_part_type = _ScriptPartType.NONE
-        self.prev_part_value = None
-
-
 class _GeneralRuntime:
     role_tasks: List
     echo_registers_num: int
@@ -39,11 +31,9 @@ class _GeneralRuntime:
 
 class _Runtime:
     general: _GeneralRuntime
-    local: _LocalRuntime
 
     def __init__(self):
         self.general = _GeneralRuntime()
-        self.local = _LocalRuntime()
 
 
 class RoleGenerator:
@@ -118,7 +108,6 @@ class RoleGenerator:
     def _return(self):
         self._runtime.general.result_registers_num = 0
         self._runtime.general.echo_registers_num = 0
-        self._runtime.local = _LocalRuntime()
 
         return self._runtime.general.role_tasks
 
@@ -130,24 +119,19 @@ class RoleGenerator:
         for name, value in default_vars.items():
             self._context.add_global_env(name, value)
 
-    def _add_task(self, task: Dict,
-                  user: str = "",
-                  variables: Dict[str, str] = None,
-                  environment: Dict[str, str] = None,
-                  set_condition: bool = False) -> Union[Dict, None]:
+    def _prepare_task(self, task: Dict, user: str = "", variables: Dict[str, str] = None,
+                      environment: Dict[str, str] = None) -> Union[Dict, None]:
         if user:
             self._add_task_user(task, user)
         if variables:
             self._add_task_vars(task, variables)
         if environment:
             self._add_task_environment(task, environment)
-        if set_condition:
-            if self._set_task_condition(task):
-                self._runtime.general.role_tasks.append(task)
-                return self._runtime.general.role_tasks[-1]
-            else:
-                return None
+        return task
 
+    def _add_task(self, task: Dict, user: str = "", variables: Dict[str, str] = None,
+                  environment: Dict[str, str] = None) -> Union[Dict, None]:
+        task = self._prepare_task(task, user, variables, environment)
         self._runtime.general.role_tasks.append(task)
         return self._runtime.general.role_tasks[-1]
 
@@ -159,7 +143,7 @@ class RoleGenerator:
             if val is None:
                 task = self._create_echo_task(expr.line)
                 register = self._add_echo_register(task)
-                self._add_task(task, user="root", environment=self._context.get_environment(), set_condition=False)
+                self._add_task(task, user="root", environment=self._context.get_environment())
                 res.append("{{ " + register + " }}")
             else:
                 res.append(val)
@@ -185,11 +169,11 @@ class RoleGenerator:
             ShellOperatorEndObject: self._handle_run_operator_end
         }
 
+        parts: List[Union[Dict, ShellOperatorObject]] = []
         for obj in directive.script.parts:
-            part_type, part_value = handle_run_map[type(obj)](obj=obj)
-            self._runtime.local.prev_part_type = part_type
-            self._runtime.local.prev_part_value = part_value
+            parts.extend(handle_run_map[type(obj)](obj=obj))
 
+        self._handle_run_parts(parts)
         self._clear_local_context()
 
     @supported_directive
@@ -215,14 +199,14 @@ class RoleGenerator:
                 "state": "present"
             }
         }
-        self._add_task(task, set_condition=False)
+        self._add_task(task)
         self._context.set_global_user(name=name)
 
     @supported_directive
     def _handle_workdir(self, directive: WorkdirDirective) -> None:
         path = self._shell_expr_values([directive.path], strict=False)[0]
         mkdir_task = self._create_mkdir_task(path)
-        self._add_task(mkdir_task, user=self._context.get_user(), set_condition=False)
+        self._add_task(mkdir_task, user=self._context.get_user())
         self._context.set_global_workdir(path)
 
     @supported_directive
@@ -241,7 +225,7 @@ class RoleGenerator:
 
         tasks = self._create_add_directive_tasks(urls, archives, files, destination, name=name, group=group)
         for task in tasks:
-            self._add_task(task, user="root", set_condition=False)
+            self._add_task(task, user="root")
 
     @supported_directive
     def _handle_copy(self, directive: CopyDirective) -> None:
@@ -250,7 +234,7 @@ class RoleGenerator:
 
         tasks = self._create_file_copy_tasks(sources, destination, name=name, group=group)
         for task in tasks:
-            self._add_task(task, user="root", set_condition=False)
+            self._add_task(task, user="root")
 
     @unsupported_directive
     def _handle_from(self, directive) -> None:
@@ -315,7 +299,7 @@ class RoleGenerator:
         if val is None:
             task = self._create_echo_task(value.line)
             register = self._add_echo_register(task)
-            self._add_task(task, environment=self._context.get_environment(), set_condition=False)
+            self._add_task(task, environment=self._context.get_environment())
             val = "{{ " + register + " }}"
         else:
             self._context.set_fact(fact_name, val)
@@ -327,7 +311,7 @@ class RoleGenerator:
             fact_name, val = self._define_fact(name, value)
             facts[fact_name] = val
         task = {"set_fact": facts}
-        self._add_task(task, set_condition=False)
+        self._add_task(task)
         return list(facts.keys())
 
     def _add_fact(self, name: str, value: ShellExpression) -> str:
@@ -511,29 +495,6 @@ class RoleGenerator:
         self._runtime.general.echo_registers_num += 1
         return register
 
-    # returns True if task with set condition should be added and False otherwise
-    def _set_task_condition(self, task: Dict) -> bool:
-        if self._runtime.local.prev_part_type is _ScriptPartType.OPERATOR_OR:
-            prev_task = self._runtime.local.prev_part_value
-            if prev_task is not None:
-                register = self._add_result_register(prev_task)
-                task["when"] = register + " is not succeeded"
-                return True
-            else:
-                # if prev_task is None that means
-                # that previous part of script cannot fail
-                # so new task will never be executed
-                return False
-        elif self._runtime.local.prev_part_type is _ScriptPartType.OPERATOR_AND:
-            prev_task = self._runtime.local.prev_part_value
-            if prev_task is not None:
-                register = self._add_result_register(prev_task)
-                task["when"] = register + " is succeeded"
-                return True
-            return True
-        else:
-            return True
-
     @staticmethod
     def _add_task_user(task: Dict, user: str) -> None:
         task["become"] = True
@@ -542,11 +503,17 @@ class RoleGenerator:
 
     @staticmethod
     def _add_task_vars(task: Dict, local_vars: Dict[str, str]) -> None:
-        task["vars"] = local_vars
+        if "vars" not in task:
+            task["vars"] = local_vars
+        else:
+            task["vars"] = {**local_vars, **task["vars"]}
 
     @staticmethod
     def _add_task_environment(task: Dict, environment: Dict[str, str]) -> None:
-        task["environment"] = environment
+        if "environment" not in task:
+            task["environment"] = environment
+        else:
+            task["environment"] = {**environment, **task["environment"]}
 
     def _create_shell_task(self, line: str) -> Dict[str, Any]:
         task = {
@@ -574,20 +541,18 @@ class RoleGenerator:
 
     def _clear_local_context(self) -> None:
         self._context.clear_local_context()
-        self._runtime.local = _LocalRuntime()
 
-    def _handle_run_command_raw(self, obj: ShellRawObject) -> (_ScriptPartType, Any):
+    def _handle_run_command_raw(self, obj: ShellRawObject) -> List[Dict]:
         task = self._create_shell_task(obj.value)
-        task = self._add_task(task, set_condition=True,
-                              user=self._context.get_user(), environment=self._context.get_environment())
-        return _ScriptPartType.COMMAND, task
+        task = self._prepare_task(task, user=self._context.get_user(), environment=self._context.get_environment())
+        return [] if task is None else [task]
 
-    def _handle_run_command_shell(self, line: str, local_vars: Dict[str, str]) -> (_ScriptPartType, Any):
+    def _handle_run_command_shell(self, line: str, local_vars: Dict[str, str]) -> List[Dict]:
         task = self._create_shell_task(line)
-        task = self._add_task(task, user=self._context.get_user(), variables=local_vars, set_condition=True)
-        return _ScriptPartType.COMMAND, task
+        task = self._prepare_task(task, user=self._context.get_user(), variables=local_vars)
+        return [] if task is None else [task]
 
-    def _handle_run_command(self, obj: ShellCommandObject) -> (_ScriptPartType, Any):
+    def _handle_run_command(self, obj: ShellCommandObject) -> List[Dict]:
         resolved = self._context.resolve_shell_command(obj)
 
         if resolved is None:
@@ -597,7 +562,7 @@ class RoleGenerator:
         return self._handle_run_command_resolved(words=words, local_vars=local_vars)
 
     def _handle_run_command_resolved(self, words: List[ShellWordObject], local_vars: Dict[str, str],
-                                     usr: str = None, cwd: str = None) -> (_ScriptPartType, Any):
+                                     usr: str = None, cwd: str = None) -> List[Dict]:
         usr = self._context.get_user() if usr is None else usr
         cwd = self._context.get_workdir() if cwd is None else cwd
         line = " ".join(x.value for x in words)
@@ -609,11 +574,8 @@ class RoleGenerator:
                 if all(v is not None for v in values):
                     self.matcher_tests.append(" ".join(values))
 
-            if len(tasks) == 1:
-                task = self._add_task(tasks[0], user=usr, variables=local_vars, set_condition=True)
-            else:
-                task = self._add_task({"block": tasks}, user=usr, variables=local_vars, set_condition=True)
-            return _ScriptPartType.COMMAND, task
+            tasks = [self._prepare_task(task, user=usr, variables=local_vars) for task in tasks]
+            return tasks
 
         extracted_call = self.task_matcher.extract_command(words)
         if extracted_call is None:
@@ -621,7 +583,7 @@ class RoleGenerator:
         return self._handle_run_command_extracted(extracted_call, local_vars, line)
 
     def _handle_run_command_extracted(self, extracted_call: ExtractedCommandCall,
-                                      local_vars: Dict[str, str], line: str) -> (_ScriptPartType, Any):
+                                      local_vars: Dict[str, str], line: str) -> List[Dict]:
         handle_map = {
             "sudo": self._handle_run_command_sudo,
             "cd": self._handle_run_command_cd
@@ -631,7 +593,9 @@ class RoleGenerator:
             return self._handle_run_command_shell(line=line, local_vars=local_vars)
         return handle_map[comm_name](extracted_call, local_vars, line)
 
-    def _handle_run_assignment(self, obj: ShellAssignmentObject) -> (_ScriptPartType, Any):
+    def _handle_run_assignment(self, obj: ShellAssignmentObject) -> List[Dict]:
+        # local vars are always added regardless of nearby shell operators
+        #
         # self._shell_expr_values is not used
         # because behaviour depends on whether expression value
         # is available without calling of "echo" task
@@ -639,36 +603,32 @@ class RoleGenerator:
         if value is None:
             task = self._create_echo_task(obj.value.line)
             register = self._add_echo_register(task)
-            task = self._add_task(task, user=self._context.get_user(), environment=self._context.get_environment(),
-                                  set_condition=True)
+            task = self._prepare_task(task, user=self._context.get_user(), environment=self._context.get_environment())
             self._context.add_local_env(name=obj.name, value="{{ " + register + " }}")
-
-            return _ScriptPartType.COMMAND, task
+            return [task]
         else:
-            # example: `BAT=bruce || MAN=wayne; echo $BAT$MAN` in bash returns `bruce`
-            # so in that case variable MAN should not be set
-            if self._runtime.local.prev_part_type is not _ScriptPartType.OPERATOR_OR or \
-                    self._runtime.local.prev_part_value is not None:
-                self._context.set_var(name=obj.name, value=value)
-                self._context.add_local_env(name=obj.name, value=value)
+            self._context.set_var(name=obj.name, value=value)
+            self._context.add_local_env(name=obj.name, value=value)
+            return []
 
-            return _ScriptPartType.NONE, None
+    @staticmethod
+    def _handle_run_operator_or(obj: ShellOperatorOrObject) -> List[ShellOperatorObject]:
+        return [obj]
 
-    def _handle_run_operator_or(self, obj: ShellOperatorOrObject) -> (_ScriptPartType, Any):
-        return _ScriptPartType.OPERATOR_OR, self._runtime.local.prev_part_value
+    @staticmethod
+    def _handle_run_operator_and(obj: ShellOperatorAndObject) -> List[ShellOperatorObject]:
+        return [obj]
 
-    def _handle_run_operator_and(self, obj: ShellOperatorAndObject) -> (_ScriptPartType, Any):
-        return _ScriptPartType.OPERATOR_AND, self._runtime.local.prev_part_value
-
-    def _handle_run_operator_end(self, obj: ShellOperatorEndObject) -> (_ScriptPartType, Any):
-        return _ScriptPartType.NONE, None
+    @staticmethod
+    def _handle_run_operator_end(obj: ShellOperatorEndObject) -> List[ShellOperatorObject]:
+        return [obj]
 
     ###################################
     # SPECIAL SHELL COMMANDS HANDLERS #
     ###################################
 
     def _handle_run_command_sudo(self, extracted_call: ExtractedCommandCall,
-                                 local_vars: Dict[str, str], line: str) -> (_ScriptPartType, Any):
+                                 local_vars: Dict[str, str], line: str) -> List[Dict]:
         params = extracted_call.params
         opt_words = []
         for p in params[1:]:
@@ -693,7 +653,7 @@ class RoleGenerator:
                                                  local_vars=local_vars, usr="root")
 
     def _handle_run_command_cd(self, extracted_call: ExtractedCommandCall,
-                               local_vars: Dict[str, str], line: str) -> (_ScriptPartType, Any):
+                               local_vars: Dict[str, str], line: str) -> List[Dict]:
         if extracted_call.opts:
             globalLog.info("No `cd` options are currently supported - command is translated to shell")
             return self._handle_run_command_shell(line=line, local_vars=local_vars)
@@ -707,9 +667,37 @@ class RoleGenerator:
             self.task_matcher.stats.coverage[-1] = 1.
         if len(extracted_call.params) < 2:
             globalLog.info("No arguments for `cd` - command is skipped")
-            return _ScriptPartType.NONE, None
+            return []
         if extracted_call.params[1].value == '-':
             self._context.set_local_workdir(self._context.get_old_workdir())
-            return _ScriptPartType.NONE, None
+            return []
         self._context.set_local_workdir(extracted_call.params[1].value)
-        return _ScriptPartType.NONE, None
+        return []
+
+    def _handle_run_parts(self, parts: List[Union[Dict, ShellOperatorObject]]) -> None:
+        cur_tasks = []
+        i = 0
+        while i < len(parts):
+            part = parts[i]
+            if isinstance(part, Dict):
+                cur_tasks.append(part)
+            elif isinstance(part, ShellOperatorObject):
+                if isinstance(part, ShellOperatorAndObject):
+                    pass
+                elif isinstance(part, ShellOperatorOrObject):
+                    # expect that next "part" exists, and it is a task
+                    i += 1
+                    cur_tasks = [{
+                        "block": cur_tasks,
+                        "rescue": [parts[i]]
+                    }]
+                elif isinstance(part, ShellOperatorEndObject):
+                    # expect that next "part" exists, and it is a task
+                    i += 1
+                    cur_tasks = [{
+                        "block": cur_tasks,
+                        "always": [parts[i]]
+                    }]
+            i += 1
+
+        self._runtime.general.role_tasks.extend(cur_tasks)
