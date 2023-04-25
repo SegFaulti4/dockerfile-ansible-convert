@@ -60,7 +60,7 @@ class JsonCommandConfigLoader:
                 matches.append(config)
 
         if len(matches) > 1:
-            globalLog.info(f"Found more that one config for {comm} - choosing one with the longest entry")
+            globalLog.info(f"Found more than one config for {comm} - choosing one with the longest entry")
             return max(matches, key=lambda x: len(x.entry))
         elif matches:
             return matches[0]

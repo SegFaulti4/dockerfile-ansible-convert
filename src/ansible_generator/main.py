@@ -17,24 +17,33 @@ class _ScriptPartType(Enum):
     NONE = 4
 
 
-@dataclass
 class _LocalRuntime:
-    prev_part_type: _ScriptPartType = None
-    prev_part_value: Union[Dict, None] = None
+    prev_part_type: _ScriptPartType
+    prev_part_value: Union[Dict, None]
+
+    def __init__(self):
+        self.prev_part_type = _ScriptPartType.NONE
+        self.prev_part_value = None
 
 
-@dataclass
 class _GeneralRuntime:
-    # directive: DockerfileDirective = None
-    role_tasks: List = field(default_factory=list)
-    echo_registers_num: int = 0
-    result_registers_num: int = 0
+    role_tasks: List
+    echo_registers_num: int
+    result_registers_num: int
+
+    def __init__(self):
+        self.role_tasks = list()
+        self.echo_registers_num = 0
+        self.result_registers_num = 0
 
 
-@dataclass
 class _Runtime:
-    general: _GeneralRuntime = _GeneralRuntime()
-    local: _LocalRuntime = _LocalRuntime()
+    general: _GeneralRuntime
+    local: _LocalRuntime
+
+    def __init__(self):
+        self.general = _GeneralRuntime()
+        self.local = _LocalRuntime()
 
 
 class RoleGenerator:
@@ -696,6 +705,9 @@ class RoleGenerator:
         # mark `cd` command as covered
         if self.task_matcher.collect_stats:
             self.task_matcher.stats.coverage[-1] = 1.
+        if len(extracted_call.params) < 2:
+            globalLog.info("No arguments for `cd` - command is skipped")
+            return _ScriptPartType.NONE, None
         if extracted_call.params[1].value == '-':
             self._context.set_local_workdir(self._context.get_old_workdir())
             return _ScriptPartType.NONE, None

@@ -71,13 +71,11 @@ def prepare_containerfile_image(file_name: str, idx: int, echo: bool) -> Optiona
 def prepare_ansible_image(file_name: str, idx: int, echo: bool) -> Optional[str]:
     path = os.path.join(GENERATOR_TESTS_DIR, file_name)
     file_basename = file_name[:file_name.find('.')]
-    file_name = file_basename + ".yml"
-    pb_path = os.path.join(TMP_DIR, file_name)
+    pb_path = os.path.join(TMP_DIR, file_basename + ".yml")
 
     with open(pb_path, "w") as outF:
         cli.main.generate(containerfile_path=path, output=outF)
 
-    # TODO: fix ip addr abomination
     ip_addr = f"172.18.0.{idx + 2}"
     image_name = f"ansible-test-{file_basename}"
     container_name = f"{image_name}-container"
@@ -97,7 +95,7 @@ def prepare_ansible_image(file_name: str, idx: int, echo: bool) -> Optional[str]
 
         flag_print(ansible_comm, echo=echo)
         ansible_res = subprocess.run(ansible_comm, stdout=PIPE, stderr=PIPE, text=True,
-                                     timeout=60, shell=True)
+                                     timeout=TIMEOUT, shell=True)
         ansible_success = True if ansible_res.returncode == 0 else False
 
         flag_print(commit_comm, echo=echo)
@@ -145,7 +143,7 @@ def diff_images(image1: Optional[str], image2: Optional[str], idx: int, echo: bo
             outF.write("[]")
         return
 
-    diff_comm = f"container-diff diff --json --type=file daemon://{image1}:latest daemon://{image2}:latest"
+    diff_comm = f"container-diff diff --no-cache --quiet --json --type=file daemon://{image1}:latest daemon://{image2}:latest"
     flag_print(diff_comm, echo=echo)
     diff_res = subprocess.run(['/bin/bash', '-c', diff_comm],
                               stdout=PIPE, stderr=PIPE, text=True)
@@ -171,17 +169,19 @@ def collect_ansible_diff_worker(args: Tuple[List[str], int, bool]):
             ans_image = prepare_ansible_image(name, idx, echo)
             diff_images(cf_image, ans_image, idx, echo)
 
-            rm_image(cf_image)
-            rm_image(ans_image)
+            #rm_image(cf_image)
+            #rm_image(ans_image)
             pbar.update(1)
 
 
 def collect_ansible_diff(containerfile_names: List[str], n_proc: int):
     echo = True
-    with multiprocessing.Pool(processes=n_proc) as pool:
-        spans = parts.parts(containerfile_names, n_proc)
-        pool.map(collect_ansible_diff_worker,
-                 [(list(span), idx, echo) for span, idx in zip(spans, range(n_proc))])
+    collect_ansible_diff_worker((containerfile_names, 0, echo))
+
+    #with multiprocessing.Pool(processes=n_proc) as pool:
+    #    spans = parts.parts(containerfile_names, n_proc)
+    #    pool.map(collect_ansible_diff_worker,
+    #             [(list(span), idx, echo) for span, idx in zip(spans, range(n_proc))])
 
 
 def main():
@@ -189,6 +189,7 @@ def main():
     # add command to build test stand image
     globalLog.setLevel(logging.ERROR)
     setup_dir(LOG_DIR)
+    setup_dir(TMP_DIR)
 
     filenames = filenames_from_dir(GENERATOR_TESTS_DIR)
     collect_ansible_diff(filenames, 1)

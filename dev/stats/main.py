@@ -23,13 +23,13 @@ def tabulize_stats(stats: Union[RoleGeneratorStatistics, TaskMatcherStatistics],
         name_supp_lengths[(n, s)].append(l)
         name_supp_stat_ids[(n, s)].append(stat_id)
 
-    headers = ["name", "supported", "usages", "occurrences" "use_coverage", "text_coverage"]
+    headers = ["name", "supported", "usages", "occurrences", "use_coverage", "text_coverage"]
     table = []
 
     for n, s in name_supp_coverages:
         coverages = name_supp_coverages[(n, s)]
         lengths = name_supp_lengths[(n, s)]
-        stat_ids = name_supp_stat_ids[(n, s)]
+        stat_ids = set(name_supp_stat_ids[(n, s)])
 
         usages = len(coverages)
         occurrences = len(stat_ids)
@@ -186,7 +186,7 @@ def main():
     # commands_file = UBUNTU_MATCHER_TESTS_FILTERED_FILE
     # collect_and_print_task_matcher_stats(commands_file)
 
-    files_dir = UBUNTU_FILES_FILTERED_DIR
+    files_dir = UBUNTU_FILES_DIR
     stats_dir = UBUNTU_STATS_DIR
     collect_and_save_containerfile_stats(files_dir, stats_dir)
 

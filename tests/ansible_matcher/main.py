@@ -68,7 +68,6 @@ def prepare_ansible_image(tasks: List[Dict[str, Any]], idx: int, echo: bool = Tr
         outF.write("---\n")
         outF.write(yaml.safe_dump(plays, sort_keys=False))
 
-    # TODO: fix ip addr abomination
     ip_addr = f"172.18.0.{idx + 2}"
     container_name = f"ansible-test-{idx}-container"
     image_name = f"ansible-test-{idx}"
