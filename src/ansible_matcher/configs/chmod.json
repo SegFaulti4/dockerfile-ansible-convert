@@ -73,7 +73,8 @@
                         "follow": true,
                         "path": "{{ item }}"
                     },
-                    "loop": "{{ ls_reg.stdout_lines }}"
+                    "loop": "{{ ls_reg.stdout_lines }}",
+                    "register": "st_reg"
                 },
                 {
                     "file": {

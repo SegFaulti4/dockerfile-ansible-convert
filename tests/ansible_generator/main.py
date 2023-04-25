@@ -169,8 +169,8 @@ def collect_ansible_diff_worker(args: Tuple[List[str], int, bool]):
             ans_image = prepare_ansible_image(name, idx, echo)
             diff_images(cf_image, ans_image, idx, echo)
 
-            #rm_image(cf_image)
-            #rm_image(ans_image)
+            rm_image(cf_image)
+            rm_image(ans_image)
             pbar.update(1)
 
 
