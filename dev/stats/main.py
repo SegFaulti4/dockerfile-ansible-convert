@@ -186,8 +186,8 @@ def main():
     # commands_file = UBUNTU_MATCHER_TESTS_FILTERED_FILE
     # collect_and_print_task_matcher_stats(commands_file)
 
-    files_dir = UBUNTU_FILES_DIR
-    stats_dir = UBUNTU_STATS_DIR
+    files_dir = UBUNTU_FILES_FILTERED_DIR
+    stats_dir = os.path.join(UBUNTU_DATA_DIR, "stats_filtered")
     collect_and_save_containerfile_stats(files_dir, stats_dir)
 
 

@@ -52,19 +52,36 @@
         },
         "opts_postprocess": {
             "-r": {},
-            "-f": {},
             "-I": {},
             "-i": {},
             "-d": {},
             "-v": {}
         },
         "examples": {
-            "rm <<files : mp>>": [
+            "rm <<files : m>>": [
                 {
-                    "shell": "ls -1d <<files>>",
+                    "ansible.builtin.shell": {
+                        "cmd": "ls -1d <<files>>",
+                        "chdir": "<<cwd>>"
+                    },
                     "register": "ls_reg"
                 }, {
-                    "file": {
+                    "ansible.builtin.file": {
+                        "state": "absent",
+                        "path": "{{ item }}"
+                    },
+                    "loop": "{{ ls_reg.stdout_lines }}"
+                }
+            ],
+            "rm -f <<files : m>>": [
+                {
+                    "ansible.builtin.shell": {
+                        "cmd": "ls -1d <<files>> 2> /dev/null || true",
+                        "chdir": "<<cwd>>"
+                    },
+                    "register": "ls_reg"
+                }, {
+                    "ansible.builtin.file": {
                         "state": "absent",
                         "path": "{{ item }}"
                     },

@@ -26,11 +26,14 @@
         "examples": {
             "chown <<owner>>:<<group>> <<files : m>>": [
                 {
-                    "shell": "ls -1d <<files>>",
+                    "ansible.builtin.shell": {
+                        "cmd": "ls -1d <<files>>",
+                        "chdir": "<<cwd>>"
+                    },
                     "register": "ls_reg"
                 },
                 {
-                    "file": {
+                    "ansible.builtin.file": {
                         "path": "{{ item }}",
                         "owner": "<<owner>>",
                         "group": "<<group>>"
@@ -40,35 +43,40 @@
             ],
             "chown <<owner>> <<files : m>>": [
                 {
-                    "shell": "ls -1d <<files>>",
+                    "ansible.builtin.shell": {
+                        "cmd": "ls -1d <<files>>",
+                        "chdir": "<<cwd>>"
+                    },
                     "register": "ls_reg"
                 },
                 {
-                    "file": {
+                    "ansible.builtin.file": {
                         "path": "{{ item }}",
                         "owner": "<<owner>>"
                     },
                     "loop": "{{ ls_reg.stdout_lines }}"
                 }
             ],
-
             "chown -R <<owner>>:<<group>> <<files : m>>": [
                 {
-                    "shell": "ls -1d <<files>>",
+                    "ansible.builtin.shell": {
+                        "cmd": "ls -1d <<files>>",
+                        "chdir": "<<cwd>>"
+                    },
                     "register": "ls_reg"
                 },
                 {
-                    "stat": {
-                        "follow": true,
+                    "ansible.builtin.stat": {
+                        "follow": false,
                         "path": "{{ item }}"
                     },
                     "loop": "{{ ls_reg.stdout_lines }}",
                     "register": "st_reg"
                 },
                 {
-                    "file": {
-                        "state": "{{ ( item.stat.isdir is defined and item.stat.isdir ) | ternary('directory', 'file') }}",
-                        "recurse":  "{{ ( item.stat.isdir is defined and item.stat.isdir ) | ternary(true, false) }}",
+                    "ansible.builtin.file": {
+                        "state": "{{ (item.stat.isdir is defined and item.stat.isdir) | ternary('directory', 'file') }}",
+                        "recurse":  "{{ (item.stat.isdir is defined and item.stat.isdir) | ternary(true, false) }}",
                         "path": "{{ item.stat.path }}",
                         "owner": "<<owner>>",
                         "group": "<<group>>"
@@ -78,21 +86,24 @@
             ],
             "chown -R <<owner>> <<files : m>>": [
                 {
-                    "shell": "ls -1d <<files>>",
+                    "ansible.builtin.shell": {
+                        "cmd": "ls -1d <<files>>",
+                        "chdir": "<<cwd>>"
+                    },
                     "register": "ls_reg"
                 },
                 {
-                    "stat": {
-                        "follow": true,
+                    "ansible.builtin.stat": {
+                        "follow": false,
                         "path": "{{ item }}"
                     },
                     "loop": "{{ ls_reg.stdout_lines }}",
                     "register": "st_reg"
                 },
                 {
-                    "file": {
-                        "state": "{{ ( item.stat.isdir is defined and item.stat.isdir ) | ternary('directory', 'file') }}",
-                        "recurse":  "{{ ( item.stat.isdir is defined and item.stat.isdir ) | ternary(true, false) }}",
+                    "ansible.builtin.file": {
+                        "state": "{{ (item.stat.isdir is defined and item.stat.isdir) | ternary('directory', 'file') }}",
+                        "recurse":  "{{ (item.stat.isdir is defined and item.stat.isdir) | ternary(true, false) }}",
                         "path": "{{ item.stat.path }}",
                         "owner": "<<owner>>"
                     },

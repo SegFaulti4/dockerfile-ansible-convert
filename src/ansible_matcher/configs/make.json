@@ -1,5 +1,5 @@
 {
-    "make": {
+    "community.general.make": {
         "entry": "make <<parameters : mo>>",
         "opts": {
             "silent": {
@@ -17,7 +17,7 @@
                 "arg_required": true,
                 "many_args": false
             },
-            "file": {
+            "ansible.builtin.file": {
                 "aliases": ["-f", "--file", "--makefile"],
                 "arg_required": true,
                 "many_args": false
@@ -26,14 +26,14 @@
         "examples": {
             "make": [
                 {
-                    "make": {
+                    "community.general.make": {
                         "chdir": "<<cwd>>"
                     }
                 }
             ],
             "make <<param : m>>=<<value : m>>": [
                 {
-                    "make": {
+                    "community.general.make": {
                         "chdir": "<<cwd>>",
                         "params": "{ <<param>>:<<value>>, }"
                     }
@@ -41,7 +41,7 @@
             ],
             "make <<target>>": [
                 {
-                    "make": {
+                    "community.general.make": {
                         "chdir": "<<cwd>>",
                         "target": "<<target>>"
                     }
@@ -49,7 +49,7 @@
             ],
             "make <<target>> <<param : m>>=<<value : m>>": [
                 {
-                    "make": {
+                    "community.general.make": {
                         "chdir": "<<cwd>>",
                         "target": "<<target>>",
                         "params": "{ <<param>>:<<value>>, }"
@@ -58,7 +58,7 @@
             ],
             "make <<param : m>>=<<value : m>> <<target>>": [
                 {
-                    "make": {
+                    "community.general.make": {
                         "chdir": "<<cwd>>",
                         "target": "<<target>>",
                         "params": "{ <<param>>:<<value>>, }"
@@ -67,7 +67,7 @@
             ],
             "make <<pre_param : m>>=<<pre_value : m>> <<target>> <<post_param : m>>=<<post_value : m>>": [
                 {
-                    "make": {
+                    "community.general.make": {
                         "chdir": "<<cwd>>",
                         "target": "<<target>>",
                         "params": "{ <<pre_param>>:<<pre_value>>, <<post_param>>:<<post_value>>, }"
@@ -77,17 +77,17 @@
         },
         "opts_postprocess": {
             "-C <<dir : p>>": {
-                "make": {
+                "community.general.make": {
                     "chdir": "<<dir>>"
                 }
             },
             "-j <<n_jobs>>": {
-                "make": {
+                "community.general.make": {
                     "jobs": "<<n_jobs>>"
                 }
             },
             "-f <<file : p>>": {
-                "make": {
+                "community.general.make": {
                     "file": "<<file>>"
                 }
             },

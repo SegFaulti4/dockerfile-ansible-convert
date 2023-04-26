@@ -26,7 +26,7 @@
         "examples": {
             "git clone <<repo>>": [
                 {
-                    "git": {
+                    "ansible.builtin.git": {
                         "repo": "<<repo>>",
                         "dest": "<<cwd>>",
                         "clone": true,
@@ -36,7 +36,7 @@
             ],
             "git clone <<repo>> <<dir : p>>": [
                 {
-                    "git": {
+                    "ansible.builtin.git": {
                         "repo": "<<repo>>",
                         "dest": "<<dir>>",
                         "clone": true,
@@ -48,17 +48,17 @@
         "opts_postprocess": {
             "--quiet": {},
             "--recurse-submodule": {
-                "git": {
+                "ansible.builtin.git": {
                     "recursive": true
                 }
             },
             "--depth <<depth>>": {
-                "git": {
+                "ansible.builtin.git": {
                     "depth": "<<depth>>"
                 }
             },
             "--branch <<branch>>": {
-                "git": {
+                "ansible.builtin.git": {
                     "version": "<<branch>>"
                 }
             }

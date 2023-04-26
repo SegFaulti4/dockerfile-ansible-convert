@@ -169,9 +169,9 @@ class RoleGenerator:
             ShellOperatorEndObject: self._handle_run_operator_end
         }
 
-        parts: List[Union[Dict, ShellOperatorObject]] = []
+        parts: List[Union[List[Dict], ShellOperatorObject]] = []
         for obj in directive.script.parts:
-            parts.extend(handle_run_map[type(obj)](obj=obj))
+            parts.append(handle_run_map[type(obj)](obj=obj))
 
         self._handle_run_parts(parts)
         self._clear_local_context()
@@ -192,14 +192,26 @@ class RoleGenerator:
         name = self._shell_expr_values([directive.name], strict=False, empty_missing=True)[0]
         group = self._shell_expr_values([directive.group], strict=False, empty_missing=True)[0]
 
-        task = {
+        if group:
+            tasks = [{
+                "group": {
+                    "state": "present",
+                    "name": group
+                }
+            }]
+        else:
+            tasks = []
+
+        tasks.append({
             "user": {
                 "name": name,
                 "group": group if group else "root",
                 "state": "present"
             }
-        }
-        self._add_task(task)
+        })
+
+        for task in tasks:
+            self._add_task(task)
         self._context.set_global_user(name=name)
 
     @supported_directive
@@ -218,7 +230,7 @@ class RoleGenerator:
         for source in sources:
             if self._is_url(source):
                 urls.append(source)
-            elif self._is_archive(source):
+            elif self._is_archive(source) and not self._is_url(source):
                 archives.append(source)
             else:
                 files.append(source)
@@ -347,7 +359,10 @@ class RoleGenerator:
     def _prepare_sources_and_destination(self, directive: Union[CopyDirective, AddDirective]) -> Tuple[List[str], str]:
         paths = [source for source in directive.sources] + [directive.destination]
         vals = self._shell_expr_values(paths, strict=True, empty_missing=True)
-        vals = [self._context.path_str_wrapper(val) for val in vals]
+
+        # sources are paths on local machine - they don't need to be resolved accordingly to context
+        vals = vals[:-1] + [self._context.path_str_wrapper(vals[-1])]
+
         sources, destination = [v.rstrip("/") for v in vals[:-1]], vals[-1]
         return sources, destination
 
@@ -380,7 +395,17 @@ class RoleGenerator:
             if group:
                 tasks[-1]["copy"]["group"] = group
         else:
-            tasks = [
+            if destination != '/':
+                tasks = [{
+                    "file": {
+                        "state": "directory",
+                        "path": destination
+                    }
+                }]
+            else:
+                tasks = []
+
+            tasks.extend([
                 {
                     "stat": {
                         "path": "{{ item }}"
@@ -399,7 +424,7 @@ class RoleGenerator:
                     },
                     "loop": "{{ st_reg.results }}"
                 }
-            ]
+            ])
             if name:
                 tasks[-1]["copy"]["owner"] = name
             if group:
@@ -472,9 +497,12 @@ class RoleGenerator:
                                     files: List[str], destination: str,
                                     name: str = "", group: str = "") -> List[Dict]:
         tasks = []
-        tasks.extend(RoleGenerator._create_file_copy_tasks(files, destination, name=name, group=group))
-        tasks.extend(RoleGenerator._create_url_copy_tasks(urls, destination, name=name, group=group))
-        tasks.extend(RoleGenerator._create_archive_copy_tasks(archives, destination, name=name, group=group))
+        if files:
+            tasks.extend(RoleGenerator._create_file_copy_tasks(files, destination, name=name, group=group))
+        if urls:
+            tasks.extend(RoleGenerator._create_url_copy_tasks(urls, destination, name=name, group=group))
+        if archives:
+            tasks.extend(RoleGenerator._create_archive_copy_tasks(archives, destination, name=name, group=group))
         return tasks
 
     #########################
@@ -574,6 +602,7 @@ class RoleGenerator:
                 if all(v is not None for v in values):
                     self.matcher_tests.append(" ".join(values))
 
+            # ATTENTION: task matcher can return blocks, so setting registers is not allowed
             tasks = [self._prepare_task(task, user=usr, variables=local_vars) for task in tasks]
             return tasks
 
@@ -612,16 +641,16 @@ class RoleGenerator:
             return []
 
     @staticmethod
-    def _handle_run_operator_or(obj: ShellOperatorOrObject) -> List[ShellOperatorObject]:
-        return [obj]
+    def _handle_run_operator_or(obj: ShellOperatorOrObject) -> ShellOperatorObject:
+        return obj
 
     @staticmethod
-    def _handle_run_operator_and(obj: ShellOperatorAndObject) -> List[ShellOperatorObject]:
-        return [obj]
+    def _handle_run_operator_and(obj: ShellOperatorAndObject) -> ShellOperatorObject:
+        return obj
 
     @staticmethod
-    def _handle_run_operator_end(obj: ShellOperatorEndObject) -> List[ShellOperatorObject]:
-        return [obj]
+    def _handle_run_operator_end(obj: ShellOperatorEndObject) -> ShellOperatorObject:
+        return obj
 
     ###################################
     # SPECIAL SHELL COMMANDS HANDLERS #
@@ -674,30 +703,32 @@ class RoleGenerator:
         self._context.set_local_workdir(extracted_call.params[1].value)
         return []
 
-    def _handle_run_parts(self, parts: List[Union[Dict, ShellOperatorObject]]) -> None:
+    def _handle_run_parts(self, parts: List[Union[List[Dict], ShellOperatorObject]]) -> None:
         cur_tasks = []
         i = 0
         while i < len(parts):
             part = parts[i]
-            if isinstance(part, Dict):
-                cur_tasks.append(part)
+            if isinstance(part, List):
+                cur_tasks.extend(part)
             elif isinstance(part, ShellOperatorObject):
                 if isinstance(part, ShellOperatorAndObject):
                     pass
                 elif isinstance(part, ShellOperatorOrObject):
-                    # expect that next "part" exists, and it is a task
+                    # expect that next "part" exists, and it is a list of tasks
                     i += 1
                     cur_tasks = [{
                         "block": cur_tasks,
-                        "rescue": [parts[i]]
+                        "rescue": parts[i]
                     }]
                 elif isinstance(part, ShellOperatorEndObject):
-                    # expect that next "part" exists, and it is a task
+                    # if the next "part" exists it should be a list of tasks
                     i += 1
-                    cur_tasks = [{
-                        "block": cur_tasks,
-                        "always": [parts[i]]
-                    }]
+                    if i < len(parts):
+                        cur_tasks = [{
+                            "block": cur_tasks,
+                            "ignore_errors": True,
+                            "always": parts[i]
+                        }]
             i += 1
 
         self._runtime.general.role_tasks.extend(cur_tasks)

@@ -1,1 +1,1 @@
-pip install -r requirements.txt
+ln -s /usr/share/cnc/current/lib/intel64/* /usr/lib/

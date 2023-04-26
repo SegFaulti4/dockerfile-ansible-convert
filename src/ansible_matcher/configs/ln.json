@@ -34,98 +34,66 @@
             }
         },
         "examples": {
-            "ln -s <<src>> <path>>": [
+            "ln -s <<globs : m>> <<dest : p>>": [
                 {
-                    "shell": "ls -1d <<src>>",
-                    "chdir": "<<cwd>>",
-                    "register": "ls_src_reg"
-                },
-                {
-                    "shell": "ls -1d <<path>>",
-                    "chdir": "<<cwd>>",
-                    "register": "ls_path_reg"
-                },
-                {
-                    "file": {
-                        "state": "link",
-                        "src": "{{ ls_src_reg.stdout_lines[-1] }}",
-                        "path": "{{ ls_path_reg.stdout_lines[-1] }}"
-                    }
-                }
-            ],
-            "ln -s <<globs : m>>": [
-                {
-                    "shell": "ls -1d <<globs>>",
-                    "chdir": "<<cwd>>",
+                    "ansible.builtin.shell": {
+                        "cmd": "ls -1d <<globs>>",
+                        "chdir": "<<cwd>>"
+                    },
                     "register": "ls_reg"
                 },
                 {
-                    "file": {
-                        "state": "link",
-                        "src": "{{ src }}",
-                        "path": "{{ ( <<cwd>>, src | basename ) | path_join }}"
+                    "ansible.builtin.stat": {
+                        "path": "<<dest>>",
+                        "follow": false
                     },
-                    "vars": {
-                        "src": "{{ ls_reg.stdout_lines[-1] }}"
-                    },
-                    "when": "ls_reg.stdout_lines | length == 1"
+                    "register": "st_reg"
                 },
                 {
-                    "block": [
-                        {
-                            "stat": {
-                                "follow": true,
-                                "path": "{{ ls_reg.stdout_lines[-1] }}"
-                            },
-                            "register": "st_reg"
-                        },
-                        {
-                            "file": {
-                                "state": "link",
-                                "src": "{{ item }}",
-                                "path": "{{ ( dir, item | basename ) | path_join }}"
-                            },
-                            "loop": "{{ ls_reg.stdout_lines[:-1] }}",
-                            "vars": {
-                                "dir": "{{ ls_reg.stdout_lines[-1] }}"
-                            },
-                            "when": "st_reg.stat.isdir is defined and st_reg.stat.isdir"
-                        },
-                        {
-                            "block": [
-                                {
-                                    "file": {
-                                        "state": "link",
-                                        "src": "{{ ls_reg.stdout_lines[0] }}",
-                                        "path": "{{ ls_reg.stdout_lines[-1] }}"
-                                    },
-                                    "when": "ls_reg.stdout_lines | length == 2"
-                                },
-                                {
-                                    "fail": {
-                                        "msg": "Failed to create symlink - last item is not a directory"
-                                    },
-                                    "when": "ls_reg.stdout_lines | length > 2"
-                                }
-                            ],
-                            "when": "st_reg.stat.isdir is undefined and st_reg.stat.isdir == False"
-                        }
-                    ],
-                    "when": "ls_reg.stdout_lines | length > 1"
+                    "ansible.builtin.fail": {
+                        "msg": "Failed to create symlink - last file is not a directory"
+                    },
+                    "when": [
+                        "ls_reg.stdout_lines | length > 1",
+                        "st_reg.stat.isdir is undefined or st_reg.stat.isdir == False"
+                    ]
+                },
+                {
+                    "ansible.builtin.file": {
+                        "state": "link",
+                        "src": "{{ item }}",
+                        "path": "{{ ((dest, item | basename) | path_join) if dest_is_dir else dest }}"
+                    },
+                    "loop": "{{ ls_reg.stdout_lines }}",
+                    "vars": {
+                        "dest_is_dir": "{{ (st_reg.stat_isdir is defined and st_reg.stat.isdir) | ternary(true, false) }}"
+                    }
+                }
+            ],
+            "ln -s <<src>>": [
+                {
+                    "ansible.builtin.file": {
+                        "state": "link",
+                        "src": "{{ src }}",
+                        "path": "{{ (<<cwd>>, src | basename) | path_join }}"
+                    },
+                    "vars": {
+                        "src": "<<src>>"
+                    }
                 }
             ]
         },
         "opts_postprocess": {
             "--force": {
-                "file": {
+                "ansible.builtin.file": {
                     "force": true
                 }
             },
             "--no-dereference": {
-                "file": {
+                "ansible.builtin.file": {
                     "follow": false
                 },
-                "stat": {
+                "ansible.builtin.stat": {
                     "follow": false
                 }
             },

@@ -87,7 +87,7 @@
                 "arg_required": false,
                 "many_args": false
             },
-            "user": {
+            "ansible.builtin.user": {
                 "aliases": ["--user"],
                 "arg_required": false,
                 "many_args": false
@@ -96,7 +96,7 @@
         "examples": {
             "pip3 install <<packages : m>>": [
                 {
-                    "pip": {
+                    "ansible.builtin.pip": {
                         "name": ["<<packages>>"],
                         "state": "present",
                         "chdir": "<<cwd>>",
@@ -106,7 +106,7 @@
             ],
             "pip3 install -r <<requirement : p>>": [
                 {
-                    "pip": {
+                    "ansible.builtin.pip": {
                         "requirement": "<<requirement>>",
                         "state": "present",
                         "chdir": "<<cwd>>",
@@ -117,62 +117,62 @@
         },
         "opts_postprocess": {
             "--default-timeout <<default_timeout_arg>>": {
-                "pip": {
+                "ansible.builtin.pip": {
                     "extra_args": "--default-timeout <<default_timeout_arg>> "
                 }
             },
             "--editable": {
-                "pip": {
+                "ansible.builtin.pip": {
                     "editable": true
                 }
             },
             "--exists-action <<exists_action_arg>>": {
-                "pip": {
+                "ansible.builtin.pip": {
                     "extra_args": "--exists-action <<exists_action_arg>> "
                 }
             },
             "--force-reinstall": {
-                "pip": {
+                "ansible.builtin.pip": {
                     "state": "forcereinstall"
                 }
             },
             "--ignore-installed": {
-                "pip": {
+                "ansible.builtin.pip": {
                     "extra_args": "--ignore-installed "
                 }
             },
             "--index-url <<index_url_arg>>": {
-                "pip": {
+                "ansible.builtin.pip": {
                     "extra_args": "--index-url <<index_url_arg>> "
                 }
             },
             "--verbose": {
-                "pip": {
+                "ansible.builtin.pip": {
                     "extra_args": "--verbose "
                 }
             },
             "--no-binary <<no_binary_arg : m>>": {
-                "pip": {
+                "ansible.builtin.pip": {
                     "extra_args": "--no-binary=<<no_binary_arg>> "
                 }
             },
             "--no-cache-dir": {
-                "pip": {
+                "ansible.builtin.pip": {
                     "extra_args": "--no-cache-dir "
                 }
             },
             "--no-index": {
-                "pip": {
+                "ansible.builtin.pip": {
                     "extra_args": "--no-index "
                 }
             },
             "--pre": {
-                "pip": {
+                "ansible.builtin.pip": {
                     "extra_args": "--pre "
                 }
             },
             "--quiet": {
-                "pip": {
+                "ansible.builtin.pip": {
                     "extra_args": "--quiet "
                 }
             },
@@ -187,17 +187,17 @@
                 "many_args": false
             },
             "--trusted-host <<trusted_host_arg>>": {
-                "pip": {
+                "ansible.builtin.pip": {
                     "extra_args": "--trusted-host <<trusted_host_arg>> "
                 }
             },
             "--upgrade": {
-                "pip": {
+                "ansible.builtin.pip": {
                     "state": "latest"
                 }
             },
             "--user": {
-                "pip": {
+                "ansible.builtin.pip": {
                     "extra_args": "--user "
                 }
             }

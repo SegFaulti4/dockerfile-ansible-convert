@@ -1,5 +1,5 @@
 {
-    "apt": {
+    "ansible.builtin.apt": {
         "entry": "apt <<parameters : m>>",
         "opts": {
             "allow-unauthenticated": {
@@ -51,7 +51,7 @@
         "examples": {
             "apt install <<packages : m>>": [
                 {
-                    "apt": {
+                    "ansible.builtin.apt": {
                         "name": ["<<packages>>"],
                         "force_apt_get": true
                     }
@@ -59,7 +59,7 @@
             ],
             "apt update": [
                 {
-                    "apt": {
+                    "ansible.builtin.apt": {
                         "update_cache": "yes",
                         "force_apt_get": true
                     }
@@ -67,7 +67,7 @@
             ],
             "apt autoremove": [
                 {
-                    "apt": {
+                    "ansible.builtin.apt": {
                         "autoremove": "yes",
                         "force_apt_get": true
                     }
@@ -75,7 +75,7 @@
             ],
             "apt clean": [
                 {
-                    "apt": {
+                    "ansible.builtin.apt": {
                         "clean": true,
                         "force_apt_get": true
                     }
@@ -83,7 +83,7 @@
             ],
             "apt upgrade": [
                 {
-                    "apt": {
+                    "ansible.builtin.apt": {
                         "upgrade": "yes",
                         "force_apt_get": true
                     }
@@ -91,7 +91,7 @@
             ],
             "apt remove <<pkg :m>>": [
                 {
-                    "apt": {
+                    "ansible.builtin.apt": {
                         "name":["<<pkg>>"],
                         "state": "absent",
                         "force_apt_get": true
@@ -101,28 +101,28 @@
         },
         "opts_postprocess": {
             "--allow-unauthenticated": {
-                "apt": {
+                "ansible.builtin.apt": {
                     "allow_unauthenticated": "yes"
                 }
             },
             "--assume-yes": {},
             "--autoremove": {
-                "apt": {
+                "ansible.builtin.apt": {
                     "autoremove": true
                 }
             },
             "--no-install-recommends": {
-                "apt": {
+                "ansible.builtin.apt": {
                     "install_recommends": false
                 }
             },
             "-o Dpkg::Options::=<<value>>": {
-                "apt": {
+                "ansible.builtin.apt": {
                     "dpkg_options": "<<value>>,"
                 }
             },
             "--purge": {
-                "apt": {
+                "ansible.builtin.apt": {
                     "purge": "yes"
                 }
             },

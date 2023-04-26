@@ -118,6 +118,15 @@ class ShellParser:
         return ShellExpression.allowed_parts(parts)
 
     def parse_as_script(self, line: str) -> ShellScript:
+
+        def custom_strip(s: str, c: str) -> str:
+            if s.startswith(c) and s.endswith(c):
+                return s.strip(c)
+            return s
+
+        line = custom_strip(line, '"')
+        line = custom_strip(line, "'")
+        line = custom_strip(line, '"')
         parts = self.parse(line)
         if self.allowed_script_parts(parts):
             return ShellScript(parts=parts, line=line)

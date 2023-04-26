@@ -62,7 +62,7 @@
                 "arg_required": false,
                 "many_args": false
             },
-            "shell": {
+            "ansible.builtin.shell": {
                 "aliases": ["-s", "--shell"],
                 "arg_required": true,
                 "many_args": false
@@ -96,98 +96,103 @@
         "examples": {
             "useradd <<name>>": [
                 {
-                    "user": {
+                    "ansible.builtin.group": {
                         "state": "present",
-                        "name": "{{ username }}",
-                        "group": "{{ username }}",
+                        "name": "<<name>>"
+                    }
+                },
+                {
+                    "ansible.builtin.user": {
+                        "state": "present",
+                        "name": "<<name>>",
+                        "group": "<<name>>",
                         "create_home": false
-                    },
-                    "vars": {
-                        "username": "<<name>>"
                     }
                 }
             ],
             "useradd --no-user-group <<name>>": [
                 {
-                    "user": {
+                    "ansible.builtin.user": {
                         "state": "present",
-                        "name": "{{ username }}",
+                        "name": "<<name>>",
                         "create_home": false
-                    },
-                    "vars": {
-                        "username": "<<name>>"
+                    }
+                }
+            ],
+            "useradd --user-group <<group>> <<name>>": [
+                {
+                    "ansible.builtin.user": {
+                        "state": "present",
+                        "name": "<<name>>",
+                        "group": "<<group>>",
+                        "create_home": false
                     }
                 }
             ]
         },
         "opts_postprocess": {
             "--base-dir <<dir : p>>": {
-                "user": {
+                "ansible.builtin.user": {
                     "home": "{{ (<<dir>>, username) | path_join }}"
                 }
             },
             "--comment <<comment>>": {
-                "user": {
+                "ansible.builtin.user": {
                     "comment": "<<comment>>"
                 }
             },
             "--create-home": {
-                "user": {
+                "ansible.builtin.user": {
                     "create_home": true
                 }
             },
             "--home-dir <<dir : p>>": {
-                "user": {
+                "ansible.builtin.user": {
                     "home": "<<dir>>"
                 }
             },
             "--gid <<group>>": {
-                "user": {
+                "ansible.builtin.user": {
                     "group": "<<group>>"
                 }
             },
             "--groups <<groups>>": {
-                "user": {
+                "ansible.builtin.user": {
                     "groups": "<<groups>>"
                 }
             },
             "--skel <<dir : p>>": {
-                "user": {
+                "ansible.builtin.user": {
                     "skeleton": "<<dir>>"
                 }
             },
             "--no-create-home": {
-                "user": {
+                "ansible.builtin.user": {
                     "create_home": false
                 }
             },
             "--system": {
-                "user": {
+                "ansible.builtin.user": {
                     "system": true
                 }
             },
             "--shell <<shell>>": {
-                "user": {
+                "ansible.builtin.user": {
                     "shell": "<<shell>>"
                 }
             },
-            "--user-group": {
-                "user": {
-                    "group": "{{ username }}"
-                }
-            },
             "--non-unique": {
-                "user": {
+                "ansible.builtin.user": {
                     "non_unique": true
                 }
             },
             "--uid <<uid>>": {
-                "user": {
+                "ansible.builtin.user": {
                     "uid": "<<uid>>"
                 }
             },
             "--password <<password>>": {
-                "user": {
+                "ansible.builtin.user": {
                     "password": "<<password>>"
                 }
             }

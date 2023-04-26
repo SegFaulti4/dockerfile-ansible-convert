@@ -24,90 +24,54 @@
             }
         },
         "examples": {
-            "mv <<globs : m>>": [
+            "mv <<globs : m>> <<dest : p>>": [
                 {
-                    "shell": {
+                    "ansible.builtin.shell": {
                         "cmd": "ls -1d <<globs>>",
                         "chdir": "<<cwd>>"
                     },
                     "register": "ls_reg"
                 },
                 {
-                    "fail": {
-                        "msg": "Failed to move file - destination is required"
+                    "ansible.builtin.stat": {
+                        "path": "<<dest>>",
+                        "follow": false
                     },
-                    "when": "ls_reg.stdout_lines | length <= 1"
+                    "register": "st_reg"
                 },
                 {
-                    "block": [
-                        {
-                            "stat": {
-                                "follow": true,
-                                "path": "{{ ls_reg.stdout_lines[-1] }}"
-                            },
-                            "register": "st_reg"
-                        },
-                        {
-                            "block": [
-                                {
-                                    "copy": {
-                                        "src": "{{ item | regex_replace('/$') }}",
-                                        "path": "{{ ( dir, item | basename ) | path_join }}",
-                                        "remote_src": true,
-                                        "force": false
-                                    },
-                                    "loop": "{{ ls_reg.stdout_lines[:-1] }}",
-                                    "vars": {
-                                        "dir": "{{ ls_reg.stdout_lines[-1] }}"
-                                    }
-                                },
-                                {
-                                    "file": {
-                                        "path": "{{ item | regex_replace('/$') }}",
-                                        "state": "absent"
-                                    },
-                                    "loop": "{{ ls_reg.stdout_lines[:-1] }}",
-                                    "vars": {
-                                        "dir": "{{ ls_reg.stdout_lines[-1] }}"
-                                    }
-                                }
-                            ],
-                            "when": "st_reg.stat.isdir is defined and st_reg.stat.isdir"
-                        },
-                        {
-                            "block": [
-                                {
-                                    "copy": {
-                                        "src": "{{ ls_reg.stdout_lines[0] | regex_replace('/$') }}",
-                                        "path": "{{ ls_reg.stdout_lines[-1] }}",
-                                        "remote_src": true,
-                                        "force": false
-                                    },
-                                    "when": "ls_reg.stdout_lines | length == 2"
-                                },
-                                {
-                                    "file": {
-                                        "path": "{{ ls_reg.stdout_lines[0] | regex_replace('/$') }}",
-                                        "state": "absent"
-                                    }
-                                },
-                                {
-                                    "fail": {
-                                        "msg": "Failed to move file - last item is not a directory"
-                                    },
-                                    "when": "ls_reg.stdout_lines | length > 2"
-                                }
-                            ],
-                            "when": "st_reg.stat.isdir is undefined and st_reg.stat.isdir == False"
-                        }
-                    ],
-                    "when": "ls_reg.stdout_lines | length > 1"
+                    "ansible.builtin.fail": {
+                        "msg": "Failed to copy files - last file is not a directory"
+                    },
+                    "when": [
+                        "ls_reg.stdout_lines | length > 1",
+                        "st_reg.stat.isdir is undefined or st_reg.stat.isdir == False"
+                    ]
+                },
+                {
+                    "ansible.builtin.copy": {
+                        "src": "{{ item | regex_replace('/$') }}",
+                        "dest": "{{ ((dest, item | basename) | path_join) if dest_is_dir else dest }}",
+                        "remote_src": true,
+                        "force": false
+                    },
+                    "loop": "{{ ls_reg.stdout_lines }}",
+                    "vars": {
+                        "dest_is_dir": "{{ (st_reg.stat_isdir is defined and st_reg.stat.isdir) | ternary(true, false) }}"
+                    }
+                },
+                {
+                    "ansible.builtin.file": {
+                        "path": "{{ item | regex_replace('/$') }}",
+                        "state": "absent"
+                    },
+                    "loop": "{{ ls_reg.stdout_lines }}"
                 }
             ]
         },
         "opts_postprocess": {
             "--force": {
-                "copy": {
+                "ansible.builtin.copy": {
                     "force": true
                 }
             },

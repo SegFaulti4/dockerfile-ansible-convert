@@ -182,7 +182,7 @@
                 "arg_required": false,
                 "many_args": false
             },
-            "user": {
+            "ansible.builtin.user": {
                 "aliases": ["--user"],
                 "arg_required": false,
                 "many_args": false
@@ -196,7 +196,7 @@
         "examples": {
             "pip install <<packages : m>>": [
                 {
-                    "pip": {
+                    "ansible.builtin.pip": {
                         "name": ["<<packages>>"],
                         "state": "present",
                         "chdir": "<<cwd>>"
@@ -205,7 +205,7 @@
             ],
             "pip install -r <<requirement : p>>": [
                 {
-                    "pip": {
+                    "ansible.builtin.pip": {
                         "requirement": "<<requirement>>",
                         "state": "present",
                         "chdir": "<<cwd>>"
@@ -215,183 +215,183 @@
         },
         "opts_postprocess": {
             "--editable": {
-                "pip": {
+                "ansible.builtin.pip": {
                     "editable": true
                 }
             },
             "--force-reinstall": {
-                "pip": {
+                "ansible.builtin.pip": {
                     "state": "forcereinstall"
                 }
             },
             "--upgrade": {
-                "pip": {
+                "ansible.builtin.pip": {
                     "state": "latest"
                 }
             },
             "--build <<build_arg>>": {
-                "pip": {
+                "ansible.builtin.pip": {
                     "extra_args": "--build <<build_arg>> "
                 }
             },
             "--constraint <<constraint_arg>>": {
-                "pip": {
+                "ansible.builtin.pip": {
                     "extra_args": "--constraint <<constraint_arg>> "
                 }
             },
             "--cache-dir <<cache_dir_arg>>": {
-                "pip": {
+                "ansible.builtin.pip": {
                     "extra_args": "--cache-dir <<cache_dir_arg>> "
                 }
             },
             "--default-timeout <<default_timeout_arg>>": {
-                "pip": {
+                "ansible.builtin.pip": {
                     "extra_args": "--default-timeout <<default_timeout_arg>> "
                 }
             },
             "--exists-action <<exists_action_arg>>": {
-                "pip": {
+                "ansible.builtin.pip": {
                     "extra_args": "--exists-action <<exists_action_arg>> "
                 }
             },
             "--extra-index-url <<extra_index_url_arg>>": {
-                "pip": {
+                "ansible.builtin.pip": {
                     "extra_args": "--extra-index-url <<extra_index_url_arg>> "
                 }
             },
             "--find-links <<find_links_arg>>": {
-                "pip": {
+                "ansible.builtin.pip": {
                     "extra_args": "--find-links <<find_links_arg>> "
                 }
             },
             "--index-url <<index_url_arg>>": {
-                "pip": {
+                "ansible.builtin.pip": {
                     "extra_args": "--index-url <<index_url_arg>> "
                 }
             },
             "--no-binary <<no_binary_arg : m>>": {
-                "pip": {
+                "ansible.builtin.pip": {
                     "extra_args": "--no-binary=<<no_binary_arg>> "
                 }
             },
             "--only-binary <<only_binary_arg>>": {
-                "pip": {
+                "ansible.builtin.pip": {
                     "extra_args": "--only-binary <<only_binary_arg>> "
                 }
             },
             "--root <<root_arg>>": {
-                "pip": {
+                "ansible.builtin.pip": {
                     "extra_args": "--root <<root_arg>> "
                 }
             },
             "--prefix <<prefix_arg>>": {
-                "pip": {
+                "ansible.builtin.pip": {
                     "extra_args": "--prefix <<prefix_arg>> "
                 }
             },
             "--src <<src_arg>>": {
-                "pip": {
+                "ansible.builtin.pip": {
                     "extra_args": "--src <<src_arg>> "
                 }
             },
             "--timeout <<timeout_arg>>": {
-                "pip": {
+                "ansible.builtin.pip": {
                     "extra_args": "--timeout <<timeout_arg>> "
                 }
             },
             "--trusted-host <<trusted_host_arg>>": {
-                "pip": {
+                "ansible.builtin.pip": {
                     "extra_args": "--trusted-host <<trusted_host_arg>> "
                 }
             },
             "--upgrade-strategy <<upgrade_strategy_arg>>": {
-                "pip": {
+                "ansible.builtin.pip": {
                     "extra_args": "--upgrade-strategy <<upgrade_strategy_arg>> "
                 }
             },
 
             "--allow-external": {
-                "pip": {
+                "ansible.builtin.pip": {
                     "extra_args": "--allow-external "
                 }
             },
             "--allow-unverified": {
-                "pip": {
+                "ansible.builtin.pip": {
                     "extra_args": "--allow-unverified "
                 }
             },
             "--disable-pip-version-check": {
-                "pip": {
+                "ansible.builtin.pip": {
                     "extra_args": "--disable-pip-version-check "
                 }
             },
             "--ignore-installed": {
-                "pip": {
+                "ansible.builtin.pip": {
                     "extra_args": "--ignore-installed "
                 }
             },
             "--verbose": {
-                "pip": {
+                "ansible.builtin.pip": {
                     "extra_args": "--verbose "
                 }
             },
             "--no-cache-dir": {
-                "pip": {
+                "ansible.builtin.pip": {
                     "extra_args": "--no-cache-dir "
                 }
             },
             "--no-clean": {
-                "pip": {
+                "ansible.builtin.pip": {
                     "extra_args": "--no-clean "
                 }
             },
             "--no-deps": {
-                "pip": {
+                "ansible.builtin.pip": {
                     "extra_args": "--no-deps "
                 }
             },
             "--no-input": {
-                "pip": {
+                "ansible.builtin.pip": {
                     "extra_args": "--no-input "
                 }
             },
             "--no-use-pep517": {
-                "pip": {
+                "ansible.builtin.pip": {
                     "extra_args": "--no-use-pep517 "
                 }
             },
             "--no-use-wheel": {
-                "pip": {
+                "ansible.builtin.pip": {
                     "extra_args": "--no-use-wheel "
                 }
             },
             "--pre": {
-                "pip": {
+                "ansible.builtin.pip": {
                     "extra_args": "--pre "
                 }
             },
             "--quiet": {
-                "pip": {
+                "ansible.builtin.pip": {
                     "extra_args": "--quiet "
                 }
             },
             "--require-hashes": {
-                "pip": {
+                "ansible.builtin.pip": {
                     "extra_args": "--require-hashes "
                 }
             },
             "--system": {
-                "pip": {
+                "ansible.builtin.pip": {
                     "extra_args": "--system "
                 }
             },
             "--user": {
-                "pip": {
+                "ansible.builtin.pip": {
                     "extra_args": "--user "
                 }
             },
             "--version": {
-                "pip": {
+                "ansible.builtin.pip": {
                     "extra_args": "--version "
                 }
             }

@@ -1,5 +1,5 @@
 {
-    "apk": {
+    "community.general.apk": {
         "entry": "apk <<parameters : m>>",
         "opts": {
             "force": {
@@ -195,21 +195,21 @@
         "examples": {
             "apk update": [
                 {
-                    "apk": {
+                    "community.general.apk": {
                         "update_cache": "yes"
                     }
                 }
             ],
             "apk add <<packages : m>>": [
                 {
-                    "apk": {
+                    "community.general.apk": {
                         "name": "<<packages>>"
                     }
                 }
             ],
             "apk del <<packages : m>>": [
                 {
-                    "apk": {
+                    "community.general.apk": {
                         "name": "<<packages>>",
                         "state": "absent"
                     }
@@ -217,7 +217,7 @@
             ],
             "apk upgrade": [
                 {
-                    "apk": {
+                    "community.general.apk": {
                         "upgrade": "yes"
                     }
                 }

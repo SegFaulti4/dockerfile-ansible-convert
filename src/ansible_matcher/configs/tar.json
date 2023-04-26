@@ -7,7 +7,7 @@
                 "many_args": false,
                 "aliases": ["-x", "--extract", "--get"]
             },
-            "file": {
+            "ansible.builtin.file": {
                 "arg_required": true,
                 "many_args": false,
                 "aliases": ["-f",  "--file"]
@@ -79,7 +79,7 @@
             "-j": {},
             "-J": {},
             "--strip-components=<<num>>": {
-                "unarchive": {
+                "ansible.builtin.unarchive": {
                     "extra-opts": [
                         "--strip-components=<<num>>"
                     ]
@@ -88,14 +88,14 @@
             "-v": {},
             "-a": {},
             "--no-same-owner": {
-                "unarchive": {
+                "ansible.builtin.unarchive": {
                     "extra-opts": [
                         "--no-same-owner"
                     ]
                 }
             },
             "--preserve-permissions": {
-                "unarchive": {
+                "ansible.builtin.unarchive": {
                     "extra-opts": [
                         "--preserve-permissions"
                     ]
@@ -105,7 +105,7 @@
         "examples": {
             "tar -x -f <<file : p>>": [
                 {
-                    "unarchive": {
+                    "ansible.builtin.unarchive": {
                         "src": "<<file>>",
                         "dest": "<<cwd>>",
                         "remote_src": "yes"
@@ -114,7 +114,7 @@
             ],
             "tar -x -f <<file : p>> -C <<dir : p>>": [
                 {
-                    "unarchive": {
+                    "ansible.builtin.unarchive": {
                         "src": "<<file>>",
                         "dest": "<<dir>>",
                         "remote_src": "yes"
@@ -123,7 +123,7 @@
             ],
             "tar fxv <<file : p>>": [
                 {
-                    "unarchive": {
+                    "ansible.builtin.unarchive": {
                         "src": "<<file>>",
                         "dest": "<<cwd>>",
                         "remote_src": "yes"
@@ -132,7 +132,7 @@
             ],
             "tar fxv <<file : p>> -C <<dir : p>>": [
                 {
-                    "unarchive": {
+                    "ansible.builtin.unarchive": {
                         "src": "<<file>>",
                         "dest": "<<dir>>",
                         "remote_src": "yes"
@@ -141,7 +141,7 @@
             ],
             "tar fzx <<file : p>>": [
                 {
-                    "unarchive": {
+                    "ansible.builtin.unarchive": {
                         "src": "<<file>>",
                         "dest": "<<cwd>>",
                         "remote_src": "yes"
@@ -150,7 +150,7 @@
             ],
             "tar fzx <<file : p>> -C <<dir : p>>": [
                 {
-                    "unarchive": {
+                    "ansible.builtin.unarchive": {
                         "src": "<<file>>",
                         "dest": "<<dir>>",
                         "remote_src": "yes"
@@ -159,7 +159,7 @@
             ],
             "tar jxf <<file : p>>": [
                 {
-                    "unarchive": {
+                    "ansible.builtin.unarchive": {
                         "src": "<<file>>",
                         "dest": "<<cwd>>",
                         "remote_src": "yes"
@@ -168,7 +168,7 @@
             ],
             "tar jxf <<file : p>> -C <<dir : p>>": [
                 {
-                    "unarchive": {
+                    "ansible.builtin.unarchive": {
                         "src": "<<file>>",
                         "dest": "<<dir>>",
                         "remote_src": "yes"
@@ -177,7 +177,7 @@
             ],
             "tar jxvf <<file : p>>": [
                 {
-                    "unarchive": {
+                    "ansible.builtin.unarchive": {
                         "src": "<<file>>",
                         "dest": "<<cwd>>",
                         "remote_src": "yes"
@@ -186,7 +186,7 @@
             ],
             "tar jxvf <<file : p>> -C <<dir : p>>": [
                 {
-                    "unarchive": {
+                    "ansible.builtin.unarchive": {
                         "src": "<<file>>",
                         "dest": "<<dir>>",
                         "remote_src": "yes"
@@ -195,7 +195,7 @@
             ],
             "tar vxf <<file : p>>": [
                 {
-                    "unarchive": {
+                    "ansible.builtin.unarchive": {
                         "src": "<<file>>",
                         "dest": "<<cwd>>",
                         "remote_src": "yes"
@@ -204,7 +204,7 @@
             ],
             "tar vxf <<file : p>> -C <<dir : p>>": [
                 {
-                    "unarchive": {
+                    "ansible.builtin.unarchive": {
                         "src": "<<file>>",
                         "dest": "<<dir>>",
                         "remote_src": "yes"
@@ -213,7 +213,7 @@
             ],
             "tar vxzf <<file : p>>": [
                 {
-                    "unarchive": {
+                    "ansible.builtin.unarchive": {
                         "src": "<<file>>",
                         "dest": "<<cwd>>",
                         "remote_src": "yes"
@@ -222,7 +222,7 @@
             ],
             "tar vxzf <<file : p>> -C <<dir : p>>": [
                 {
-                    "unarchive": {
+                    "ansible.builtin.unarchive": {
                         "src": "<<file>>",
                         "dest": "<<dir>>",
                         "remote_src": "yes"
@@ -231,7 +231,7 @@
             ],
             "tar xaf <<file : p>>": [
                 {
-                    "unarchive": {
+                    "ansible.builtin.unarchive": {
                         "src": "<<file>>",
                         "dest": "<<cwd>>",
                         "remote_src": "yes"
@@ -240,7 +240,7 @@
             ],
             "tar xaf <<file : p>> -C <<dir : p>>": [
                 {
-                    "unarchive": {
+                    "ansible.builtin.unarchive": {
                         "src": "<<file>>",
                         "dest": "<<dir>>",
                         "remote_src": "yes"
@@ -249,7 +249,7 @@
             ],
             "tar xf <<file : p>>": [
                 {
-                    "unarchive": {
+                    "ansible.builtin.unarchive": {
                         "src": "<<file>>",
                         "dest": "<<cwd>>",
                         "remote_src": "yes"
@@ -258,7 +258,7 @@
             ],
             "tar xf <<file : p>> -C <<dir : p>>": [
                 {
-                    "unarchive": {
+                    "ansible.builtin.unarchive": {
                         "src": "<<file>>",
                         "dest": "<<dir>>",
                         "remote_src": "yes"
@@ -267,7 +267,7 @@
             ],
             "tar xfa <<file : p>>": [
                 {
-                    "unarchive": {
+                    "ansible.builtin.unarchive": {
                         "src": "<<file>>",
                         "dest": "<<cwd>>",
                         "remote_src": "yes"
@@ -276,7 +276,7 @@
             ],
             "tar xfa <<file : p>> -C <<dir : p>>": [
                 {
-                    "unarchive": {
+                    "ansible.builtin.unarchive": {
                         "src": "<<file>>",
                         "dest": "<<dir>>",
                         "remote_src": "yes"
@@ -285,7 +285,7 @@
             ],
             "tar xfj <<file : p>>": [
                 {
-                    "unarchive": {
+                    "ansible.builtin.unarchive": {
                         "src": "<<file>>",
                         "dest": "<<cwd>>",
                         "remote_src": "yes"
@@ -294,7 +294,7 @@
             ],
             "tar xfj <<file : p>> -C <<dir : p>>": [
                 {
-                    "unarchive": {
+                    "ansible.builtin.unarchive": {
                         "src": "<<file>>",
                         "dest": "<<dir>>",
                         "remote_src": "yes"
@@ -303,7 +303,7 @@
             ],
             "tar xfv <<file : p>>": [
                 {
-                    "unarchive": {
+                    "ansible.builtin.unarchive": {
                         "src": "<<file>>",
                         "dest": "<<cwd>>",
                         "remote_src": "yes"
@@ -312,7 +312,7 @@
             ],
             "tar xfv <<file : p>> -C <<dir : p>>": [
                 {
-                    "unarchive": {
+                    "ansible.builtin.unarchive": {
                         "src": "<<file>>",
                         "dest": "<<dir>>",
                         "remote_src": "yes"
@@ -321,7 +321,7 @@
             ],
             "tar xfvz <<file : p>>": [
                 {
-                    "unarchive": {
+                    "ansible.builtin.unarchive": {
                         "src": "<<file>>",
                         "dest": "<<cwd>>",
                         "remote_src": "yes"
@@ -330,7 +330,7 @@
             ],
             "tar xfvz <<file : p>> -C <<dir : p>>": [
                 {
-                    "unarchive": {
+                    "ansible.builtin.unarchive": {
                         "src": "<<file>>",
                         "dest": "<<dir>>",
                         "remote_src": "yes"
@@ -339,7 +339,7 @@
             ],
             "tar xfx <<file : p>>": [
                 {
-                    "unarchive": {
+                    "ansible.builtin.unarchive": {
                         "src": "<<file>>",
                         "dest": "<<cwd>>",
                         "remote_src": "yes"
@@ -348,7 +348,7 @@
             ],
             "tar xfx <<file : p>> -C <<dir : p>>": [
                 {
-                    "unarchive": {
+                    "ansible.builtin.unarchive": {
                         "src": "<<file>>",
                         "dest": "<<dir>>",
                         "remote_src": "yes"
@@ -357,7 +357,7 @@
             ],
             "tar xfz <<file : p>>": [
                 {
-                    "unarchive": {
+                    "ansible.builtin.unarchive": {
                         "src": "<<file>>",
                         "dest": "<<cwd>>",
                         "remote_src": "yes"
@@ -366,7 +366,7 @@
             ],
             "tar xfz <<file : p>> -C <<dir : p>>": [
                 {
-                    "unarchive": {
+                    "ansible.builtin.unarchive": {
                         "src": "<<file>>",
                         "dest": "<<dir>>",
                         "remote_src": "yes"
@@ -375,7 +375,7 @@
             ],
             "tar xfzv <<file : p>>": [
                 {
-                    "unarchive": {
+                    "ansible.builtin.unarchive": {
                         "src": "<<file>>",
                         "dest": "<<cwd>>",
                         "remote_src": "yes"
@@ -384,7 +384,7 @@
             ],
             "tar xfzv <<file : p>> -C <<dir : p>>": [
                 {
-                    "unarchive": {
+                    "ansible.builtin.unarchive": {
                         "src": "<<file>>",
                         "dest": "<<dir>>",
                         "remote_src": "yes"
@@ -393,7 +393,7 @@
             ],
             "tar xjf <<file : p>>": [
                 {
-                    "unarchive": {
+                    "ansible.builtin.unarchive": {
                         "src": "<<file>>",
                         "dest": "<<cwd>>",
                         "remote_src": "yes"
@@ -402,7 +402,7 @@
             ],
             "tar xjf <<file : p>> -C <<dir : p>>": [
                 {
-                    "unarchive": {
+                    "ansible.builtin.unarchive": {
                         "src": "<<file>>",
                         "dest": "<<dir>>",
                         "remote_src": "yes"
@@ -411,7 +411,7 @@
             ],
             "tar xJf <<file : p>>": [
                 {
-                    "unarchive": {
+                    "ansible.builtin.unarchive": {
                         "src": "<<file>>",
                         "dest": "<<cwd>>",
                         "remote_src": "yes"
@@ -420,7 +420,7 @@
             ],
             "tar xJf <<file : p>> -C <<dir : p>>": [
                 {
-                    "unarchive": {
+                    "ansible.builtin.unarchive": {
                         "src": "<<file>>",
                         "dest": "<<dir>>",
                         "remote_src": "yes"
@@ -429,7 +429,7 @@
             ],
             "tar xjvf <<file : p>>": [
                 {
-                    "unarchive": {
+                    "ansible.builtin.unarchive": {
                         "src": "<<file>>",
                         "dest": "<<cwd>>",
                         "remote_src": "yes"
@@ -438,7 +438,7 @@
             ],
             "tar xjvf <<file : p>> -C <<dir : p>>": [
                 {
-                    "unarchive": {
+                    "ansible.builtin.unarchive": {
                         "src": "<<file>>",
                         "dest": "<<dir>>",
                         "remote_src": "yes"
@@ -447,7 +447,7 @@
             ],
             "tar xvaf <<file : p>>": [
                 {
-                    "unarchive": {
+                    "ansible.builtin.unarchive": {
                         "src": "<<file>>",
                         "dest": "<<cwd>>",
                         "remote_src": "yes"
@@ -456,7 +456,7 @@
             ],
             "tar xvaf <<file : p>> -C <<dir : p>>": [
                 {
-                    "unarchive": {
+                    "ansible.builtin.unarchive": {
                         "src": "<<file>>",
                         "dest": "<<dir>>",
                         "remote_src": "yes"
@@ -465,7 +465,7 @@
             ],
             "tar xvf <<file : p>>": [
                 {
-                    "unarchive": {
+                    "ansible.builtin.unarchive": {
                         "src": "<<file>>",
                         "dest": "<<cwd>>",
                         "remote_src": "yes"
@@ -474,7 +474,7 @@
             ],
             "tar xvf <<file : p>> -C <<dir : p>>": [
                 {
-                    "unarchive": {
+                    "ansible.builtin.unarchive": {
                         "src": "<<file>>",
                         "dest": "<<dir>>",
                         "remote_src": "yes"
@@ -483,7 +483,7 @@
             ],
             "tar xvfj <<file : p>>": [
                 {
-                    "unarchive": {
+                    "ansible.builtin.unarchive": {
                         "src": "<<file>>",
                         "dest": "<<cwd>>",
                         "remote_src": "yes"
@@ -492,7 +492,7 @@
             ],
             "tar xvfj <<file : p>> -C <<dir : p>>": [
                 {
-                    "unarchive": {
+                    "ansible.builtin.unarchive": {
                         "src": "<<file>>",
                         "dest": "<<dir>>",
                         "remote_src": "yes"
@@ -501,7 +501,7 @@
             ],
             "tar xvfJ <<file : p>>": [
                 {
-                    "unarchive": {
+                    "ansible.builtin.unarchive": {
                         "src": "<<file>>",
                         "dest": "<<cwd>>",
                         "remote_src": "yes"
@@ -510,7 +510,7 @@
             ],
             "tar xvfJ <<file : p>> -C <<dir : p>>": [
                 {
-                    "unarchive": {
+                    "ansible.builtin.unarchive": {
                         "src": "<<file>>",
                         "dest": "<<dir>>",
                         "remote_src": "yes"
@@ -519,7 +519,7 @@
             ],
             "tar xvfz <<file : p>>": [
                 {
-                    "unarchive": {
+                    "ansible.builtin.unarchive": {
                         "src": "<<file>>",
                         "dest": "<<cwd>>",
                         "remote_src": "yes"
@@ -528,7 +528,7 @@
             ],
             "tar xvfz <<file : p>> -C <<dir : p>>": [
                 {
-                    "unarchive": {
+                    "ansible.builtin.unarchive": {
                         "src": "<<file>>",
                         "dest": "<<dir>>",
                         "remote_src": "yes"
@@ -537,7 +537,7 @@
             ],
             "tar xvjf <<file : p>>": [
                 {
-                    "unarchive": {
+                    "ansible.builtin.unarchive": {
                         "src": "<<file>>",
                         "dest": "<<cwd>>",
                         "remote_src": "yes"
@@ -546,7 +546,7 @@
             ],
             "tar xvjf <<file : p>> -C <<dir : p>>": [
                 {
-                    "unarchive": {
+                    "ansible.builtin.unarchive": {
                         "src": "<<file>>",
                         "dest": "<<dir>>",
                         "remote_src": "yes"
@@ -555,7 +555,7 @@
             ],
             "tar xvJf <<file : p>>": [
                 {
-                    "unarchive": {
+                    "ansible.builtin.unarchive": {
                         "src": "<<file>>",
                         "dest": "<<cwd>>",
                         "remote_src": "yes"
@@ -564,7 +564,7 @@
             ],
             "tar xvJf <<file : p>> -C <<dir : p>>": [
                 {
-                    "unarchive": {
+                    "ansible.builtin.unarchive": {
                         "src": "<<file>>",
                         "dest": "<<dir>>",
                         "remote_src": "yes"
@@ -573,7 +573,7 @@
             ],
             "tar xvvf <<file : p>>": [
                 {
-                    "unarchive": {
+                    "ansible.builtin.unarchive": {
                         "src": "<<file>>",
                         "dest": "<<cwd>>",
                         "remote_src": "yes"
@@ -582,7 +582,7 @@
             ],
             "tar xvvf <<file : p>> -C <<dir : p>>": [
                 {
-                    "unarchive": {
+                    "ansible.builtin.unarchive": {
                         "src": "<<file>>",
                         "dest": "<<dir>>",
                         "remote_src": "yes"
@@ -591,7 +591,7 @@
             ],
             "tar xvzf <<file : p>>": [
                 {
-                    "unarchive": {
+                    "ansible.builtin.unarchive": {
                         "src": "<<file>>",
                         "dest": "<<cwd>>",
                         "remote_src": "yes"
@@ -600,7 +600,7 @@
             ],
             "tar xvzf <<file : p>> -C <<dir : p>>": [
                 {
-                    "unarchive": {
+                    "ansible.builtin.unarchive": {
                         "src": "<<file>>",
                         "dest": "<<dir>>",
                         "remote_src": "yes"
@@ -609,7 +609,7 @@
             ],
             "tar xzf <<file : p>>": [
                 {
-                    "unarchive": {
+                    "ansible.builtin.unarchive": {
                         "src": "<<file>>",
                         "dest": "<<cwd>>",
                         "remote_src": "yes"
@@ -618,7 +618,7 @@
             ],
             "tar xzf <<file : p>> -C <<dir : p>>": [
                 {
-                    "unarchive": {
+                    "ansible.builtin.unarchive": {
                         "src": "<<file>>",
                         "dest": "<<dir>>",
                         "remote_src": "yes"
@@ -627,7 +627,7 @@
             ],
             "tar xzfv <<file : p>>": [
                 {
-                    "unarchive": {
+                    "ansible.builtin.unarchive": {
                         "src": "<<file>>",
                         "dest": "<<cwd>>",
                         "remote_src": "yes"
@@ -636,7 +636,7 @@
             ],
             "tar xzfv <<file : p>> -C <<dir : p>>": [
                 {
-                    "unarchive": {
+                    "ansible.builtin.unarchive": {
                         "src": "<<file>>",
                         "dest": "<<dir>>",
                         "remote_src": "yes"
@@ -645,7 +645,7 @@
             ],
             "tar zxf <<file : p>>": [
                 {
-                    "unarchive": {
+                    "ansible.builtin.unarchive": {
                         "src": "<<file>>",
                         "dest": "<<cwd>>",
                         "remote_src": "yes"
@@ -654,7 +654,7 @@
             ],
             "tar zxf <<file : p>> -C <<dir : p>>": [
                 {
-                    "unarchive": {
+                    "ansible.builtin.unarchive": {
                         "src": "<<file>>",
                         "dest": "<<dir>>",
                         "remote_src": "yes"
@@ -663,7 +663,7 @@
             ],
             "tar zxfv <<file : p>>": [
                 {
-                    "unarchive": {
+                    "ansible.builtin.unarchive": {
                         "src": "<<file>>",
                         "dest": "<<cwd>>",
                         "remote_src": "yes"
@@ -672,7 +672,7 @@
             ],
             "tar zxfv <<file : p>> -C <<dir : p>>": [
                 {
-                    "unarchive": {
+                    "ansible.builtin.unarchive": {
                         "src": "<<file>>",
                         "dest": "<<dir>>",
                         "remote_src": "yes"
@@ -681,7 +681,7 @@
             ],
             "tar zxv <<file : p>>": [
                 {
-                    "unarchive": {
+                    "ansible.builtin.unarchive": {
                         "src": "<<file>>",
                         "dest": "<<cwd>>",
                         "remote_src": "yes"
@@ -690,7 +690,7 @@
             ],
             "tar zxv <<file : p>> -C <<dir : p>>": [
                 {
-                    "unarchive": {
+                    "ansible.builtin.unarchive": {
                         "src": "<<file>>",
                         "dest": "<<dir>>",
                         "remote_src": "yes"
@@ -699,7 +699,7 @@
             ],
             "tar zxvf <<file : p>>": [
                 {
-                    "unarchive": {
+                    "ansible.builtin.unarchive": {
                         "src": "<<file>>",
                         "dest": "<<cwd>>",
                         "remote_src": "yes"
@@ -708,7 +708,7 @@
             ],
             "tar zxvf <<file : p>> -C <<dir : p>>": [
                 {
-                    "unarchive": {
+                    "ansible.builtin.unarchive": {
                         "src": "<<file>>",
                         "dest": "<<dir>>",
                         "remote_src": "yes"
@@ -717,7 +717,7 @@
             ],
             "tar xzvf <<file : p>>": [
                 {
-                    "unarchive": {
+                    "ansible.builtin.unarchive": {
                         "src": "<<file>>",
                         "dest": "<<cwd>>",
                         "remote_src": "yes"
@@ -726,7 +726,7 @@
             ],
             "tar xzvf <<file : p>> -C <<dir : p>>": [
                 {
-                    "unarchive": {
+                    "ansible.builtin.unarchive": {
                         "src": "<<file>>",
                         "dest": "<<dir>>",
                         "remote_src": "yes"
@@ -735,7 +735,7 @@
             ],
             "tar zvxf <<file : p>>": [
                 {
-                    "unarchive": {
+                    "ansible.builtin.unarchive": {
                         "src": "<<file>>",
                         "dest": "<<cwd>>",
                         "remote_src": "yes"
@@ -744,7 +744,7 @@
             ],
             "tar zvxf <<file : p>> -C <<dir : p>>": [
                 {
-                    "unarchive": {
+                    "ansible.builtin.unarchive": {
                         "src": "<<file>>",
                         "dest": "<<dir>>",
                         "remote_src": "yes"

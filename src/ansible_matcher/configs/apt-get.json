@@ -1,10 +1,10 @@
 {
-    "apt": {
+    "ansible.builtin.apt": {
         "entry": "apt-get <<parameters : m>>",
         "examples": {
             "apt-get install <<packages : m>>": [
                 {
-                    "apt": {
+                    "ansible.builtin.apt": {
                         "name": ["<<packages>>"],
                         "force_apt_get": true
                     }
@@ -12,7 +12,7 @@
             ],
             "apt-get autoclean": [
                 {
-                    "apt": {
+                    "ansible.builtin.apt": {
                         "autoclean": true,
                         "force_apt_get": true
                     }
@@ -20,7 +20,7 @@
             ],
             "apt-get clean": [
                 {
-                    "apt": {
+                    "ansible.builtin.apt": {
                         "clean": true,
                         "force_apt_get": true
                     }
@@ -28,7 +28,7 @@
             ],
             "apt-get autoremove": [
                 {
-                    "apt": {
+                    "ansible.builtin.apt": {
                         "autoremove": "yes",
                         "force_apt_get": true
                     }
@@ -36,7 +36,7 @@
             ],
             "apt-get build-dep <<packages : m>>": [
                 {
-                    "apt": {
+                    "ansible.builtin.apt": {
                         "name": ["<<packages>>"],
                         "state": "build-dep",
                         "force_apt_get": true
@@ -45,7 +45,7 @@
             ],
             "apt-get dist-upgrade": [
                 {
-                    "apt": {
+                    "ansible.builtin.apt": {
                         "upgrade": "dist",
                         "force_apt_get": true
                     }
@@ -53,7 +53,7 @@
             ],
             "apt-get remove <<pkg :m>>": [
                 {
-                    "apt": {
+                    "ansible.builtin.apt": {
                         "name":[ "<<pkg>>" ],
                         "state": "absent",
                         "force_apt_get": true
@@ -62,7 +62,7 @@
             ],
             "apt-get update": [
                 {
-                    "apt": {
+                    "ansible.builtin.apt": {
                         "update_cache": "yes",
                         "force_apt_get": true
                     }
@@ -70,7 +70,7 @@
             ],
             "apt-get upgrade": [
                 {
-                    "apt": {
+                    "ansible.builtin.apt": {
                         "upgrade": "yes",
                         "force_apt_get": true
                     }
@@ -434,67 +434,67 @@
         },
         "opts_postprocess": {
             "--force-yes": {
-                "apt": {
+                "ansible.builtin.apt": {
                     "force": "yes"
                 }
             },
             "--allow-unauthenticated --allow-downgrades": {
-                "apt": {
+                "ansible.builtin.apt": {
                     "force": "yes"
                 }
             },
             "--allow-change-held-packages": {
-                "apt": {
+                "ansible.builtin.apt": {
                     "--allow-change-held-packages": "yes"
                 }
             },
             "--allow-downgrades": {
-                "apt": {
+                "ansible.builtin.apt": {
                     "allow_downgrade": "yes"
                 }
             },
             "--allow-unauthenticated": {
-                "apt": {
+                "ansible.builtin.apt": {
                     "allow_unauthenticated": "yes"
                 }
             },
             "--autoremove": {
-                "apt": {
+                "ansible.builtin.apt": {
                     "autoremove": true
                 }
             },
             "--assume-yes": {},
             "--default-release <<value>>": {
-                "apt": {
+                "ansible.builtin.apt": {
                     "default_release": "<<value>>"
                 }
             },
             "-o Dpkg::Options::=<<value>>": {
-                "apt": {
+                "ansible.builtin.apt": {
                     "dpkg_options": "<<value>>,"
                 }
             },
             "--no-remove": {
-                "apt": {
+                "ansible.builtin.apt": {
                     "fail_on_autoremove": true
                 }
             },
             "--list-cleanup": {},
             "--no-install-recommends": {
-                "apt": {
+                "ansible.builtin.apt": {
                     "install_recommends": false
                 }
             },
             "--no-list-cleanup": {},
             "--no-show-upgraded": {},
             "--only-upgrade": {
-                "apt": {
+                "ansible.builtin.apt": {
                     "only_upgrade": "yes"
                 }
             },
             "--print-uris": {},
             "--purge": {
-                "apt": {
+                "ansible.builtin.apt": {
                     "purge": "yes"
                 }
             },

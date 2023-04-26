@@ -121,7 +121,7 @@
         "examples": {
             "wget <<url>>": [
                 {
-                    "get_url": {
+                    "ansible.builtin.get_url": {
                         "url": "<<url>>",
                         "dest": "<<cwd>>",
                         "force": true,
@@ -131,7 +131,7 @@
             ],
             "wget --tries <<tries>> <<url>>": [
                 {
-                    "get_url": {
+                    "ansible.builtin.get_url": {
                         "url": "<<url>>",
                         "dest": "<<cwd>>",
                         "force": true,
@@ -143,22 +143,22 @@
         },
         "opts_postprocess": {
             "-O <<file : p>>": {
-                "get_url": {
+                "ansible.builtin.get_url": {
                     "dest": "<<file>>"
                 }
             },
             "--no-check-certificate": {
-                "get_url": {
+                "ansible.builtin.get_url": {
                     "validate_certs": false
                 }
             },
             "--no-clobber": {
-                "get_url": {
+                "ansible.builtin.get_url": {
                     "force": false
                 }
             },
             "-P <<file : p>>": {
-                "get_url": {
+                "ansible.builtin.get_url": {
                     "dest": "<<file>>"
                 }
             },

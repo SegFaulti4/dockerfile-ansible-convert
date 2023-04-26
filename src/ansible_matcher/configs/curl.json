@@ -2,7 +2,7 @@
     "curl": {
         "entry": "curl <<parameters : m>>",
         "opts": {
-            "fail": {
+            "ansible.builtin.fail": {
                 "arg_required": false,
                 "many_args": false,
                 "aliases": ["-f", "--fail"]
@@ -35,8 +35,8 @@
         },
         "opts_postprocess": {
             "-L": {
-                "uri": {
-                    "follow_redirects:": "safe"
+                "ansible.builtin.uri": {
+                    "follow_redirects": "safe"
                 }
             },
             "-f": {},
@@ -46,7 +46,7 @@
         "examples": {
             "curl -o <<output : p>> <<url>>": [
                 {
-                    "uri": {
+                    "ansible.builtin.uri": {
                         "method": "GET",
                         "dest": "<<output>>",
                         "url": "<<url>>"
@@ -55,7 +55,7 @@
             ],
             "curl -O <<url>>": [
                 {
-                    "uri": {
+                    "ansible.builtin.uri": {
                         "method": "GET",
                         "dest": "<<cwd>>",
                         "url": "<<url>>"

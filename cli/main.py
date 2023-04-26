@@ -24,7 +24,10 @@ def parse_arguments():
 def represent_str(self, data):
     tag = u'tag:yaml.org,2002:str'
     style = None
-    if '{{' in data and '}}' in data or "'" in data:
+
+    if data.startswith('"') and data.endswith('"'):
+        data = data.strip('"')
+    if '{{' in data and '}}' in data:
         style = '"'
     return self.represent_scalar(tag, data, style=style)
 

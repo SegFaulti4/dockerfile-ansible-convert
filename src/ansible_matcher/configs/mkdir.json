@@ -30,7 +30,7 @@
         "examples": {
             "mkdir -p <<directories : mp>>": [
                 {
-                    "file": {
+                    "ansible.builtin.file": {
                         "path": "<<directories>>",
                         "state": "directory"
                     }
@@ -38,7 +38,7 @@
             ],
             "mkdir <<directories : mp>>": [
                 {
-                    "file": {
+                    "ansible.builtin.file": {
                         "path": "<<directories>>",
                         "state": "directory"
                     }
@@ -47,7 +47,7 @@
         },
         "opts_postprocess": {
             "-m <<mode>>": {
-                "file": {
+                "ansible.builtin.file": {
                     "mode": "<<mode>>"
                 }
             },

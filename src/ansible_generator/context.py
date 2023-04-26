@@ -85,7 +85,7 @@ class AnsiblePlayContext:
             else:
                 return None
 
-        return " ".join(word.value for word in words)
+        return " ".join(word.value for word in words).strip('"')
 
     def get_environment(self):
         return {**self.global_env, **self.local_env}

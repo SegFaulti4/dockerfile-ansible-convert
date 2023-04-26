@@ -21,7 +21,7 @@
         "examples": {
             "pip uninstall <<packages : m>>": [
                 {
-                    "pip": {
+                    "ansible.builtin.pip": {
                         "name": ["<<packages>>"],
                         "state": "absent",
                         "chdir": "<<cwd>>"
@@ -30,7 +30,7 @@
             ],
             "pip uninstall -r <<requirement : p>>": [
                 {
-                    "pip": {
+                    "ansible.builtin.pip": {
                         "requirement": "<<requirement>>",
                         "state": "absent",
                         "chdir": "<<cwd>>"
@@ -41,7 +41,7 @@
         "opts_postprocess": {
             "--yes": {},
             "--no-cache-dir": {
-                "pip": {
+                "ansible.builtin.pip": {
                     "extra_args": "--no-cache-dir "
                 }
             }
