@@ -80,7 +80,7 @@
             "-J": {},
             "--strip-components=<<num>>": {
                 "ansible.builtin.unarchive": {
-                    "extra-opts": [
+                    "extra_opts": [
                         "--strip-components=<<num>>"
                     ]
                 }
@@ -89,14 +89,14 @@
             "-a": {},
             "--no-same-owner": {
                 "ansible.builtin.unarchive": {
-                    "extra-opts": [
+                    "extra_opts": [
                         "--no-same-owner"
                     ]
                 }
             },
             "--preserve-permissions": {
                 "ansible.builtin.unarchive": {
-                    "extra-opts": [
+                    "extra_opts": [
                         "--preserve-permissions"
                     ]
                 }

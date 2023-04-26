@@ -35,7 +35,7 @@ def prepare_containerfile_image(file_name: str, idx: int, echo: bool) -> Optiona
     copy_file(path, cf_path)
 
     image_name = f"docker-test-{file_basename}"
-    build_comm = f"docker build --no-cache -t {image_name} --file={cf_path} ."
+    build_comm = f"docker build --no-cache --progress=plain -t {image_name} --file={cf_path} ."
 
     try:
         flag_print(build_comm, echo=echo)
@@ -77,6 +77,7 @@ def prepare_ansible_image(file_name: str, idx: int, echo: bool) -> Optional[str]
         with open(pb_path, "w") as outF:
             cli.main.generate(containerfile_path=path, output=outF)
     except Exception:
+        print("failed to generate playbook")
         return None
 
     ip_addr = f"172.18.0.{idx + 2}"
@@ -85,7 +86,7 @@ def prepare_ansible_image(file_name: str, idx: int, echo: bool) -> Optional[str]
 
     run_comm = f"docker run -d --net {DOCKER_NET_NAME} --ip {ip_addr} -p {8000 + idx}:22 " \
                f"--name={container_name} {BASE_IMAGE}"
-    ansible_comm = f'/home/popovms/.local/bin/ansible-playbook -v {pb_path} --ssh-common-args="-o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null" --user=root --inventory="{ip_addr},"'
+    ansible_comm = f'/usr/bin/ansible-playbook -v {pb_path} --ssh-common-args="-o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null" --user=root --inventory="{ip_addr},"'
     commit_comm = f"docker commit {container_name} {image_name}"
     stop_rm_comm = f"docker stop {container_name} && docker rm {container_name}"
 
@@ -141,18 +142,21 @@ def prepare_ansible_image(file_name: str, idx: int, echo: bool) -> Optional[str]
 
 def diff_images(image1: Optional[str], image2: Optional[str], idx: int, echo: bool = True):
     log_path = os.path.join(LOG_DIR, f"diff-{image1}.json")
-    if image1 is None or image2 is None:
-        with open(log_path, "w") as outF:
-            outF.write("[]")
-        return
-
     diff_comm = f"container-diff diff --no-cache --json --type=file daemon://{image1}:latest daemon://{image2}:latest"
     flag_print(diff_comm, echo=echo)
+
+    if image1 is None or image2 is None:
+        with open(log_path, "w") as outF:
+            outF.write(f"[]\nimage1: {image1}, image2: {image2}\n")
+        return
+
+    """
     diff_res = subprocess.run(['/bin/bash', '-c', diff_comm],
                               stdout=PIPE, stderr=PIPE, text=True)
 
     with open(log_path, "w") as outF:
         outF.write(diff_res.stdout)
+    """
 
 
 def rm_image(image: Optional[str]):
@@ -177,20 +181,25 @@ def collect_ansible_diff_worker(args: Tuple[List[str], int, bool]):
             diff_images(cf_image, ans_image, idx, echo)
             time.sleep(2)
 
+            """
             rm_image(cf_image)
             time.sleep(2)
             rm_image(ans_image)
             time.sleep(2)
             pbar.update(1)
+            """
 
 
 def collect_ansible_diff(containerfile_names: List[str], n_proc: int):
     echo = True
-    # collect_ansible_diff_worker((containerfile_names, 0, echo))
-    with multiprocessing.Pool(processes=n_proc) as pool:
+    collect_ansible_diff_worker((containerfile_names, 0, echo))
+
+    """
+    # with multiprocessing.Pool(processes=n_proc) as pool:
         spans = parts.parts(containerfile_names, n_proc)
         pool.map(collect_ansible_diff_worker,
                  [(list(span), idx, echo) for span, idx in zip(spans, range(n_proc))])
+    """
 
 
 def main():
@@ -203,7 +212,7 @@ def main():
     filenames = filenames_from_dir(GENERATOR_TESTS_DIR)
     filenames.sort()
     filenames = filenames[:20]
-    collect_ansible_diff(filenames, 2)
+    collect_ansible_diff(filenames, 1)
 
 
 if __name__ == "__main__":
