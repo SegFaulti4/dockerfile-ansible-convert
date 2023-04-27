@@ -92,9 +92,6 @@
             "--no-dereference": {
                 "ansible.builtin.file": {
                     "follow": false
-                },
-                "ansible.builtin.stat": {
-                    "follow": false
                 }
             },
             "--verbose": {}

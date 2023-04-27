@@ -77,7 +77,7 @@ def prepare_ansible_image(file_name: str, idx: int, echo: bool) -> Optional[str]
         with open(pb_path, "w") as outF:
             cli.main.generate(containerfile_path=path, output=outF)
     except Exception:
-        print("failed to generate playbook")
+        print(f"Failed to generate playbook from dockerfile - {path}")
         return None
 
     ip_addr = f"172.18.0.{idx + 2}"
@@ -90,53 +90,61 @@ def prepare_ansible_image(file_name: str, idx: int, echo: bool) -> Optional[str]
     commit_comm = f"docker commit {container_name} {image_name}"
     stop_rm_comm = f"docker stop {container_name} && docker rm {container_name}"
 
-    try:
-        flag_print(run_comm, echo=echo)
-        run_res = subprocess.run(["/bin/bash", "-c", run_comm], stdout=PIPE, stderr=PIPE, text=True,
+    def shell_try(comm):
+        try:
+            flag_print(comm, echo=echo)
+            res = subprocess.run(["/bin/bash", "-c", comm], stdout=PIPE, stderr=PIPE, text=True,
                                  timeout=TIMEOUT)
-        run_success = True if run_res.returncode == 0 else False
-        time.sleep(3)
+            time.sleep(0.5)
+            succ = True if res.returncode == 0 else False
+            out, err = res.stdout, res.stderr
+        except subprocess.TimeoutExpired:
+            succ = False
+            out, err = "", "Time limit exceeded"
+        return succ, out, err
 
+    run_success, run_stdout, run_stderr = shell_try(run_comm)
+
+    try:
         flag_print(ansible_comm, echo=echo)
         ansible_res = subprocess.run(ansible_comm, stdout=PIPE, stderr=PIPE, text=True,
                                      timeout=TIMEOUT, shell=True)
         ansible_success = True if ansible_res.returncode == 0 else False
-
-        flag_print(commit_comm, echo=echo)
-        commit_res = subprocess.run(['/bin/bash', '-c', commit_comm], stdout=PIPE, stderr=PIPE, text=True,
-                                    timeout=TIMEOUT)
-        commit_success = True if commit_res.returncode == 0 else False
-
-        flag_print(stop_rm_comm, echo=echo)
-        stop_rm_res = subprocess.run(['/bin/bash', '-c', stop_rm_comm], stdout=PIPE, stderr=PIPE, text=True,
-                                     timeout=TIMEOUT)
-        stop_rm_success = True if stop_rm_res.returncode == 0 else False
-
-        success = run_success and ansible_success and commit_success and stop_rm_success
         ansible_stdout, ansible_stderr = ansible_res.stdout, ansible_res.stderr
     except subprocess.TimeoutExpired:
-        success = False
+        ansible_success = False
         ansible_stdout, ansible_stderr = "", "Time limit exceeded"
     except UnicodeDecodeError:
-        success = False
+        ansible_success = False
         ansible_stdout, ansible_stderr = "", "Unicode shenanigans"
+
+    commit_success, commit_stdout, commit_stderr = shell_try(commit_comm)
+    stop_rm_success, stop_rm_stdout, stop_rm_stderr = shell_try(stop_rm_comm)
+
+    success = run_success and ansible_success and commit_success and stop_rm_success
+
+    def shell_run_lines(name, comm, succ, out, err):
+        return [
+            log_header(f"{name} COMMAND") + f"{comm}\n\n",
+            log_header(f"{name} SUCCESS") + f"{succ}\n\n",
+            log_header(f"{name} STDOUT") + f"{out.strip()}\n\n",
+            log_header(f"{name} STDERR") + f"{err.strip()}\n\n"
+        ]
 
     log_path = os.path.join(LOG_DIR, image_name)
     with open(log_path, "w") as outF:
-        outF.writelines([
-            log_header("IMAGE NAME") + f"{image_name}\n\n",
-            log_header("PLAYBOOK PATH") + f"{pb_path}\n\n",
-            log_header("RUN COMMAND") + f"{run_comm}\n\n",
-            log_header("ANSIBLE COMMAND") + f"{ansible_comm}\n\n",
-            log_header("ANSIBLE STDOUT") + f"{ansible_stdout.strip()}\n\n",
-            log_header("ANSIBLE STDERR") + f"{ansible_stderr.strip()}\n\n",
-            log_header("COMMIT COMMAND") + f"{commit_comm}\n\n",
-            log_header("STOP RM COMMAND") + f"{stop_rm_comm}\n\n",
-        ])
+        outF.writelines(
+            [log_header("IMAGE NAME") + f"{image_name}\n\n", log_header("PLAYBOOK PATH") + f"{pb_path}\n\n"] +
+            shell_run_lines("RUN", run_comm, run_success, run_stdout, run_stderr) +
+            shell_run_lines("ANSIBLE", ansible_comm, ansible_success, ansible_stdout, ansible_stderr) +
+            shell_run_lines("COMMIT", commit_comm, commit_success, commit_stdout, commit_stderr) +
+            shell_run_lines("RUN", stop_rm_comm, stop_rm_success, stop_rm_stdout, stop_rm_stderr)
+        )
 
     if success:
         return image_name
     else:
+        print(f"Failed ansible - {image_name}")
         return None
 
 
@@ -191,7 +199,7 @@ def collect_ansible_diff_worker(args: Tuple[List[str], int, bool]):
 
 
 def collect_ansible_diff(containerfile_names: List[str], n_proc: int):
-    echo = True
+    echo = False
     collect_ansible_diff_worker((containerfile_names, 0, echo))
 
     """
@@ -211,7 +219,7 @@ def main():
 
     filenames = filenames_from_dir(GENERATOR_TESTS_DIR)
     filenames.sort()
-    filenames = filenames[:20]
+    filenames = filenames[:200]
     collect_ansible_diff(filenames, 1)
 
 
