@@ -138,7 +138,8 @@ def prepare_ansible_image(file_name: str, idx: int, echo: bool) -> Optional[str]
             shell_run_lines("RUN", run_comm, run_success, run_stdout, run_stderr) +
             shell_run_lines("ANSIBLE", ansible_comm, ansible_success, ansible_stdout, ansible_stderr) +
             shell_run_lines("COMMIT", commit_comm, commit_success, commit_stdout, commit_stderr) +
-            shell_run_lines("RUN", stop_rm_comm, stop_rm_success, stop_rm_stdout, stop_rm_stderr)
+            shell_run_lines("RUN", stop_rm_comm, stop_rm_success, stop_rm_stdout, stop_rm_stderr) +
+            [log_header("SUCCESS") + f"{success}\n\n"]
         )
 
     if success:
@@ -167,14 +168,14 @@ def diff_images(image1: Optional[str], image2: Optional[str], idx: int, echo: bo
     """
 
 
-def rm_image(image: Optional[str]):
+def rm_image(image: Optional[str], echo: bool):
     if image is None:
         return
 
     rm_comm = f"docker image rm {image}"
     rm_res = subprocess.run(["/bin/bash", "-c", rm_comm], stdout=PIPE, stderr=PIPE, text=True)
-    print(f"RMing {image} - stdout - {rm_res.stdout}")
-    print(f"RMing {image} - stderr - {rm_res.stderr}")
+    flag_print(f"RMing {image} - stdout - {rm_res.stdout}", echo=echo)
+    flag_print(f"RMing {image} - stderr - {rm_res.stderr}", echo=echo)
 
 
 def collect_ansible_diff_worker(args: Tuple[List[str], int, bool]):
@@ -183,19 +184,14 @@ def collect_ansible_diff_worker(args: Tuple[List[str], int, bool]):
     with tqdm(total=len(names), position=idx, desc=f"Loop {idx}") as pbar:
         for name in names:
             cf_image = prepare_containerfile_image(name, idx, echo)
-            time.sleep(2)
             ans_image = prepare_ansible_image(name, idx, echo)
-            time.sleep(2)
             diff_images(cf_image, ans_image, idx, echo)
-            time.sleep(2)
 
-            """
-            rm_image(cf_image)
-            time.sleep(2)
-            rm_image(ans_image)
-            time.sleep(2)
+            time.sleep(1)
+            rm_image(cf_image, echo)
+            time.sleep(1)
+            rm_image(ans_image, echo)
             pbar.update(1)
-            """
 
 
 def collect_ansible_diff(containerfile_names: List[str], n_proc: int):
@@ -219,7 +215,7 @@ def main():
 
     filenames = filenames_from_dir(GENERATOR_TESTS_DIR)
     filenames.sort()
-    filenames = filenames[:200]
+    # filenames = filenames[0:500]
     collect_ansible_diff(filenames, 1)
 
 
