@@ -108,5 +108,12 @@ class BashlexShellParser(ShellParser):
         nodes = bashlex.parse(val)
         res = []
         for node in nodes:
-            res.extend(BashlexNodeTransformer.transform_node(node, val))
+            transformed = BashlexNodeTransformer.transform_node(node, val)
+
+            # transform_node can return empty list
+            # in that case we create ShellRawObject
+            if not transformed:
+                res.append(ShellRawObject(value=val[node.pos[0]:node.pos[1]]))
+            else:
+                res.extend(transformed)
         return res

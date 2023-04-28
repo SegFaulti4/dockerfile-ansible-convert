@@ -55,6 +55,7 @@
                         "cmd": "ls -1d <<files>>",
                         "chdir": "<<cwd>>"
                     },
+                    "changed_when": false,
                     "register": "ls_reg"
                 },
                 {
@@ -71,6 +72,7 @@
                         "cmd": "ls -1d <<files>>",
                         "chdir": "<<cwd>>"
                     },
+                    "changed_when": false,
                     "register": "ls_reg"
                 },
                 {
@@ -78,6 +80,7 @@
                         "follow": false,
                         "path": "{{ item }}"
                     },
+                    "changed_when": false,
                     "loop": "{{ ls_reg.stdout_lines }}",
                     "register": "st_reg"
                 },

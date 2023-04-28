@@ -64,6 +64,7 @@
                         "cmd": "ls -1d <<files>>",
                         "chdir": "<<cwd>>"
                     },
+                    "changed_when": false,
                     "register": "ls_reg"
                 }, {
                     "ansible.builtin.file": {
@@ -79,6 +80,7 @@
                         "cmd": "ls -1d <<files>> 2> /dev/null || true",
                         "chdir": "<<cwd>>"
                     },
+                    "changed_when": false,
                     "register": "ls_reg"
                 }, {
                     "ansible.builtin.file": {

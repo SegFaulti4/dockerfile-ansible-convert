@@ -87,7 +87,7 @@
                 "arg_required": false,
                 "many_args": false
             },
-            "ansible.builtin.user": {
+            "user": {
                 "aliases": ["--user"],
                 "arg_required": false,
                 "many_args": false

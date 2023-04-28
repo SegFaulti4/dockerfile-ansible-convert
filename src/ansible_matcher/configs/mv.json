@@ -30,6 +30,7 @@
                         "cmd": "ls -1d <<globs>>",
                         "chdir": "<<cwd>>"
                     },
+                    "changed_when": false,
                     "register": "ls_reg"
                 },
                 {
@@ -37,6 +38,7 @@
                         "path": "<<dest>>",
                         "follow": false
                     },
+                    "changed_when": false,
                     "register": "st_reg"
                 },
                 {

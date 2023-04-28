@@ -28,20 +28,42 @@
             }
         },
         "examples": {
+            "mkdir -p <<directory : p>>": [
+                {
+                    "ansible.builtin.file": {
+                        "path": "<<directory>>",
+                        "state": "directory"
+                    }
+                }
+            ],
+            "mkdir <<directory : p>>": [
+                {
+                    "ansible.builtin.file": {
+                        "path": "<<directory>>",
+                        "state": "directory"
+                    }
+                }
+            ],
             "mkdir -p <<directories : mp>>": [
                 {
                     "ansible.builtin.file": {
-                        "path": "<<directories>>",
+                        "path": "{{ item }}",
                         "state": "directory"
-                    }
+                    },
+                    "loop": [
+                        "<<directories>>"
+                    ]
                 }
             ],
             "mkdir <<directories : mp>>": [
                 {
                     "ansible.builtin.file": {
-                        "path": "<<directories>>",
+                        "path": "{{ item }}",
                         "state": "directory"
-                    }
+                    },
+                    "loop": [
+                        "<<directories>>"
+                    ]
                 }
             ]
         },

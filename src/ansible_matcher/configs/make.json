@@ -17,7 +17,7 @@
                 "arg_required": true,
                 "many_args": false
             },
-            "ansible.builtin.file": {
+            "file": {
                 "aliases": ["-f", "--file", "--makefile"],
                 "arg_required": true,
                 "many_args": false

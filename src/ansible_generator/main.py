@@ -90,10 +90,8 @@ class RoleGenerator:
         self.stats = RoleGeneratorStatistics()
         self.matcher_tests = list()
         self._runtime = _Runtime()
-        self._context = AnsiblePlayContext(global_env=dict(), local_env=dict(),
-                                           global_user=self.default_user,
-                                           global_workdir=self.default_workdir,
-                                           facts=dict(), vars=dict())
+        self._context = AnsiblePlayContext(global_user=self.default_user,
+                                           global_workdir=self.default_workdir)
         self._add_default_context_vars()
 
         for directive in self._df_content.directives:
@@ -550,6 +548,9 @@ class RoleGenerator:
             }
         }
         wd = self._context.get_workdir()
+        if wd is None:
+            print()
+
         if wd is not None:
             task["shell"]["chdir"] = wd
 

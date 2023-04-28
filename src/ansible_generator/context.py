@@ -7,21 +7,25 @@ from typing import Dict, Optional
 from dataclasses import dataclass
 
 
-@dataclass
 class AnsiblePlayContext:
     global_env: Dict[str, str]
     local_env: Dict[str, str]
     facts: Dict[str, str]
     vars: Dict[str, str]
-    global_workdir: Optional[str] = None
-    local_workdir: Optional[str] = None
     global_user: Optional[str] = None
     local_user: Optional[str] = None
-    global_old_workdir: Optional[str] = None
-    local_old_workdir: Optional[str] = None
 
     _WORKDIR_KEY = 'PWD'
     _OLD_WORKDIR_KEY = 'OLDPWD'
+
+    def __init__(self, global_user: str, global_workdir: str):
+        self.global_env = dict()
+        self.local_env = dict()
+        self.facts = dict()
+        self.vars = dict()
+        self.global_user = global_user
+        self.local_user = None
+        self.global_env[self._WORKDIR_KEY] = global_workdir
 
     def resolve_shell_word(self, word: ShellWordObject, strict: bool = True, empty_missing: bool = False) \
             -> Optional[Tuple[ShellWordObject, Dict[str, str]]]:
@@ -35,9 +39,9 @@ class AnsiblePlayContext:
         for param in word.parts:
             param_name = param.name
             if param_name in self.local_env:
+                local_vars = {param_name: self.local_env[param_name]}
                 param_name = self._local_var_name_wrapper(param_name)
                 param_val = "{{ " + param_name + " }}"
-                local_vars = {param_name: param_val}
             elif param_name in self.global_env:
                 param_val = self.global_env[param_name]
             elif strict:
@@ -186,6 +190,19 @@ class AnsiblePlayContext:
         return rendered
 
     def path_str_wrapper(self, path: str) -> str:
+
+        def custom_strip(s: str, c: str) -> str:
+            return s.strip(c) if s.startswith(c) and s.endswith(c) else s
+
+        def strip_quotes(s: str) -> str:
+            s = custom_strip(s, '"')
+            s = custom_strip(s, "'")
+            s = custom_strip(s, '"')
+            return s
+
+        # because we don't need any quotes
+        path = strip_quotes(path)
+
         if path.startswith("~"):
             path = "/home/" + self.get_user() + path[1:]
         workdir = self.get_workdir()

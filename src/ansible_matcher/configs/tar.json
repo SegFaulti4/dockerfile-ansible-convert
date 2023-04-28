@@ -7,7 +7,7 @@
                 "many_args": false,
                 "aliases": ["-x", "--extract", "--get"]
             },
-            "ansible.builtin.file": {
+            "file": {
                 "arg_required": true,
                 "many_args": false,
                 "aliases": ["-f",  "--file"]

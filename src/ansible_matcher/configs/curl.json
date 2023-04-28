@@ -2,7 +2,7 @@
     "curl": {
         "entry": "curl <<parameters : m>>",
         "opts": {
-            "ansible.builtin.fail": {
+            "fail": {
                 "arg_required": false,
                 "many_args": false,
                 "aliases": ["-f", "--fail"]

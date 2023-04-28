@@ -62,7 +62,7 @@
                 "arg_required": false,
                 "many_args": false
             },
-            "ansible.builtin.shell": {
+            "shell": {
                 "aliases": ["-s", "--shell"],
                 "arg_required": true,
                 "many_args": false
@@ -133,7 +133,7 @@
         "opts_postprocess": {
             "--base-dir <<dir : p>>": {
                 "ansible.builtin.user": {
-                    "home": "{{ (<<dir>>, username) | path_join }}"
+                    "home": "{{ ('<<dir>>', username) | path_join }}"
                 }
             },
             "--comment <<comment>>": {

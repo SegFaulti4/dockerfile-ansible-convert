@@ -35,7 +35,7 @@ def prepare_containerfile_image(file_name: str, idx: int, echo: bool) -> Optiona
     copy_file(path, cf_path)
 
     image_name = f"docker-test-{file_basename}"
-    build_comm = f"docker build --no-cache --progress=plain -t {image_name} --file={cf_path} ."
+    build_comm = f"docker build --progress=plain -t {image_name} --file={cf_path} ."
 
     try:
         flag_print(build_comm, echo=echo)

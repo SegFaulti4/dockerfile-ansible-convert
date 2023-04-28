@@ -30,8 +30,12 @@ class DockerfileCommandTransformer:
     @staticmethod
     def transform_arg(directive) -> Tuple[Type, Dict]:
         arr = [v.strip('"') for v in directive.value]
-        if len(directive.value) == 1:
-            arr.append('""')
+        if len(arr) == 1:
+            if "=" not in arr[0]:
+                arr.append('""')
+            else:
+                pos = arr[0].find('=')
+                arr = [arr[0][:pos], arr[0][pos + 1:]]
         return ArgDirective, {"name": arr[0], "value": arr[1]}
 
     @staticmethod

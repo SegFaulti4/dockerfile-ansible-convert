@@ -122,20 +122,28 @@
             "wget <<url>>": [
                 {
                     "ansible.builtin.get_url": {
-                        "url": "<<url>>",
-                        "dest": "<<cwd>>",
+                        "url": "{{ src }}",
+                        "dest": "{{ (cwd, src | basename) | path_join }}",
                         "force": true,
                         "decompress": false
+                    },
+                    "vars": {
+                        "cwd": "<<cwd>>",
+                        "src": "<<url>>"
                     }
                 }
             ],
             "wget --tries <<tries>> <<url>>": [
                 {
                     "ansible.builtin.get_url": {
-                        "url": "<<url>>",
-                        "dest": "<<cwd>>",
+                        "url": "{{ src }}",
+                        "dest": "{{ (cwd, src | basename) | path_join }}",
                         "force": true,
                         "decompress": false
+                    },
+                    "vars": {
+                        "cwd": "<<cwd>>",
+                        "src": "<<url>>"
                     },
                     "retries": "<<tries>>"
                 }
