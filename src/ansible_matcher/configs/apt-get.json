@@ -2,6 +2,16 @@
     "ansible.builtin.apt": {
         "entry": "apt-get <<parameters : m>>",
         "examples": {
+            "apt-get install <<pkg_string>>": [
+                {
+                    "ansible.builtin.apt": {
+                        "name": "{{ packages | split }}"
+                    },
+                    "vars": {
+                        "packages": "<<pkg_string>>"
+                    }
+                }
+            ],
             "apt-get install <<packages : m>>": [
                 {
                     "ansible.builtin.apt": {

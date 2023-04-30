@@ -111,11 +111,16 @@ class RoleGenerator:
 
     def _add_default_context_vars(self):
         default_vars = {
-            "PATH": self._DEFAULT_PATH,
-            "HOME": self._context.path_str_wrapper("~")
+            "PATH": "{{ ansible_env.PATH }}",
+            "HOME": "{{ ansible_env.HOME }}"
         }
+        task = {"set_fact": dict()}
+
         for name, value in default_vars.items():
-            self._context.add_global_env(name, value)
+            fact_name = self._fact_name_wrapper(name)
+            task["set_fact"][fact_name] = value
+            self._context.add_global_env(name=name, value="{{ " + fact_name + " }}")
+        self._add_task(task, user="")
 
     def _prepare_task(self, task: Dict, user: str = "", variables: Dict[str, str] = None,
                       environment: Dict[str, str] = None) -> Union[Dict, None]:
@@ -190,23 +195,58 @@ class RoleGenerator:
         name = self._shell_expr_values([directive.name], strict=False, empty_missing=True)[0]
         group = self._shell_expr_values([directive.group], strict=False, empty_missing=True)[0]
 
-        if group:
-            tasks = [{
-                "group": {
-                    "state": "present",
-                    "name": group
-                }
-            }]
-        else:
-            tasks = []
+        tasks = []
 
-        tasks.append({
-            "user": {
-                "name": name,
-                "group": group if group else "root",
-                "state": "present"
-            }
-        })
+        if group:
+            if group.isnumeric():
+                gid = int(group)
+                group = f"autogen_gid_{gid}"
+            else:
+                gid = None
+
+            if gid is None:
+                tasks.append({
+                    "group": {
+                        "state": "present",
+                        "name": group
+                    },
+                    "become": True
+                })
+            else:
+                tasks.append({
+                    "group": {
+                        "state": "present",
+                        "name": group,
+                        "gid": gid
+                    },
+                    "become": True
+                })
+
+        if name.isnumeric():
+            uid = int(name)
+            name = f"autogen_uid_{uid}"
+        else:
+            uid = None
+
+        if uid is None:
+            tasks.append({
+                "user": {
+                    "name": name,
+                    "group": group if group else "root",
+                    "state": "present"
+                },
+                "become": True
+            })
+        else:
+            tasks.append({
+                "user": {
+                    "name": name,
+                    "group": group if group else "root",
+                    "uid": uid,
+                    "state": "present"
+                },
+                "become": True
+            })
 
         for task in tasks:
             self._add_task(task)
@@ -397,7 +437,7 @@ class RoleGenerator:
                 tasks = [{
                     "file": {
                         "state": "directory",
-                        "path": destination
+                        "path": destination[:-1]
                     }
                 }]
             else:
@@ -435,31 +475,73 @@ class RoleGenerator:
         if not urls:
             return []
 
-        if len(urls) > 1:
-            tasks = [{
-                "get_url": {
-                    "url": "{{ item }}",
-                    "decompress": False,
-                    "dest": destination
-                },
-                "loop": urls
-            }]
-            if name:
-                tasks[-1]["get_url"]["owner"] = name
-            if group:
-                tasks[-1]["get_url"]["group"] = group
+        tasks = []
+
+        if destination.endswith("/"):
+            if destination != '/':
+                tasks.append({
+                    "file": {
+                        "state": "directory",
+                        "path": destination[:-1]
+                    }
+                })
+            if len(urls) > 1:
+                tasks.append({
+                    "get_url": {
+                        "url": "{{ item }}",
+                        "dest": "{{ (dest, item | basename) | path_join }}",
+                        "decompress": False
+                    },
+                    "loop": urls,
+                    "vars": {
+                        "dest": destination[:-1] if destination != "/" else destination
+                    }
+                })
+            else:
+                tasks.append({
+                    "get_url": {
+                        "url": "{{ url }}",
+                        "dest": "{{ (dest, url | basename) | path_join }}",
+                        "decompress": False
+                    },
+                    "vars": {
+                        "url": urls[0],
+                        "dest": destination[:-1] if destination != "/" else destination
+                    }
+                })
+
         else:
-            tasks = [{
-                "get_url": {
-                    "url": urls[0],
-                    "decompress": False,
+            tasks.append({
+                "file": {
+                    "state": "directory",
+                    "path": "{{ dest | dirname }}"
+                },
+                "vars": {
                     "dest": destination
                 }
-            }]
-            if name:
-                tasks[-1]["get_url"]["owner"] = name
-            if group:
-                tasks[-1]["get_url"]["group"] = group
+            })
+            if len(urls) > 1:
+                tasks.append({
+                    "get_url": {
+                        "url": "{{ item }}",
+                        "dest": destination,
+                        "decompress": False
+                    },
+                    "loop": urls
+                })
+            else:
+                tasks.append({
+                    "get_url": {
+                        "url": urls[0],
+                        "dest": destination,
+                        "decompress": False
+                    }
+                })
+
+        if name:
+            tasks[-1]["get_url"]["owner"] = name
+        if group:
+            tasks[-1]["get_url"]["group"] = group
         return tasks
 
     @staticmethod
@@ -548,9 +630,6 @@ class RoleGenerator:
             }
         }
         wd = self._context.get_workdir()
-        if wd is None:
-            print()
-
         if wd is not None:
             task["shell"]["chdir"] = wd
 
@@ -576,10 +655,16 @@ class RoleGenerator:
         task = self._prepare_task(task, user=self._context.get_user(), environment=self._context.get_environment())
         return [] if task is None else [task]
 
-    def _handle_run_command_shell(self, line: str, local_vars: Dict[str, str]) -> List[Dict]:
-        task = self._create_shell_task(line)
-        task = self._prepare_task(task, user=self._context.get_user(), variables=local_vars)
-        return [] if task is None else [task]
+    def _handle_run_command_shell(self, line: str, local_vars: Dict[str, str], raw_line: str) -> List[Dict]:
+        obj = ShellRawObject(value=raw_line)
+        return self._handle_run_command_raw(obj)
+
+        # currently redundant behaviour
+        # may add it back i the future
+        #
+        # task = self._create_shell_task(line)
+        # task = self._prepare_task(task, user=self._context.get_user(), variables=local_vars)
+        # return [] if task is None else [task]
 
     def _handle_run_command(self, obj: ShellCommandObject) -> List[Dict]:
         resolved = self._context.resolve_shell_command(obj)
@@ -588,9 +673,9 @@ class RoleGenerator:
             return self._handle_run_command_raw(ShellRawObject(value=obj.line))
         words, local_vars = resolved
 
-        return self._handle_run_command_resolved(words=words, local_vars=local_vars)
+        return self._handle_run_command_resolved(words=words, local_vars=local_vars, raw_line=obj.line)
 
-    def _handle_run_command_resolved(self, words: List[ShellWordObject], local_vars: Dict[str, str],
+    def _handle_run_command_resolved(self, words: List[ShellWordObject], local_vars: Dict[str, str], raw_line: str,
                                      usr: str = None, cwd: str = None) -> List[Dict]:
         usr = self._context.get_user() if usr is None else usr
         cwd = self._context.get_workdir() if cwd is None else cwd
@@ -609,18 +694,18 @@ class RoleGenerator:
 
         extracted_call = self.task_matcher.extract_command(words)
         if extracted_call is None:
-            return self._handle_run_command_shell(line=line, local_vars=local_vars)
-        return self._handle_run_command_extracted(extracted_call, local_vars, line)
+            return self._handle_run_command_shell(line=line, local_vars=local_vars, raw_line=raw_line)
+        return self._handle_run_command_extracted(extracted_call, local_vars, line, raw_line=raw_line)
 
     def _handle_run_command_extracted(self, extracted_call: ExtractedCommandCall,
-                                      local_vars: Dict[str, str], line: str) -> List[Dict]:
+                                      local_vars: Dict[str, str], line: str, raw_line: str) -> List[Dict]:
         handle_map = {
             "sudo": self._handle_run_command_sudo,
             "cd": self._handle_run_command_cd
         }
         comm_name = extracted_call.params[0].value
         if comm_name not in handle_map:
-            return self._handle_run_command_shell(line=line, local_vars=local_vars)
+            return self._handle_run_command_shell(line=line, local_vars=local_vars, raw_line=raw_line)
         return handle_map[comm_name](extracted_call, local_vars, line)
 
     def _handle_run_assignment(self, obj: ShellAssignmentObject) -> List[Dict]:
@@ -652,6 +737,61 @@ class RoleGenerator:
     @staticmethod
     def _handle_run_operator_end(obj: ShellOperatorEndObject) -> ShellOperatorObject:
         return obj
+
+    def _handle_run_parts(self, parts: List[Union[List[Dict], ShellOperatorObject]]) -> None:
+        cur_tasks = []
+        i = 0
+
+        # delete empty task lists (e.g. `cd` command)
+        parts = [part for part in parts if part]
+
+        # skip a few first operators
+        # after deleting empty task lists
+        while not isinstance(parts[i], List):
+            i += 1
+
+        while i < len(parts):
+            part = parts[i]
+            if isinstance(part, List):
+                cur_tasks.extend(part)
+            elif isinstance(part, ShellOperatorObject):
+                if isinstance(part, ShellOperatorAndObject):
+                    pass
+                elif isinstance(part, ShellOperatorOrObject):
+                    if i + 1 >= len(parts):
+                        pass
+                    else:
+                        if not isinstance(parts[i + 1], List):
+                            cur_tasks = [{
+                                "block": cur_tasks,
+                                "ignore_errors": True
+                            }]
+                        else:
+                            i += 1
+                            cur_tasks = [{
+                                "block": cur_tasks,
+                                "rescue": parts[i]
+                            }]
+                elif isinstance(part, ShellOperatorEndObject):
+                    if i + 1 >= len(parts):
+                        pass
+                    else:
+                        if not isinstance(parts[i + 1], List):
+                            cur_tasks = [{
+                                "block": cur_tasks,
+                                "ignore_errors": True
+                            }]
+                        else:
+                            i += 1
+                            if i < len(parts):
+                                cur_tasks = [{
+                                    "block": cur_tasks,
+                                    "ignore_errors": True,
+                                    "always": parts[i]
+                                }]
+            i += 1
+
+        self._runtime.general.role_tasks.extend(cur_tasks)
 
     ###################################
     # SPECIAL SHELL COMMANDS HANDLERS #
@@ -703,33 +843,3 @@ class RoleGenerator:
             return []
         self._context.set_local_workdir(extracted_call.params[1].value)
         return []
-
-    def _handle_run_parts(self, parts: List[Union[List[Dict], ShellOperatorObject]]) -> None:
-        cur_tasks = []
-        i = 0
-        while i < len(parts):
-            part = parts[i]
-            if isinstance(part, List):
-                cur_tasks.extend(part)
-            elif isinstance(part, ShellOperatorObject):
-                if isinstance(part, ShellOperatorAndObject):
-                    pass
-                elif isinstance(part, ShellOperatorOrObject):
-                    # expect that next "part" exists, and it is a list of tasks
-                    i += 1
-                    cur_tasks = [{
-                        "block": cur_tasks,
-                        "rescue": parts[i]
-                    }]
-                elif isinstance(part, ShellOperatorEndObject):
-                    # if the next "part" exists it should be a list of tasks
-                    i += 1
-                    if i < len(parts):
-                        cur_tasks = [{
-                            "block": cur_tasks,
-                            "ignore_errors": True,
-                            "always": parts[i]
-                        }]
-            i += 1
-
-        self._runtime.general.role_tasks.extend(cur_tasks)

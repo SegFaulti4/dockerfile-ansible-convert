@@ -37,8 +37,11 @@
             "ln -s <<globs : m>> <<dest : p>>": [
                 {
                     "ansible.builtin.shell": {
-                        "cmd": "ls -1d <<globs>>",
+                        "cmd": "ls -1d {{ files }}",
                         "chdir": "<<cwd>>"
+                    },
+                    "vars": {
+                        "files": "<<globs>>"
                     },
                     "changed_when": false,
                     "register": "ls_reg"

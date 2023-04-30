@@ -175,6 +175,19 @@ class TemplateTweaks:
     usr: str
 
     def tweak_spec_path(self, path: str):
+
+        def custom_strip(s: str, c: str) -> str:
+            return s.strip(c) if s.startswith(c) and s.endswith(c) else s
+
+        def strip_quotes(s: str) -> str:
+            s = custom_strip(s, "'")
+            s = custom_strip(s, '"')
+            s = custom_strip(s, "'")
+            return s
+
+        # because we don't need any quotes
+        path = strip_quotes(path)
+
         if path.startswith("/"):
             return path
         if path.startswith("~"):

@@ -39,9 +39,10 @@ class AnsiblePlayContext:
         for param in word.parts:
             param_name = param.name
             if param_name in self.local_env:
-                local_vars = {param_name: self.local_env[param_name]}
-                param_name = self._local_var_name_wrapper(param_name)
-                param_val = "{{ " + param_name + " }}"
+                local_var_name = self._local_var_name_wrapper(param_name)
+                local_vars = {local_var_name: self.local_env[param_name]}
+                param_name = local_var_name
+                param_val = "{{ " + local_var_name + " }}"
             elif param_name in self.global_env:
                 param_val = self.global_env[param_name]
             elif strict:
@@ -212,4 +213,4 @@ class AnsiblePlayContext:
 
     @staticmethod
     def _local_var_name_wrapper(name: str) -> str:
-        return name.strip().lower().replace('-', '_')
+        return name.strip().lower().replace('-', '_') + "_local_var"

@@ -27,10 +27,14 @@
             "git clone <<repo>>": [
                 {
                     "ansible.builtin.git": {
-                        "repo": "<<repo>>",
-                        "dest": "<<cwd>>",
+                        "repo": "{{ repo }}",
+                        "dest": "{{ (dir, repo | basename | regex_replace('.git$')) | path_join }}",
                         "clone": true,
                         "recursive": false
+                    },
+                    "var": {
+                        "dir": "<<cwd>>",
+                        "repo": "<<repo>>"
                     }
                 }
             ],

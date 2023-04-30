@@ -49,6 +49,16 @@
             }
         },
         "examples": {
+            "apt install <<pkg_string>>": [
+                {
+                    "ansible.builtin.apt": {
+                        "name": "{{ packages | split }}"
+                    },
+                    "vars": {
+                        "packages": "<<pkg_string>>"
+                    }
+                }
+            ],
             "apt install <<packages : m>>": [
                 {
                     "ansible.builtin.apt": {

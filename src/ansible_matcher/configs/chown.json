@@ -27,8 +27,11 @@
             "chown <<owner>>:<<group>> <<files : m>>": [
                 {
                     "ansible.builtin.shell": {
-                        "cmd": "ls -1d <<files>>",
+                        "cmd": "ls -1d {{ files }}",
                         "chdir": "<<cwd>>"
+                    },
+                    "vars": {
+                        "files": "<<files>>"
                     },
                     "changed_when": false,
                     "register": "ls_reg"
@@ -45,8 +48,11 @@
             "chown <<owner>> <<files : m>>": [
                 {
                     "ansible.builtin.shell": {
-                        "cmd": "ls -1d <<files>>",
+                        "cmd": "ls -1d {{ files }}",
                         "chdir": "<<cwd>>"
+                    },
+                    "vars": {
+                        "files": "{{ files }}"
                     },
                     "changed_when": false,
                     "register": "ls_reg"
@@ -62,8 +68,11 @@
             "chown -R <<owner>>:<<group>> <<files : m>>": [
                 {
                     "ansible.builtin.shell": {
-                        "cmd": "ls -1d <<files>>",
+                        "cmd": "ls -1d {{ files }}",
                         "chdir": "<<cwd>>"
+                    },
+                    "vars": {
+                        "files": "<<files>>"
                     },
                     "changed_when": false,
                     "register": "ls_reg"
@@ -91,8 +100,11 @@
             "chown -R <<owner>> <<files : m>>": [
                 {
                     "ansible.builtin.shell": {
-                        "cmd": "ls -1d <<files>>",
+                        "cmd": "ls -1d {{ files }}",
                         "chdir": "<<cwd>>"
+                    },
+                    "vars": {
+                        "files": "<<files>>"
                     },
                     "changed_when": false,
                     "register": "ls_reg"

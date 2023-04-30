@@ -27,6 +27,10 @@ def represent_str(self, data):
 
     if data.startswith('"') and data.endswith('"'):
         data = data.strip('"')
+    if data.startswith("'") and data.endswith("'"):
+        data = data.strip("'")
+    if data.startswith('"') and data.endswith('"'):
+        data = data.strip('"')
     if '{{' in data and '}}' in data:
         style = '"'
     return self.represent_scalar(tag, data, style=style)

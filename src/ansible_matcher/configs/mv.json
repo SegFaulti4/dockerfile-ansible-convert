@@ -27,8 +27,11 @@
             "mv <<globs : m>> <<dest : p>>": [
                 {
                     "ansible.builtin.shell": {
-                        "cmd": "ls -1d <<globs>>",
+                        "cmd": "ls -1d {{ files }}",
                         "chdir": "<<cwd>>"
+                    },
+                    "vars": {
+                        "files": "<<globs>>"
                     },
                     "changed_when": false,
                     "register": "ls_reg"
@@ -59,6 +62,7 @@
                     },
                     "loop": "{{ ls_reg.stdout_lines }}",
                     "vars": {
+                        "dest": "<<dest>>",
                         "dest_is_dir": "{{ (st_reg.stat_isdir is defined and st_reg.stat.isdir) | ternary(true, false) }}"
                     }
                 },

@@ -29,7 +29,7 @@ class DockerfileCommandTransformer:
 
     @staticmethod
     def transform_arg(directive) -> Tuple[Type, Dict]:
-        arr = [v.strip('"') for v in directive.value]
+        arr = [v for v in directive.value]
         if len(arr) == 1:
             if "=" not in arr[0]:
                 arr.append('""')
