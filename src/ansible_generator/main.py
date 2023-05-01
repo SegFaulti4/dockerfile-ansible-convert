@@ -195,6 +195,8 @@ class RoleGenerator:
         name = self._shell_expr_values([directive.name], strict=False, empty_missing=True)[0]
         group = self._shell_expr_values([directive.group], strict=False, empty_missing=True)[0]
 
+        if not name:
+            return
         tasks = []
 
         if group:
@@ -234,7 +236,7 @@ class RoleGenerator:
                     "name": name,
                     "group": group if group else "root",
                     "state": "present",
-                    "create_home": True
+                    "create_home": False
                 },
                 "become": True
             })
@@ -245,7 +247,7 @@ class RoleGenerator:
                     "group": group if group else "root",
                     "uid": uid,
                     "state": "present",
-                    "create_home": True
+                    "create_home": False
                 },
                 "become": True
             })

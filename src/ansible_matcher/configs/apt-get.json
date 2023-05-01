@@ -299,6 +299,13 @@
                 "arg_required": false,
                 "many_args": false
             },
+            "no-install-suggests": {
+                "aliases": [
+                    "--no-install-suggests"
+                ],
+                "arg_required": false,
+                "many_args": false
+            },
             "no-list-cleanup": {
                 "aliases": [
                     "--no-list-cleanup"
@@ -495,6 +502,7 @@
                     "install_recommends": false
                 }
             },
+            "--no-install-suggests": {},
             "--no-list-cleanup": {},
             "--no-show-upgraded": {},
             "--only-upgrade": {

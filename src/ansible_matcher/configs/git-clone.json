@@ -24,6 +24,16 @@
             }
         },
         "examples": {
+            "git clone <<repo>> .": [
+                {
+                    "ansible.builtin.git": {
+                        "repo": "<<repo>>",
+                        "dest": "<<cwd>>",
+                        "clone": true,
+                        "recursive": false
+                    }
+                }
+            ],
             "git clone <<repo>>": [
                 {
                     "ansible.builtin.git": {

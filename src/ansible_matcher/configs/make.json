@@ -35,7 +35,7 @@
                 {
                     "community.general.make": {
                         "chdir": "<<cwd>>",
-                        "params": "{ <<param>>:<<value>>, }"
+                        "params": "{{ '{ \"<<param>>\":\"<<value>>\", }' | from_yaml }}"
                     }
                 }
             ],
@@ -52,7 +52,7 @@
                     "community.general.make": {
                         "chdir": "<<cwd>>",
                         "target": "<<target>>",
-                        "params": "{ <<param>>:<<value>>, }"
+                        "params": "{{ '{ \"<<param>>\":\"<<value>>\", }' | from_yaml }}"
                     }
                 }
             ],
@@ -61,7 +61,7 @@
                     "community.general.make": {
                         "chdir": "<<cwd>>",
                         "target": "<<target>>",
-                        "params": "{ <<param>>:<<value>>, }"
+                        "params": "{{ '{ \"<<param>>\":\"<<value>>\", }' | from_yaml }}"
                     }
                 }
             ],
@@ -70,7 +70,7 @@
                     "community.general.make": {
                         "chdir": "<<cwd>>",
                         "target": "<<target>>",
-                        "params": "{ <<pre_param>>:<<pre_value>>, <<post_param>>:<<post_value>>, }"
+                        "params": "{{ '{ \"<<pre_param>>\":\"<<pre_value>>\", \"<<post_param>>\":\"<<post_value>\", }' | from_yaml }}"
                     }
                 }
             ]
