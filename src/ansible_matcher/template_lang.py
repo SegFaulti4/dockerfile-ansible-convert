@@ -5,6 +5,7 @@ import os
 from src.ansible_matcher.antlr.src.CommandTemplateLexer import CommandTemplateLexer
 from src.ansible_matcher.antlr.src.CommandTemplateParser import CommandTemplateParser
 from src.ansible_matcher.antlr.src.CommandTemplateParserVisitor import CommandTemplateParserVisitor
+from src.utils import path_utils
 from antlr4 import *
 from typing import Union, Optional, Dict
 
@@ -175,41 +176,7 @@ class TemplateTweaks:
     usr: str
 
     def tweak_spec_path(self, path: str):
-
-        def custom_strip(s: str, c: str) -> str:
-            return s.strip(c) if s.startswith(c) and s.endswith(c) else s
-
-        def strip_quotes(s: str) -> str:
-            s = custom_strip(s, "'")
-            s = custom_strip(s, '"')
-            s = custom_strip(s, "'")
-            return s
-
-        # because we don't need any quotes
-        path = strip_quotes(path)
-
-        if path.startswith("/"):
-            return path
-        if path.startswith("~"):
-            if self.usr is None:
-                globalLog.info(f"Could not change path string - {path}, usr is None")
-                return path
-            if self.usr == "root":
-                home = "/root"
-            else:
-                home = f"/home/{self.usr}"
-            path = path[1:]
-            i = 0
-
-            # to handle something like `~/dir`
-            # because for some reason os.path.join("/home/usr", "~/") == "/"
-            while path[i] == "/":
-                i += 1
-            path = path[i:]
-            return os.path.join(home, path)
-
-        # this is enough for something like `./some_dir/other_dir` or `another_dir/other_dir`
-        return os.path.join(self.cwd, path)
+        return path_utils.path_str_wrapper(path, cwd=self.cwd, usr=self.usr)
 
 
 TemplateMatchResult = Dict[str, Union[str, List[str]]]

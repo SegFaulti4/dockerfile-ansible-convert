@@ -90,6 +90,7 @@ class RoleGenerator:
         self.stats = RoleGeneratorStatistics()
         self.matcher_tests = list()
         self._runtime = _Runtime()
+        # setting up global_user also sets `HOME` global env
         self._context = AnsiblePlayContext(global_user=self.default_user,
                                            global_workdir=self.default_workdir)
         self._add_default_context_vars()
@@ -111,8 +112,7 @@ class RoleGenerator:
 
     def _add_default_context_vars(self):
         default_vars = {
-            "PATH": "{{ ansible_env.PATH }}",
-            "HOME": "{{ ansible_env.HOME }}"
+            "PATH": "{{ ansible_env.PATH }}"
         }
         task = {"set_fact": dict()}
 
@@ -233,7 +233,8 @@ class RoleGenerator:
                 "user": {
                     "name": name,
                     "group": group if group else "root",
-                    "state": "present"
+                    "state": "present",
+                    "create_home": True
                 },
                 "become": True
             })
@@ -243,7 +244,8 @@ class RoleGenerator:
                     "name": name,
                     "group": group if group else "root",
                     "uid": uid,
-                    "state": "present"
+                    "state": "present",
+                    "create_home": True
                 },
                 "become": True
             })
@@ -655,9 +657,8 @@ class RoleGenerator:
         task = self._prepare_task(task, user=self._context.get_user(), environment=self._context.get_environment())
         return [] if task is None else [task]
 
-    def _handle_run_command_shell(self, line: str, local_vars: Dict[str, str], raw_line: str) -> List[Dict]:
-        obj = ShellRawObject(value=raw_line)
-        return self._handle_run_command_raw(obj)
+    def _handle_run_command_shell(self, line: str, local_vars: Dict[str, str], obj: ShellCommandObject) -> List[Dict]:
+        return self._handle_run_command_raw(ShellRawObject(value=obj.line))
 
         # currently redundant behaviour
         # may add it back i the future
@@ -673,11 +674,11 @@ class RoleGenerator:
             return self._handle_run_command_raw(ShellRawObject(value=obj.line))
         words, local_vars = resolved
 
-        return self._handle_run_command_resolved(words=words, local_vars=local_vars, raw_line=obj.line)
+        return self._handle_run_command_resolved(words=words, local_vars=local_vars, obj=obj)
 
-    def _handle_run_command_resolved(self, words: List[ShellWordObject], local_vars: Dict[str, str], raw_line: str,
-                                     usr: str = None, cwd: str = None) -> List[Dict]:
-        usr = self._context.get_user() if usr is None else usr
+    def _handle_run_command_resolved(self, words: List[ShellWordObject], local_vars: Dict[str, str],
+                                     obj: ShellCommandObject, cwd: str = None) -> List[Dict]:
+        usr = self._context.get_user()
         cwd = self._context.get_workdir() if cwd is None else cwd
         line = " ".join(x.value for x in words)
 
@@ -694,19 +695,19 @@ class RoleGenerator:
 
         extracted_call = self.task_matcher.extract_command(words)
         if extracted_call is None:
-            return self._handle_run_command_shell(line=line, local_vars=local_vars, raw_line=raw_line)
-        return self._handle_run_command_extracted(extracted_call, local_vars, line, raw_line=raw_line)
+            return self._handle_run_command_shell(line=line, local_vars=local_vars, obj=obj)
+        return self._handle_run_command_extracted(extracted_call, local_vars, line, obj=obj)
 
     def _handle_run_command_extracted(self, extracted_call: ExtractedCommandCall,
-                                      local_vars: Dict[str, str], line: str, raw_line: str) -> List[Dict]:
+                                      local_vars: Dict[str, str], line: str, obj: ShellCommandObject) -> List[Dict]:
         handle_map = {
             "sudo": self._handle_run_command_sudo,
             "cd": self._handle_run_command_cd
         }
         comm_name = extracted_call.params[0].value
         if comm_name not in handle_map:
-            return self._handle_run_command_shell(line=line, local_vars=local_vars, raw_line=raw_line)
-        return handle_map[comm_name](extracted_call, local_vars, line)
+            return self._handle_run_command_shell(line=line, local_vars=local_vars, obj=obj)
+        return handle_map[comm_name](extracted_call, local_vars, line, obj)
 
     def _handle_run_assignment(self, obj: ShellAssignmentObject) -> List[Dict]:
         # local vars are always added regardless of nearby shell operators
@@ -747,7 +748,7 @@ class RoleGenerator:
 
         # skip a few first operators
         # after deleting empty task lists
-        while not isinstance(parts[i], List):
+        while parts[i:] and not isinstance(parts[i], List):
             i += 1
 
         while i < len(parts):
@@ -798,7 +799,7 @@ class RoleGenerator:
     ###################################
 
     def _handle_run_command_sudo(self, extracted_call: ExtractedCommandCall,
-                                 local_vars: Dict[str, str], line: str) -> List[Dict]:
+                                 local_vars: Dict[str, str], line: str, obj: ShellCommandObject) -> List[Dict]:
         params = extracted_call.params
         opt_words = []
         for p in params[1:]:
@@ -814,23 +815,29 @@ class RoleGenerator:
         # no `sudo` options are currently supported
         if opt_words:
             globalLog.info("No `sudo` options are currently supported - command is translated to shell")
-            return self._handle_run_command_shell(line=line, local_vars=local_vars)
+            return self._handle_run_command_shell(line=line, local_vars=local_vars, obj=obj)
 
         # `sudo` command is covered, "sudoed" command might not be covered
         if self.task_matcher.collect_stats:
             self.task_matcher.stats.coverage[-1] = 1.0
-        return self._handle_run_command_resolved(words=params[1:],
-                                                 local_vars=local_vars, usr="root")
+
+        self._context.set_local_user("root")
+        # slightly dirty but ok
+        obj.parts = obj.parts[1:]
+        res = self._handle_run_command_resolved(words=params[1:], local_vars=local_vars, obj=obj)
+        self._context.unset_local_user()
+
+        return res
 
     def _handle_run_command_cd(self, extracted_call: ExtractedCommandCall,
-                               local_vars: Dict[str, str], line: str) -> List[Dict]:
+                               local_vars: Dict[str, str], line: str, obj: ShellCommandObject) -> List[Dict]:
         if extracted_call.opts:
             globalLog.info("No `cd` options are currently supported - command is translated to shell")
-            return self._handle_run_command_shell(line=line, local_vars=local_vars)
+            return self._handle_run_command_shell(line=line, local_vars=local_vars, obj=obj)
 
         if len(extracted_call.params) > 2:
             globalLog.info("More than one argument passed to `cd` - command is translated to shell")
-            return self._handle_run_command_shell(line=line, local_vars=local_vars)
+            return self._handle_run_command_shell(line=line, local_vars=local_vars, obj=obj)
 
         # mark `cd` command as covered
         if self.task_matcher.collect_stats:

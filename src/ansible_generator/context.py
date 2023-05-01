@@ -1,10 +1,10 @@
 from src.shell.main import *
+from src.utils import path_utils
 
 import os.path
 import jinja2
 import jinja2.meta
 from typing import Dict, Optional
-from dataclasses import dataclass
 
 
 class AnsiblePlayContext:
@@ -15,8 +15,9 @@ class AnsiblePlayContext:
     global_user: Optional[str] = None
     local_user: Optional[str] = None
 
-    _WORKDIR_KEY = 'PWD'
-    _OLD_WORKDIR_KEY = 'OLDPWD'
+    WORKDIR_KEY = 'PWD'
+    OLD_WORKDIR_KEY = 'OLDPWD'
+    HOME_KEY = "HOME"
 
     def __init__(self, global_user: str, global_workdir: str):
         self.global_env = dict()
@@ -25,9 +26,11 @@ class AnsiblePlayContext:
         self.vars = dict()
         self.global_user = global_user
         self.local_user = None
-        self.global_env[self._WORKDIR_KEY] = global_workdir
+        self.global_env[self.WORKDIR_KEY] = global_workdir
+        self.global_env[self.HOME_KEY] = self.path_str_wrapper("~")
 
-    def resolve_shell_word(self, word: ShellWordObject, strict: bool = True, empty_missing: bool = False) \
+    def resolve_shell_word(self, word: ShellWordObject, strict: bool = True, empty_missing: bool = False,
+                           override_local_env: Dict[str, str] = None) \
             -> Optional[Tuple[ShellWordObject, Dict[str, str]]]:
         if not word.parts:
             return word, {}
@@ -38,7 +41,13 @@ class AnsiblePlayContext:
         slice_start = 0
         for param in word.parts:
             param_name = param.name
-            if param_name in self.local_env:
+
+            if override_local_env is not None:
+                local_env = {**self.local_env, **override_local_env}
+            else:
+                local_env = self.local_env
+
+            if param_name in local_env:
                 local_var_name = self._local_var_name_wrapper(param_name)
                 local_vars = {local_var_name: self.local_env[param_name]}
                 param_name = local_var_name
@@ -62,12 +71,13 @@ class AnsiblePlayContext:
 
         return ShellWordObject(value=value, parts=parts), local_vars
 
-    def resolve_shell_command(self, command: ShellCommandObject, strict: bool = True, empty_missing: bool = False) \
+    def resolve_shell_command(self, command: ShellCommandObject, strict: bool = True, empty_missing: bool = False,
+                              override_local_env: Dict[str, str] = None) \
             -> Optional[Tuple[List[ShellWordObject], Dict[str, str]]]:
         words = []
         local_vars = {}
         for part in command.parts:
-            resolved = self.resolve_shell_word(part, strict, empty_missing)
+            resolved = self.resolve_shell_word(part, strict, empty_missing, override_local_env=override_local_env)
             if resolved is None:
                 return None
 
@@ -93,7 +103,11 @@ class AnsiblePlayContext:
         return " ".join(word.value for word in words).strip('"')
 
     def get_environment(self):
-        return {**self.global_env, **self.local_env}
+        res = {**self.global_env, **self.local_env}
+        # `PWD` env doesn't affect Ansible tasks
+        if "PWD" in res:
+            del res["PWD"]
+        return res
 
     def get_user(self) -> Optional[str]:
         local_usr = self.get_local_user()
@@ -120,33 +134,43 @@ class AnsiblePlayContext:
         return local_old_wd
 
     def get_global_workdir(self) -> Optional[str]:
-        return self.global_env.get(self._WORKDIR_KEY, None)
+        return self.global_env.get(self.WORKDIR_KEY, None)
 
     def get_local_workdir(self) -> Optional[str]:
-        return self.local_env.get(self._WORKDIR_KEY, None)
+        return self.local_env.get(self.WORKDIR_KEY, None)
 
     def get_global_old_workdir(self) -> Optional[str]:
-        return self.global_env.get(self._OLD_WORKDIR_KEY, None)
+        return self.global_env.get(self.OLD_WORKDIR_KEY, None)
 
     def get_local_old_workdir(self) -> Optional[str]:
-        return self.local_env.get(self._OLD_WORKDIR_KEY, None)
+        return self.local_env.get(self.OLD_WORKDIR_KEY, None)
 
     def set_global_old_workdir(self, value: str) -> None:
-        self.global_env[self._WORKDIR_KEY] = value
+        self.global_env[self.WORKDIR_KEY] = value
 
     def set_local_old_workdir(self, value: str) -> None:
-        self.local_env[self._WORKDIR_KEY] = value
+        self.local_env[self.WORKDIR_KEY] = value
 
     def set_global_workdir(self, path: str) -> None:
         self.set_global_old_workdir(self.get_global_workdir())
-        self.global_env[self._WORKDIR_KEY] = self.path_str_wrapper(path)
+        self.global_env[self.WORKDIR_KEY] = self.path_str_wrapper(path)
 
     def set_local_workdir(self, path: str) -> None:
         self.set_local_old_workdir(self.get_local_workdir())
-        self.local_env[self._WORKDIR_KEY] = self.path_str_wrapper(path)
+        self.local_env[self.WORKDIR_KEY] = self.path_str_wrapper(path)
 
     def set_global_user(self, name: str) -> None:
         self.global_user = name
+        self.global_env[self.HOME_KEY] = self.path_str_wrapper("~")
+
+    def set_local_user(self, name: str) -> None:
+        self.local_user = name
+        self.local_env[self.HOME_KEY] = self.path_str_wrapper("~")
+
+    def unset_local_user(self) -> None:
+        self.local_user = None
+        if self.HOME_KEY in self.local_env:
+            del self.local_env[self.HOME_KEY]
 
     def add_global_env(self, name: str, value: str) -> None:
         self.global_env[name] = value
@@ -171,7 +195,6 @@ class AnsiblePlayContext:
     def clear_local_context(self) -> None:
         self.local_env.clear()
         self.vars.clear()
-        self.local_workdir = None
         self.local_user = None
 
     def word_true_value(self, word: ShellWordObject) -> Optional[str]:
@@ -190,26 +213,18 @@ class AnsiblePlayContext:
             return None
         return rendered
 
-    def path_str_wrapper(self, path: str) -> str:
+    def path_str_wrapper(self, path: str, override_user: str = None) -> str:
+        if override_user is None:
+            usr = self.get_user()
+        else:
+            usr = override_user
 
-        def custom_strip(s: str, c: str) -> str:
-            return s.strip(c) if s.startswith(c) and s.endswith(c) else s
+        if self.get_workdir() is None:
+            cwd = "/"
+        else:
+            cwd = self.get_workdir()
 
-        def strip_quotes(s: str) -> str:
-            s = custom_strip(s, '"')
-            s = custom_strip(s, "'")
-            s = custom_strip(s, '"')
-            return s
-
-        # because we don't need any quotes
-        path = strip_quotes(path)
-
-        if path.startswith("~"):
-            path = "/home/" + self.get_user() + path[1:]
-        workdir = self.get_workdir()
-        if workdir is None:
-            workdir = "/"
-        return os.path.join(workdir, path)
+        return path_utils.path_str_wrapper(path, cwd=cwd, usr=usr)
 
     @staticmethod
     def _local_var_name_wrapper(name: str) -> str:

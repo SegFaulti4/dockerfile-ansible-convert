@@ -2,6 +2,7 @@ import logging
 import oyaml as yaml
 import sys
 import os.path
+from tqdm import tqdm
 
 from dev.sandbox.shell.main import SandboxShellParser
 from dev.sandbox.containerfile.main import SandboxDockerfileParser

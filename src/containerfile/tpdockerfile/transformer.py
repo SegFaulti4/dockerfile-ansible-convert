@@ -31,6 +31,11 @@ class DockerfileCommandTransformer:
     def transform_arg(directive) -> Tuple[Type, Dict]:
         arr = [v for v in directive.value]
         if len(arr) == 1:
+            # I hate some people, why would you do that???
+            # ARG "var=value"
+            if arr[0].startswith('"') and arr[0].endswith('"'):
+                arr[0] = arr[0].strip('"')
+
             if "=" not in arr[0]:
                 arr.append('""')
             else:

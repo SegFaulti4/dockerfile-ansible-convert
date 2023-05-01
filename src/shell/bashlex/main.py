@@ -70,10 +70,10 @@ class BashlexNodeTransformer:
         eq_pos = node.word.find('=')
         name, value = node.word[0:eq_pos], node.word[eq_pos + 1:]
 
-        # workaround to preserve literal values
-        # not sure if it's still needed
-        if not value.startswith('"') or not value.endswith('"'):
-            value = '"' + value + '"'
+        # workaround added to parse_as_expression
+        # if not value.startswith('"') or not value.endswith('"'):
+        #     value = '"' + value + '"'
+
         # Circular dependency
         part = BashlexShellParser().parse_as_expression(value)
         return [ShellAssignmentObject(name=name, value=part)]
