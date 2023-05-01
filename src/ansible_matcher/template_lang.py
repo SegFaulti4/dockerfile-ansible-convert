@@ -195,9 +195,20 @@ class TemplateTweaks:
                 globalLog.info(f"Could not change path string - {path}, usr is None")
                 return path
             if self.usr == "root":
-                return os.path.join(f"/root/", path[1:])
-            return os.path.join(f"/home/{self.usr}/", path[1:])
+                home = "/root"
+            else:
+                home = f"/home/{self.usr}"
+            path = path[1:]
+            i = 0
 
+            # to handle something like `~/dir`
+            # because for some reason os.path.join("/home/usr", "~/") == "/"
+            while path[i] == "/":
+                i += 1
+            path = path[i:]
+            return os.path.join(home, path)
+
+        # this is enough for something like `./some_dir/other_dir` or `another_dir/other_dir`
         return os.path.join(self.cwd, path)
 
 

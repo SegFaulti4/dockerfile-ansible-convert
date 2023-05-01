@@ -37,7 +37,7 @@
             "ln -s <<globs : m>> <<dest : p>>": [
                 {
                     "ansible.builtin.shell": {
-                        "cmd": "ls -1d {{ files }}",
+                        "cmd": "realpath -sm {{ files }}",
                         "chdir": "<<cwd>>"
                     },
                     "vars": {
@@ -72,7 +72,7 @@
                     "loop": "{{ ls_reg.stdout_lines }}",
                     "vars": {
                         "dest": "<<dest>>",
-                        "dest_is_dir": "{{ (st_reg.stat_isdir is defined and st_reg.stat.isdir) | ternary(true, false) }}"
+                        "dest_is_dir": "{{ (st_reg.stat.isdir is defined and st_reg.stat.isdir) | ternary(true, false) }}"
                     }
                 }
             ],

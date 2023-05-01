@@ -27,7 +27,7 @@
             "chown <<owner>>:<<group>> <<files : m>>": [
                 {
                     "ansible.builtin.shell": {
-                        "cmd": "ls -1d {{ files }}",
+                        "cmd": "realpath -sm {{ files }}",
                         "chdir": "<<cwd>>"
                     },
                     "vars": {
@@ -39,6 +39,8 @@
                 {
                     "ansible.builtin.file": {
                         "path": "{{ item }}",
+                        "recurse": false,
+                        "follow": true,
                         "owner": "<<owner>>",
                         "group": "<<group>>"
                     },
@@ -48,11 +50,11 @@
             "chown <<owner>> <<files : m>>": [
                 {
                     "ansible.builtin.shell": {
-                        "cmd": "ls -1d {{ files }}",
+                        "cmd": "realpath -sm {{ files }}",
                         "chdir": "<<cwd>>"
                     },
                     "vars": {
-                        "files": "{{ files }}"
+                        "files": "<<files>>"
                     },
                     "changed_when": false,
                     "register": "ls_reg"
@@ -60,6 +62,8 @@
                 {
                     "ansible.builtin.file": {
                         "path": "{{ item }}",
+                        "recurse": false,
+                        "follow": true,
                         "owner": "<<owner>>"
                     },
                     "loop": "{{ ls_reg.stdout_lines }}"
@@ -68,7 +72,7 @@
             "chown -R <<owner>>:<<group>> <<files : m>>": [
                 {
                     "ansible.builtin.shell": {
-                        "cmd": "ls -1d {{ files }}",
+                        "cmd": "realpath -sm {{ files }}",
                         "chdir": "<<cwd>>"
                     },
                     "vars": {
@@ -90,6 +94,7 @@
                     "ansible.builtin.file": {
                         "state": "{{ (item.stat.isdir is defined and item.stat.isdir) | ternary('directory', 'file') }}",
                         "recurse":  "{{ (item.stat.isdir is defined and item.stat.isdir) | ternary(true, false) }}",
+                        "follow": false,
                         "path": "{{ item.stat.path }}",
                         "owner": "<<owner>>",
                         "group": "<<group>>"
@@ -100,7 +105,7 @@
             "chown -R <<owner>> <<files : m>>": [
                 {
                     "ansible.builtin.shell": {
-                        "cmd": "ls -1d {{ files }}",
+                        "cmd": "realpath -sm {{ files }}",
                         "chdir": "<<cwd>>"
                     },
                     "vars": {
@@ -122,6 +127,7 @@
                     "ansible.builtin.file": {
                         "state": "{{ (item.stat.isdir is defined and item.stat.isdir) | ternary('directory', 'file') }}",
                         "recurse":  "{{ (item.stat.isdir is defined and item.stat.isdir) | ternary(true, false) }}",
+                        "follow": false,
                         "path": "{{ item.stat.path }}",
                         "owner": "<<owner>>"
                     },
@@ -129,6 +135,14 @@
                 }
             ]
         },
-        "opts_postprocess": {}
+        "opts_postprocess": {
+            "--quiet": {},
+            "--verbose": {},
+            "--no-dereference": {
+                "ansible.builtin.file": {
+                    "follow": false
+                }
+            }
+        }
     }
 }

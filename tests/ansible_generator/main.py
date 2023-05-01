@@ -86,7 +86,7 @@ def prepare_ansible_image(file_name: str, idx: int, echo: bool) -> Optional[str]
 
     run_comm = f"docker run -d --net {DOCKER_NET_NAME} --ip {ip_addr} -p {8000 + idx}:22 " \
                f"--name={container_name} {BASE_IMAGE}"
-    ansible_comm = f'/usr/bin/ansible-playbook -v {pb_path} --ssh-common-args="-o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null" --user=root --inventory="{ip_addr},"'
+    ansible_comm = f'/usr/bin/ansible-playbook -vv {pb_path} --ssh-common-args="-o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null" --user=root --inventory="{ip_addr},"'
     commit_comm = f"docker commit {container_name} {image_name}"
     stop_rm_comm = f"docker stop {container_name} && docker rm {container_name}"
 

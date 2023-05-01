@@ -27,7 +27,7 @@
             "mv <<globs : m>> <<dest : p>>": [
                 {
                     "ansible.builtin.shell": {
-                        "cmd": "ls -1d {{ files }}",
+                        "cmd": "realpath -sm {{ files }}",
                         "chdir": "<<cwd>>"
                     },
                     "vars": {
@@ -57,18 +57,20 @@
                     "ansible.builtin.copy": {
                         "src": "{{ item | regex_replace('/$') }}",
                         "dest": "{{ ((dest, item | basename) | path_join) if dest_is_dir else dest }}",
+                        "follow": false,
                         "remote_src": true,
                         "force": false
                     },
                     "loop": "{{ ls_reg.stdout_lines }}",
                     "vars": {
                         "dest": "<<dest>>",
-                        "dest_is_dir": "{{ (st_reg.stat_isdir is defined and st_reg.stat.isdir) | ternary(true, false) }}"
+                        "dest_is_dir": "{{ (st_reg.stat.isdir is defined and st_reg.stat.isdir) | ternary(true, false) }}"
                     }
                 },
                 {
                     "ansible.builtin.file": {
                         "path": "{{ item | regex_replace('/$') }}",
+                        "follow": false,
                         "state": "absent"
                     },
                     "loop": "{{ ls_reg.stdout_lines }}"

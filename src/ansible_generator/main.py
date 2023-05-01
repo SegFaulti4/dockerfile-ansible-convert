@@ -147,7 +147,7 @@ class RoleGenerator:
                 task = self._create_echo_task(expr.line)
                 register = self._add_echo_register(task)
                 self._add_task(task, user="root", environment=self._context.get_environment())
-                res.append("{{ " + register + " }}")
+                res.append("{{ " + register + ".stdout }}")
             else:
                 res.append(val)
         return res
@@ -350,7 +350,7 @@ class RoleGenerator:
             task = self._create_echo_task(value.line)
             register = self._add_echo_register(task)
             self._add_task(task, environment=self._context.get_environment())
-            val = "{{ " + register + " }}"
+            val = "{{ " + register + ".stdout }}"
         else:
             self._context.set_fact(fact_name, val)
         return fact_name, val
@@ -719,7 +719,7 @@ class RoleGenerator:
             task = self._create_echo_task(obj.value.line)
             register = self._add_echo_register(task)
             task = self._prepare_task(task, user=self._context.get_user(), environment=self._context.get_environment())
-            self._context.add_local_env(name=obj.name, value="{{ " + register + " }}")
+            self._context.add_local_env(name=obj.name, value="{{ " + register + ".stdout }}")
             return [task]
         else:
             self._context.set_var(name=obj.name, value=value)

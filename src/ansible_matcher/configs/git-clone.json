@@ -32,7 +32,7 @@
                         "clone": true,
                         "recursive": false
                     },
-                    "var": {
+                    "vars": {
                         "dir": "<<cwd>>",
                         "repo": "<<repo>>"
                     }

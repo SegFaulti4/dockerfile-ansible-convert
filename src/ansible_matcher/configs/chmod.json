@@ -52,7 +52,7 @@
             "chmod <<mode>> <<files : m>>": [
                 {
                     "ansible.builtin.shell": {
-                        "cmd": "ls -1d {{ files }}",
+                        "cmd": "realpath -sm {{ files }}",
                         "chdir": "<<cwd>>"
                     },
                     "vars": {
@@ -64,6 +64,8 @@
                 {
                     "ansible.builtin.file": {
                         "path": "{{ item }}",
+                        "recurse": false,
+                        "follow": true,
                         "mode": "<<mode>>"
                     },
                     "loop": "{{ ls_reg.stdout_lines }}"
@@ -72,7 +74,7 @@
             "chmod -R <<mode>> <<files : m>>": [
                 {
                     "ansible.builtin.shell": {
-                        "cmd": "ls -1d {{ files }}",
+                        "cmd": "realpath -sm {{ files }}",
                         "chdir": "<<cwd>>"
                     },
                     "vars": {
@@ -86,7 +88,6 @@
                         "follow": false,
                         "path": "{{ item }}"
                     },
-                    "changed_when": false,
                     "loop": "{{ ls_reg.stdout_lines }}",
                     "register": "st_reg"
                 },
@@ -94,6 +95,7 @@
                     "ansible.builtin.file": {
                         "state": "{{ (item.stat.isdir is defined and item.stat.isdir) | ternary('directory', 'file') }}",
                         "recurse":  "{{ (item.stat.isdir is defined and item.stat.isdir) | ternary(true, false) }}",
+                        "follow": "{{ (item.stat.isdir is defined and item.stat.isdir) | ternary(false, true) }}",
                         "path": "{{ item.stat.path }}",
                         "mode": "<<mode>>"
                     },

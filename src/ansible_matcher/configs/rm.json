@@ -61,7 +61,7 @@
             "rm <<files : m>>": [
                 {
                     "ansible.builtin.shell": {
-                        "cmd": "ls -1d {{ files }}",
+                        "cmd": "realpath -sm {{ files }}",
                         "chdir": "<<cwd>>"
                     },
                     "vars": {
@@ -72,6 +72,7 @@
                 }, {
                     "ansible.builtin.file": {
                         "state": "absent",
+                        "follow": false,
                         "path": "{{ item }}"
                     },
                     "loop": "{{ ls_reg.stdout_lines }}"
@@ -80,7 +81,7 @@
             "rm -f <<files : m>>": [
                 {
                     "ansible.builtin.shell": {
-                        "cmd": "ls -1d {{ files }} 2> /dev/null || true",
+                        "cmd": "realpath -sm {{ files }} 2> /dev/null || true",
                         "chdir": "<<cwd>>"
                     },
                     "vars": {
@@ -91,6 +92,7 @@
                 }, {
                     "ansible.builtin.file": {
                         "state": "absent",
+                        "follow": false,
                         "path": "{{ item }}"
                     },
                     "loop": "{{ ls_reg.stdout_lines }}"

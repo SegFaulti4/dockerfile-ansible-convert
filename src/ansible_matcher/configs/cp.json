@@ -62,7 +62,7 @@
             "cp <<globs : m>> <<dest : p>>": [
                 {
                     "ansible.builtin.shell": {
-                        "cmd": "ls -1d {{ files }}",
+                        "cmd": "realpath -sm {{ files }}",
                         "chdir": "<<cwd>>"
                     },
                     "vars": {
@@ -93,12 +93,57 @@
                         "src": "{{ item | regex_replace('/$') }}",
                         "dest": "{{ ((dest, item | basename) | path_join) if dest_is_dir else dest }}",
                         "remote_src": true,
+                        "follow": true,
                         "force": false
                     },
                     "loop": "{{ ls_reg.stdout_lines }}",
                     "vars": {
                         "dest": "<<dest>>",
-                        "dest_is_dir": "{{ (st_reg.stat_isdir is defined and st_reg.stat.isdir) | ternary(true, false) }}"
+                        "dest_is_dir": "{{ (st_reg.stat.isdir is defined and st_reg.stat.isdir) | ternary(true, false) }}"
+                    }
+                }
+            ],
+            "cp -R <<globs : m>> <<dest : p>>": [
+                {
+                    "ansible.builtin.shell": {
+                        "cmd": "realpath -sm {{ files }}",
+                        "chdir": "<<cwd>>"
+                    },
+                    "vars": {
+                        "files": "<<globs>>"
+                    },
+                    "changed_when": false,
+                    "register": "ls_reg"
+                },
+                {
+                    "ansible.builtin.stat": {
+                        "path": "<<dest>>",
+                        "follow": false
+                    },
+                    "changed_when": false,
+                    "register": "st_reg"
+                },
+                {
+                    "ansible.builtin.fail": {
+                        "msg": "Failed to copy files - last file is not a directory"
+                    },
+                    "when": [
+                        "ls_reg.stdout_lines | length > 1",
+                        "st_reg.stat.isdir is undefined or st_reg.stat.isdir == False"
+                    ]
+                },
+                {
+                    "ansible.builtin.copy": {
+                        "src": "{{ item | regex_replace('/$') }}",
+                        "dest": "{{ ((dest, item | basename) | path_join) if dest_is_dir else dest }}",
+                        "remote_src": true,
+                        "follow": false,
+                        "force": false
+                    },
+                    "loop": "{{ ls_reg.stdout_lines }}",
+                    "vars": {
+                        "dest": "<<dest>>",
+                        "dest_is_dir": "{{ (st_reg.stat.isdir is defined and st_reg.stat.isdir) | ternary(true, false) }}"
                     }
                 }
             ]
@@ -109,8 +154,8 @@
                     "force": true
                 }
             },
-            "--recursive": {},
             "--verbose": {},
+            "--r": {},
             "--backup": {
                 "ansible.builtin.copy": {
                     "backup": true
