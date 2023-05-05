@@ -118,3 +118,8 @@ def copy_files(paths: List[str], directory: str) -> None:
 
 if __name__ == "__main__":
     globalLog.setLevel(logging.ERROR)
+
+    files_dir = UBUNTU_FILES_DIR
+    output_file = UBUNTU_SHELL_COMMANDS_MINED_FILE
+
+    mine_shell_commands(files_dir, output_file)
