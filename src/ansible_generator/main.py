@@ -1,8 +1,6 @@
 from enum import Enum
-import itertools
 import validators
 
-from src.shell.main import *
 from src.ansible_matcher.main import *
 from src.containerfile.main import *
 from src.ansible_generator.context import *
@@ -259,8 +257,9 @@ class RoleGenerator:
     @supported_directive
     def _handle_workdir(self, directive: WorkdirDirective) -> None:
         path = self._shell_expr_values([directive.path], strict=False)[0]
-        mkdir_task = self._create_mkdir_task(path)
-        self._add_task(mkdir_task, user=self._context.get_user())
+        if path != "/":
+            mkdir_task = self._create_mkdir_task(path)
+            self._add_task(mkdir_task, user=self._context.get_user())
         self._context.set_global_workdir(path)
 
     @supported_directive
@@ -616,9 +615,9 @@ class RoleGenerator:
     @staticmethod
     def _add_task_vars(task: Dict, local_vars: Dict[str, str]) -> None:
         if "vars" not in task:
-            task["vars"] = local_vars
+            task["vars"] = deepcopy(local_vars)
         else:
-            task["vars"] = {**local_vars, **task["vars"]}
+            task["vars"] = {**deepcopy(local_vars), **task["vars"]}
 
     @staticmethod
     def _add_task_environment(task: Dict, environment: Dict[str, str]) -> None:
@@ -848,7 +847,7 @@ class RoleGenerator:
             globalLog.info("No arguments for `cd` - command is skipped")
             return []
         if extracted_call.params[1].value == '-':
-            self._context.set_local_workdir(self._context.get_old_workdir())
+            self._context.set_local_workdir(self._context.get_old_workdir(), self._context.old_workdir_local_vars)
             return []
-        self._context.set_local_workdir(extracted_call.params[1].value)
+        self._context.set_local_workdir(extracted_call.params[1].value, local_vars)
         return []

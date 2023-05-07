@@ -155,7 +155,7 @@
                 }
             },
             "--verbose": {},
-            "--r": {},
+            "-r": {},
             "--backup": {
                 "ansible.builtin.copy": {
                     "backup": true

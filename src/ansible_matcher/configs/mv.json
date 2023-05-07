@@ -26,54 +26,123 @@
         "examples": {
             "mv <<globs : m>> <<dest : p>>": [
                 {
-                    "ansible.builtin.shell": {
-                        "cmd": "realpath -sm {{ files }}",
-                        "chdir": "<<cwd>>"
-                    },
+                    "name": "Inspect 'mv' parameters",
                     "vars": {
-                        "files": "<<globs>>"
+                        "sources": "<<globs>>",
+                        "destination": "<<dest>>"
                     },
-                    "changed_when": false,
-                    "register": "ls_reg"
-                },
-                {
-                    "ansible.builtin.stat": {
-                        "path": "<<dest>>",
-                        "follow": false
-                    },
-                    "changed_when": false,
-                    "register": "st_reg"
-                },
-                {
-                    "ansible.builtin.fail": {
-                        "msg": "Failed to copy files - last file is not a directory"
-                    },
-                    "when": [
-                        "ls_reg.stdout_lines | length > 1",
-                        "st_reg.stat.isdir is undefined or st_reg.stat.isdir == False"
+                    "block": [
+                        {
+                            "name": "Resolve 'mv' source paths",
+                            "ansible.builtin.shell": {
+                                "cmd": "realpath -se {{ sources }}",
+                                "chdir": "<<cwd>>"
+                            },
+                            "changed_when": false,
+                            "register": "src_paths"
+                        },
+                        {
+                            "name": "Inspect 'mv' destination",
+                            "ansible.builtin.stat": {
+                                "path": "{{ destination }}",
+                                "follow": false
+                            },
+                            "changed_when": false,
+                            "register": "dst_info"
+                        },
+                        {
+                            "name": "Fail 'mv' if multiple sources and destination is not a directory",
+                            "ansible.builtin.fail": {
+                                "msg": "Failed to move files"
+                            },
+                            "when": [
+                                "src_paths.stdout_lines | length > 1",
+                                "dst_info.stat.isdir is undefined or dst_info.stat.isdir == False"
+                            ]
+                        }
                     ]
                 },
                 {
-                    "ansible.builtin.copy": {
-                        "src": "{{ item | regex_replace('/$') }}",
-                        "dest": "{{ ((dest, item | basename) | path_join) if dest_is_dir else dest }}",
+                    "name": "Handle 'mv' single source",
+                    "when": "src_paths.stdout_lines | length == 1",
+                    "vars": {
+                        "source": "{{ src_paths.stdout_lines[0] }}",
+                        "destination": "{{ '<<dest>>' | regex_replace('/$') }}"
+                    },
+                    "block": [
+                        {
+                            "name": "Inspect 'mv' single source",
+                            "ansible.builtin.stat": {
+                                "path": "{{ source }}",
+                                "follow": false
+                            },
+                            "changed_when": false,
+                            "register": "src_info"
+                        },
+                        {
+                            "name": "Handle 'mv' rename directory",
+                            "when":[
+                                "src_info.stat.isdir == True",
+                                "dst_info.stat.isdir is undefined"
+                            ],
+                            "block": [
+                                {
+                                    "file": {
+                                        "path": "{{ destination }}",
+                                        "state": "directory"
+                                    }
+                                },
+                                {
+                                    "copy": {
+                                        "src": "{{ source }}/",
+                                        "dest": "{{ destination }}",
+                                        "follow": false,
+                                        "remote_src": true,
+                                        "force": false
+                                    }
+                                }
+                            ]
+                        },
+                        {
+                           "name": "Copy file or directory",
+                            "when": "src_info.stat.isdir == False or dst_info.stat.isdir is defined",
+                            "copy": {
+                                "src": "{{ source }}",
+                                "dest": "{{ destination }}",
+                                "follow": false,
+                                "remote_src": true,
+                                "force": false
+                            }
+                        }
+                    ]
+                },
+                {
+                    "name": "Handle 'mv' multiple sources",
+                    "when": "src_paths.stdout_lines | length > 1",
+                    "vars": {
+                        "sources": "{{ src_paths.stdout_lines }}",
+                        "destination": "{{ '<<dest>>' | regex_replace('/$') }}"
+                    },
+                    "loop": "{{ sources }}",
+                    "copy": {
+                        "src": "{{ item }}",
+                        "dest": "{{ destination }}",
                         "follow": false,
                         "remote_src": true,
                         "force": false
-                    },
-                    "loop": "{{ ls_reg.stdout_lines }}",
-                    "vars": {
-                        "dest": "<<dest>>",
-                        "dest_is_dir": "{{ (st_reg.stat.isdir is defined and st_reg.stat.isdir) | ternary(true, false) }}"
                     }
                 },
                 {
+                    "name": "Remove 'mv' sources",
+                    "vars": {
+                        "sources": "{{ src_paths.stdout_lines }}"
+                    },
+                    "loop": "{{ sources }}",
                     "ansible.builtin.file": {
-                        "path": "{{ item | regex_replace('/$') }}",
+                        "path": "{{ item }}",
                         "follow": false,
                         "state": "absent"
-                    },
-                    "loop": "{{ ls_reg.stdout_lines }}"
+                    }
                 }
             ]
         },

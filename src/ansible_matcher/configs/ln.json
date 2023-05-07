@@ -66,6 +66,7 @@
                 {
                     "ansible.builtin.file": {
                         "state": "link",
+                        "force": true,
                         "src": "{{ item }}",
                         "path": "{{ ((dest, item | basename) | path_join) if dest_is_dir else dest }}"
                     },
@@ -80,6 +81,7 @@
                 {
                     "ansible.builtin.file": {
                         "state": "link",
+                        "force": true,
                         "src": "{{ src }}",
                         "path": "{{ (cwd, src | basename) | path_join }}"
                     },
@@ -91,11 +93,7 @@
             ]
         },
         "opts_postprocess": {
-            "--force": {
-                "ansible.builtin.file": {
-                    "force": true
-                }
-            },
+            "--force": {},
             "--no-dereference": {
                 "ansible.builtin.file": {
                     "follow": false

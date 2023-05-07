@@ -373,14 +373,14 @@ class TestTemplateFiller(unittest.TestCase):
 
     def setUp(self):
         globalLog.setLevel(logging.INFO)
-        rb = self.RB
         lb = self.LB
+        rb = self.RB
         self.templ_constr = TemplateConstructor()
         self.templ_strings = [
-            f"{rb}single{lb}",
-            f"{rb}many{lb}",
-            f"{rb}optional{lb}",
-            f"word {rb}single{lb} word {rb}many{lb} word {rb}optional{lb} word"
+            f"{lb}single{rb}",
+            f"{lb}many{rb}",
+            f"{lb}optional{rb}",
+            f"word {lb}single{rb} word {lb}many{rb} word {lb}optional{rb} word"
         ]
         self.fields_dict = {
             "single": "single",

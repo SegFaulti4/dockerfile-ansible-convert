@@ -44,6 +44,15 @@
             "-s": {}
         },
         "examples": {
+            "curl -o <<output : p>> git.io/scope": [
+                {
+                    "ansible.builtin.uri": {
+                        "method": "GET",
+                        "dest": "<<output>>",
+                        "url": "https://git.io/scope"
+                    }
+                }
+            ],
             "curl -o <<output : p>> <<url>>": [
                 {
                     "ansible.builtin.uri": {

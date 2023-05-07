@@ -4,6 +4,7 @@ from src.utils import path_utils
 import os.path
 import jinja2
 import jinja2.meta
+from copy import deepcopy
 from typing import Dict, Optional
 
 
@@ -14,6 +15,9 @@ class AnsiblePlayContext:
     vars: Dict[str, str]
     global_user: Optional[str] = None
     local_user: Optional[str] = None
+
+    workdir_local_vars: Dict[str, str]
+    old_workdir_local_vars: Dict[str, str]
 
     WORKDIR_KEY = 'PWD'
     OLD_WORKDIR_KEY = 'OLDPWD'
@@ -26,6 +30,8 @@ class AnsiblePlayContext:
         self.vars = dict()
         self.global_user = global_user
         self.local_user = None
+        self.workdir_local_vars = dict()
+        self.old_workdir_local_vars = dict()
         self.global_env[self.WORKDIR_KEY] = global_workdir
         self.global_env[self.HOME_KEY] = self.path_str_wrapper("~")
 
@@ -85,6 +91,8 @@ class AnsiblePlayContext:
             words.append(part_word)
             local_vars = {**local_vars, **word_local_vars}
 
+        for var, val in self.workdir_local_vars.items():
+            local_vars[var] = val
         return words, local_vars
 
     def resolve_shell_expression(self, expr: ShellExpression, strict: bool = True, empty_missing: bool = False) \
@@ -148,16 +156,20 @@ class AnsiblePlayContext:
     def set_global_old_workdir(self, value: str) -> None:
         self.global_env[self.WORKDIR_KEY] = value
 
-    def set_local_old_workdir(self, value: str) -> None:
+    def set_local_old_workdir(self, value: str, local_vars: Optional[Dict[str, str]]) -> None:
+        new_local_vars = dict() if local_vars is None else deepcopy(local_vars)
         self.local_env[self.WORKDIR_KEY] = value
+        self.old_workdir_local_vars = new_local_vars
 
     def set_global_workdir(self, path: str) -> None:
         self.set_global_old_workdir(self.get_global_workdir())
         self.global_env[self.WORKDIR_KEY] = self.path_str_wrapper(path)
 
-    def set_local_workdir(self, path: str) -> None:
-        self.set_local_old_workdir(self.get_local_workdir())
+    def set_local_workdir(self, path: str, local_vars: Optional[Dict[str, str]]) -> None:
+        new_local_vars = dict() if local_vars is None else deepcopy(local_vars)
+        self.set_local_old_workdir(self.get_local_workdir(), self.workdir_local_vars)
         self.local_env[self.WORKDIR_KEY] = self.path_str_wrapper(path)
+        self.workdir_local_vars = new_local_vars
 
     def set_global_user(self, name: str) -> None:
         self.global_user = name
@@ -196,6 +208,8 @@ class AnsiblePlayContext:
         self.local_env.clear()
         self.vars.clear()
         self.local_user = None
+        self.old_workdir_local_vars.clear()
+        self.workdir_local_vars.clear()
 
     def word_true_value(self, word: ShellWordObject) -> Optional[str]:
         return self._str_true_value(word.value)

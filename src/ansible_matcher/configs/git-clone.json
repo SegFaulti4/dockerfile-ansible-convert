@@ -26,6 +26,13 @@
         "examples": {
             "git clone <<repo>> .": [
                 {
+                    "file": {
+                        "state": "absent",
+                        "follow": false,
+                        "path": "<<cwd>>"
+                    }
+                },
+                {
                     "ansible.builtin.git": {
                         "repo": "<<repo>>",
                         "dest": "<<cwd>>",

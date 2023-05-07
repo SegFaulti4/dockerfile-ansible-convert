@@ -12,6 +12,9 @@ def visit_dict(d_dict: Dict[str, Any], predicate: Callable, proc: Callable):
         elif isinstance(v, dict):
             if (id(k), id(d)) not in visited:
                 queue.extend((_k, _v, v) for _k, _v in v.items())
+        elif isinstance(v, list):
+            if (id(k), id(d)) not in visited:
+                queue.extend((_k, _v, v) for _k, _v in enumerate(v))
         visited.add((id(k), id(d)))
 
     return d_dict
