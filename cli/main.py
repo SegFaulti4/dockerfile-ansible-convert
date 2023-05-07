@@ -64,6 +64,7 @@ def generate(containerfile_path: str, output=sys.stdout) -> None:
     plays = [
         {
             "hosts": "all",
+            "remote_user": "root",
             "become_method": "su",
             "tasks": tasks
         }

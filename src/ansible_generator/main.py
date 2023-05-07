@@ -655,7 +655,8 @@ class RoleGenerator:
 
     def _handle_run_command_raw(self, obj: ShellRawObject) -> List[Dict]:
         task = self._create_shell_task(obj.value)
-        task = self._prepare_task(task, user=self._context.get_user(), environment=self._context.get_environment())
+        task = self._prepare_task(task, user=self._context.get_user(), environment=self._context.get_environment(),
+                                  variables=self._context.workdir_local_vars)
         return [] if task is None else [task]
 
     def _handle_run_command_shell(self, line: str, local_vars: Dict[str, str], obj: ShellCommandObject) -> List[Dict]:
@@ -720,7 +721,8 @@ class RoleGenerator:
         if value is None:
             task = self._create_echo_task(obj.value.line)
             register = self._add_echo_register(task)
-            task = self._prepare_task(task, user=self._context.get_user(), environment=self._context.get_environment())
+            task = self._prepare_task(task, user=self._context.get_user(), environment=self._context.get_environment(),
+                                      variables=self._context.workdir_local_vars)
             self._context.add_local_env(name=obj.name, value="{{ " + register + ".stdout }}")
             return [task]
         else:

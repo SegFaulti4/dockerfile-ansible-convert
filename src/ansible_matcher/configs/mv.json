@@ -96,7 +96,6 @@
                                     "copy": {
                                         "src": "{{ source }}/",
                                         "dest": "{{ destination }}",
-                                        "follow": false,
                                         "remote_src": true,
                                         "force": false
                                     }
@@ -109,7 +108,6 @@
                             "copy": {
                                 "src": "{{ source }}",
                                 "dest": "{{ destination }}",
-                                "follow": false,
                                 "remote_src": true,
                                 "force": false
                             }
@@ -127,7 +125,6 @@
                     "copy": {
                         "src": "{{ item }}",
                         "dest": "{{ destination }}",
-                        "follow": false,
                         "remote_src": true,
                         "force": false
                     }
@@ -152,8 +149,7 @@
                     "force": true
                 }
             },
-            "--verbose": {},
-            "--recursive": {}
+            "--verbose": {}
         }
     }
 }
