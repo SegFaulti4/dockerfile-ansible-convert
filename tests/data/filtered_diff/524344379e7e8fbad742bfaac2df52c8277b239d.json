@@ -1,0 +1,42 @@
+[
+    {
+        "Diff": {
+            "Adds": [
+                {
+                    "Name": "/puppet-alfresco/.git/ORIG_HEAD",
+                    "Size": 41
+                },
+                {
+                    "Name": "/root/puppet-alfresco",
+                    "Size": 0
+                }
+            ],
+            "Dels": [],
+            "Mods": [
+                {
+                    "Name": "/puppet-alfresco/.git/index",
+                    "Size1": 11118,
+                    "Size2": 11118
+                },
+                {
+                    "Name": "/puppet-alfresco/.git/logs/refs/remotes/origin/HEAD",
+                    "Size1": 193,
+                    "Size2": 190
+                },
+                {
+                    "Name": "/puppet-alfresco/.git/logs/refs/heads/master",
+                    "Size1": 193,
+                    "Size2": 190
+                },
+                {
+                    "Name": "/puppet-alfresco/.git/logs/HEAD",
+                    "Size1": 193,
+                    "Size2": 522
+                }
+            ]
+        },
+        "DiffType": "File",
+        "Image1": "docker-test-524344379e7e8fbad742bfaac2df52c8277b239d:latest",
+        "Image2": "ansible-test-524344379e7e8fbad742bfaac2df52c8277b239d:latest"
+    }
+]

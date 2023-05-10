@@ -1,0 +1,17 @@
+[
+    {
+        "Diff": {
+            "Adds": [],
+            "Dels": [
+                {
+                    "Name": "/root/.wget-hsts",
+                    "Size": 165
+                }
+            ],
+            "Mods": []
+        },
+        "DiffType": "File",
+        "Image1": "docker-test-bbbe9209fe4d90b53d3fd4069507356715165060:latest",
+        "Image2": "ansible-test-bbbe9209fe4d90b53d3fd4069507356715165060:latest"
+    }
+]

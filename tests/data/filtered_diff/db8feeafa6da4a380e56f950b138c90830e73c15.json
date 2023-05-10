@@ -1,0 +1,23 @@
+[
+    {
+        "Diff": {
+            "Adds": [],
+            "Dels": [],
+            "Mods": [
+                {
+                    "Name": "/rootfs/lib64",
+                    "Size1": 3,
+                    "Size2": 11
+                },
+                {
+                    "Name": "/rootfs/sbin",
+                    "Size1": 3,
+                    "Size2": 11
+                }
+            ]
+        },
+        "DiffType": "File",
+        "Image1": "docker-test-db8feeafa6da4a380e56f950b138c90830e73c15:latest",
+        "Image2": "ansible-test-db8feeafa6da4a380e56f950b138c90830e73c15:latest"
+    }
+]

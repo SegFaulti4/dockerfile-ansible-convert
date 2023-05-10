@@ -1,0 +1,37 @@
+[
+    {
+        "Diff": {
+            "Adds": [
+                {
+                    "Name": "/home/monero/.ansible",
+                    "Size": 0
+                },
+                {
+                    "Name": "/home/monero/.ansible/tmp",
+                    "Size": 0
+                }
+            ],
+            "Dels": [
+                {
+                    "Name": "/home/monero/.wget-hsts",
+                    "Size": 165
+                }
+            ],
+            "Mods": [
+                {
+                    "Name": "/etc/passwd",
+                    "Size1": 1318,
+                    "Size2": 1315
+                },
+                {
+                    "Name": "/etc/passwd-",
+                    "Size1": 1275,
+                    "Size2": 1318
+                }
+            ]
+        },
+        "DiffType": "File",
+        "Image1": "docker-test-2046ce798ce04b8d5528ac838514229704769b43:latest",
+        "Image2": "ansible-test-2046ce798ce04b8d5528ac838514229704769b43:latest"
+    }
+]

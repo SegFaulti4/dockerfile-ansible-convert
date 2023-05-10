@@ -1,0 +1,18 @@
+[
+    {
+        "Diff": {
+            "Adds": [],
+            "Dels": [],
+            "Mods": [
+                {
+                    "Name": "/root/miniconda3/lib/python3.6/__pycache__/_sysconfigdata_m_linux_x86_64-linux-gnu.cpython-36.pyc",
+                    "Size1": 17420,
+                    "Size2": 17420
+                }
+            ]
+        },
+        "DiffType": "File",
+        "Image1": "docker-test-10ed6c08135218bbf3fc34a91c056930a95f4825:latest",
+        "Image2": "ansible-test-10ed6c08135218bbf3fc34a91c056930a95f4825:latest"
+    }
+]

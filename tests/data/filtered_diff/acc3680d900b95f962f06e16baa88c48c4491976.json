@@ -1,0 +1,48 @@
+[
+    {
+        "Diff": {
+            "Adds": [
+                {
+                    "Name": "/cpuminer/.git/ORIG_HEAD",
+                    "Size": 41
+                }
+            ],
+            "Dels": [],
+            "Mods": [
+                {
+                    "Name": "/cpuminer/config.log",
+                    "Size1": 34850,
+                    "Size2": 34903
+                },
+                {
+                    "Name": "/cpuminer/autom4te.cache/requests",
+                    "Size1": 11143,
+                    "Size2": 11143
+                },
+                {
+                    "Name": "/cpuminer/.git/index",
+                    "Size1": 3891,
+                    "Size2": 3891
+                },
+                {
+                    "Name": "/cpuminer/.git/logs/refs/remotes/origin/HEAD",
+                    "Size1": 181,
+                    "Size2": 178
+                },
+                {
+                    "Name": "/cpuminer/.git/logs/refs/heads/master",
+                    "Size1": 181,
+                    "Size2": 178
+                },
+                {
+                    "Name": "/cpuminer/.git/logs/HEAD",
+                    "Size1": 181,
+                    "Size2": 510
+                }
+            ]
+        },
+        "DiffType": "File",
+        "Image1": "docker-test-acc3680d900b95f962f06e16baa88c48c4491976:latest",
+        "Image2": "ansible-test-acc3680d900b95f962f06e16baa88c48c4491976:latest"
+    }
+]

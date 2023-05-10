@@ -1,0 +1,33 @@
+[
+    {
+        "Diff": {
+            "Adds": [
+                {
+                    "Name": "/etc/ssl/certs/634c3c1f.0",
+                    "Size": 21
+                }
+            ],
+            "Dels": [
+                {
+                    "Name": "/etc/ssl/certs/ce275665.0",
+                    "Size": 21
+                }
+            ],
+            "Mods": [
+                {
+                    "Name": "/etc/ssl/private/ssl-cert-snakeoil.key",
+                    "Size1": 1704,
+                    "Size2": 1704
+                },
+                {
+                    "Name": "/etc/ssl/certs/ssl-cert-snakeoil.pem",
+                    "Size1": 1090,
+                    "Size2": 1103
+                }
+            ]
+        },
+        "DiffType": "File",
+        "Image1": "docker-test-2563473e48c62a3587cee83bcee5ecfc69cc033f:latest",
+        "Image2": "ansible-test-2563473e48c62a3587cee83bcee5ecfc69cc033f:latest"
+    }
+]

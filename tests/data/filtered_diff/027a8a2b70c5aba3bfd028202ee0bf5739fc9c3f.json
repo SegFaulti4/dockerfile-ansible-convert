@@ -1,0 +1,110 @@
+[
+    {
+        "Diff": {
+            "Adds": [
+                {
+                    "Name": "/usr/bin/lsb_release",
+                    "Size": 3638
+                },
+                {
+                    "Name": "/usr/lib/python2.7",
+                    "Size": 38
+                },
+                {
+                    "Name": "/usr/lib/python2.7/dist-packages",
+                    "Size": 38
+                },
+                {
+                    "Name": "/usr/lib/python2.7/dist-packages/lsb_release.py",
+                    "Size": 38
+                },
+                {
+                    "Name": "/usr/lib/python3/dist-packages/lsb_release.py",
+                    "Size": 38
+                },
+                {
+                    "Name": "/usr/share/bug/lsb-release",
+                    "Size": 604
+                },
+                {
+                    "Name": "/usr/share/distro-info",
+                    "Size": 3691
+                },
+                {
+                    "Name": "/usr/share/distro-info/debian.csv",
+                    "Size": 1108
+                },
+                {
+                    "Name": "/usr/share/distro-info/ubuntu.csv",
+                    "Size": 2583
+                },
+                {
+                    "Name": "/usr/share/doc/distro-info-data",
+                    "Size": 2060
+                },
+                {
+                    "Name": "/usr/share/doc/distro-info-data/changelog.gz",
+                    "Size": 1052
+                },
+                {
+                    "Name": "/usr/share/doc/distro-info-data/copyright",
+                    "Size": 1008
+                },
+                {
+                    "Name": "/usr/share/doc/lsb-release",
+                    "Size": 3853
+                },
+                {
+                    "Name": "/usr/share/doc/lsb-release/changelog.gz",
+                    "Size": 1204
+                },
+                {
+                    "Name": "/usr/share/doc/lsb-release/copyright",
+                    "Size": 2649
+                },
+                {
+                    "Name": "/usr/share/pyshared",
+                    "Size": 14901
+                },
+                {
+                    "Name": "/usr/share/pyshared/lsb_release.py",
+                    "Size": 14901
+                },
+                {
+                    "Name": "/var/lib/dpkg/info/distro-info-data.list",
+                    "Size": 290
+                },
+                {
+                    "Name": "/var/lib/dpkg/info/distro-info-data.md5sums",
+                    "Size": 366
+                },
+                {
+                    "Name": "/var/lib/dpkg/info/lsb-release.list",
+                    "Size": 581
+                },
+                {
+                    "Name": "/var/lib/dpkg/info/lsb-release.md5sums",
+                    "Size": 469
+                },
+                {
+                    "Name": "/var/lib/dpkg/info/lsb-release.postinst",
+                    "Size": 304
+                },
+                {
+                    "Name": "/var/lib/dpkg/info/lsb-release.postrm",
+                    "Size": 300
+                }
+            ],
+            "Dels": [
+                {
+                    "Name": "/root/.wget-hsts",
+                    "Size": 165
+                }
+            ],
+            "Mods": []
+        },
+        "DiffType": "File",
+        "Image1": "docker-test-027a8a2b70c5aba3bfd028202ee0bf5739fc9c3f:latest",
+        "Image2": "ansible-test-027a8a2b70c5aba3bfd028202ee0bf5739fc9c3f:latest"
+    }
+]

@@ -1,0 +1,38 @@
+[
+    {
+        "Diff": {
+            "Adds": [
+                {
+                    "Name": "/sysbench/sysbench-tpcc/.git/ORIG_HEAD",
+                    "Size": 41
+                }
+            ],
+            "Dels": [],
+            "Mods": [
+                {
+                    "Name": "/sysbench/sysbench-tpcc/.git/index",
+                    "Size1": 609,
+                    "Size2": 609
+                },
+                {
+                    "Name": "/sysbench/sysbench-tpcc/.git/logs/refs/heads/master",
+                    "Size1": 195,
+                    "Size2": 192
+                },
+                {
+                    "Name": "/sysbench/sysbench-tpcc/.git/logs/refs/remotes/origin/HEAD",
+                    "Size1": 195,
+                    "Size2": 192
+                },
+                {
+                    "Name": "/sysbench/sysbench-tpcc/.git/logs/HEAD",
+                    "Size1": 195,
+                    "Size2": 524
+                }
+            ]
+        },
+        "DiffType": "File",
+        "Image1": "docker-test-ee10076aa060c89f2b24ca8f035f9c669a87df61:latest",
+        "Image2": "ansible-test-ee10076aa060c89f2b24ca8f035f9c669a87df61:latest"
+    }
+]

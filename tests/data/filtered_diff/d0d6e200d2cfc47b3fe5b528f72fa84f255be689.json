@@ -1,0 +1,33 @@
+[
+    {
+        "Diff": {
+            "Adds": [],
+            "Dels": [],
+            "Mods": [
+                {
+                    "Name": "/var/lib/apt/lists/security.ubuntu.com_ubuntu_dists_jammy-security_main_binary-amd64_Packages.lz4",
+                    "Size1": 1680109,
+                    "Size2": 1679953
+                },
+                {
+                    "Name": "/var/lib/apt/lists/security.ubuntu.com_ubuntu_dists_jammy-security_universe_binary-amd64_Packages.lz4",
+                    "Size1": 1544147,
+                    "Size2": 1544179
+                },
+                {
+                    "Name": "/var/lib/apt/lists/archive.ubuntu.com_ubuntu_dists_jammy-updates_InRelease",
+                    "Size1": 118747,
+                    "Size2": 118747
+                },
+                {
+                    "Name": "/var/lib/apt/lists/security.ubuntu.com_ubuntu_dists_jammy-security_InRelease",
+                    "Size1": 110337,
+                    "Size2": 110337
+                }
+            ]
+        },
+        "DiffType": "File",
+        "Image1": "docker-test-d0d6e200d2cfc47b3fe5b528f72fa84f255be689:latest",
+        "Image2": "ansible-test-d0d6e200d2cfc47b3fe5b528f72fa84f255be689:latest"
+    }
+]

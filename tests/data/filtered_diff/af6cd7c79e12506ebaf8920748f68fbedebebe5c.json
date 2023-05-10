@@ -1,0 +1,37 @@
+[
+    {
+        "Diff": {
+            "Adds": [
+                {
+                    "Name": "/etc/ssl/certs/b782bc28.0",
+                    "Size": 21
+                }
+            ],
+            "Dels": [
+                {
+                    "Name": "/etc/ssl/certs/ce275665.0",
+                    "Size": 21
+                },
+                {
+                    "Name": "/root/.wget-hsts",
+                    "Size": 173
+                }
+            ],
+            "Mods": [
+                {
+                    "Name": "/etc/ssl/private/ssl-cert-snakeoil.key",
+                    "Size1": 1708,
+                    "Size2": 1704
+                },
+                {
+                    "Name": "/etc/ssl/certs/ssl-cert-snakeoil.pem",
+                    "Size1": 1090,
+                    "Size2": 1103
+                }
+            ]
+        },
+        "DiffType": "File",
+        "Image1": "docker-test-af6cd7c79e12506ebaf8920748f68fbedebebe5c:latest",
+        "Image2": "ansible-test-af6cd7c79e12506ebaf8920748f68fbedebebe5c:latest"
+    }
+]

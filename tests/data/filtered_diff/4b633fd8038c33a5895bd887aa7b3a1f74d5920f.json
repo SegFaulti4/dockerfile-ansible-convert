@@ -1,0 +1,28 @@
+[
+    {
+        "Diff": {
+            "Adds": [],
+            "Dels": [],
+            "Mods": [
+                {
+                    "Name": "/var/lib/apt/lists/archive.ubuntu.com_ubuntu_dists_jammy-updates_InRelease",
+                    "Size1": 118747,
+                    "Size2": 118747
+                },
+                {
+                    "Name": "/var/lib/apt/lists/security.ubuntu.com_ubuntu_dists_jammy-security_InRelease",
+                    "Size1": 110337,
+                    "Size2": 110337
+                },
+                {
+                    "Name": "/var/lib/apt/lists/archive.ubuntu.com_ubuntu_dists_jammy-backports_InRelease",
+                    "Size1": 107692,
+                    "Size2": 107692
+                }
+            ]
+        },
+        "DiffType": "File",
+        "Image1": "docker-test-4b633fd8038c33a5895bd887aa7b3a1f74d5920f:latest",
+        "Image2": "ansible-test-4b633fd8038c33a5895bd887aa7b3a1f74d5920f:latest"
+    }
+]

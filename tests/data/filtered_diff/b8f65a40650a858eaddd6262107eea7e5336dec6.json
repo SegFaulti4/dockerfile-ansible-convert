@@ -1,0 +1,32 @@
+[
+    {
+        "Diff": {
+            "Adds": [
+                {
+                    "Name": "/home/glot/.ansible",
+                    "Size": 0
+                },
+                {
+                    "Name": "/home/glot/.ansible/tmp",
+                    "Size": 0
+                }
+            ],
+            "Dels": [],
+            "Mods": [
+                {
+                    "Name": "/etc/passwd",
+                    "Size1": 1314,
+                    "Size2": 1311
+                },
+                {
+                    "Name": "/etc/passwd-",
+                    "Size1": 1275,
+                    "Size2": 1314
+                }
+            ]
+        },
+        "DiffType": "File",
+        "Image1": "docker-test-b8f65a40650a858eaddd6262107eea7e5336dec6:latest",
+        "Image2": "ansible-test-b8f65a40650a858eaddd6262107eea7e5336dec6:latest"
+    }
+]

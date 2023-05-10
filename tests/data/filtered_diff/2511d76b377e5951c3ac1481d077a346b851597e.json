@@ -1,0 +1,18 @@
+[
+    {
+        "Diff": {
+            "Adds": [],
+            "Dels": [],
+            "Mods": [
+                {
+                    "Name": "/etc/bind/rndc.key",
+                    "Size1": 100,
+                    "Size2": 100
+                }
+            ]
+        },
+        "DiffType": "File",
+        "Image1": "docker-test-2511d76b377e5951c3ac1481d077a346b851597e:latest",
+        "Image2": "ansible-test-2511d76b377e5951c3ac1481d077a346b851597e:latest"
+    }
+]

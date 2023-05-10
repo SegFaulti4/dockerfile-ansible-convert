@@ -1,0 +1,38 @@
+[
+    {
+        "Diff": {
+            "Adds": [
+                {
+                    "Name": "/socketlog/.git/ORIG_HEAD",
+                    "Size": 41
+                }
+            ],
+            "Dels": [],
+            "Mods": [
+                {
+                    "Name": "/socketlog/.git/index",
+                    "Size1": 6370,
+                    "Size2": 6370
+                },
+                {
+                    "Name": "/socketlog/.git/logs/HEAD",
+                    "Size1": 189,
+                    "Size2": 518
+                },
+                {
+                    "Name": "/socketlog/.git/logs/refs/heads/master",
+                    "Size1": 189,
+                    "Size2": 186
+                },
+                {
+                    "Name": "/socketlog/.git/logs/refs/remotes/origin/HEAD",
+                    "Size1": 189,
+                    "Size2": 186
+                }
+            ]
+        },
+        "DiffType": "File",
+        "Image1": "docker-test-83015e6b5e2deba10b613ff4af1e96e5d9b95d11:latest",
+        "Image2": "ansible-test-83015e6b5e2deba10b613ff4af1e96e5d9b95d11:latest"
+    }
+]

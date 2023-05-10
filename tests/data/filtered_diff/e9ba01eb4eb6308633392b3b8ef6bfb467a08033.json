@@ -1,0 +1,32 @@
+[
+    {
+        "Diff": {
+            "Adds": [
+                {
+                    "Name": "/home/developer/.ansible",
+                    "Size": 0
+                },
+                {
+                    "Name": "/home/developer/.ansible/tmp",
+                    "Size": 0
+                }
+            ],
+            "Dels": [],
+            "Mods": [
+                {
+                    "Name": "/etc/passwd",
+                    "Size1": 1327,
+                    "Size2": 1324
+                },
+                {
+                    "Name": "/etc/passwd-",
+                    "Size1": 1324,
+                    "Size2": 1327
+                }
+            ]
+        },
+        "DiffType": "File",
+        "Image1": "docker-test-e9ba01eb4eb6308633392b3b8ef6bfb467a08033:latest",
+        "Image2": "ansible-test-e9ba01eb4eb6308633392b3b8ef6bfb467a08033:latest"
+    }
+]

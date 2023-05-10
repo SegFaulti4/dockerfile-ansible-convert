@@ -1,0 +1,33 @@
+[
+    {
+        "Diff": {
+            "Adds": [
+                {
+                    "Name": "/tmp/hsperfdata_root/2082",
+                    "Size": 32768
+                }
+            ],
+            "Dels": [
+                {
+                    "Name": "/tmp/hsperfdata_root/1512",
+                    "Size": 32768
+                }
+            ],
+            "Mods": [
+                {
+                    "Name": "/usr/lib/jvm/java-8-openjdk-amd64/jre/lib/amd64/server/classes.jsa",
+                    "Size1": 20258816,
+                    "Size2": 20258816
+                },
+                {
+                    "Name": "/etc/ssl/certs/java/cacerts",
+                    "Size1": 143233,
+                    "Size2": 142104
+                }
+            ]
+        },
+        "DiffType": "File",
+        "Image1": "docker-test-2e401e85cf5ee24abb2626995d38b914bbb7e559:latest",
+        "Image2": "ansible-test-2e401e85cf5ee24abb2626995d38b914bbb7e559:latest"
+    }
+]

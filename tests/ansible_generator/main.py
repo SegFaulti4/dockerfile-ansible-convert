@@ -149,22 +149,27 @@ def prepare_ansible_image(file_name: str, idx: int, echo: bool) -> Optional[str]
         return None
 
 
-def diff_images(image1: Optional[str], image2: Optional[str], idx: int, echo: bool = True):
-    log_path = os.path.join(LOG_DIR, f"diff-{image1}.json")
-    diff_comm = f"container-diff diff --no-cache --json --type=file daemon://{image1}:latest daemon://{image2}:latest"
-    flag_print(diff_comm, echo=echo)
+def collect_test_images_worker(args: Tuple[List[str], int, bool]):
+    names, idx, echo = args
 
-    if image1 is None or image2 is None:
-        with open(log_path, "w") as outF:
-            outF.write(f"[]\nimage1: {image1}, image2: {image2}\n")
-        return
+    with tqdm(total=len(names), position=idx, desc=f"Loop {idx}") as pbar:
+        for name in names:
+            cf_image = prepare_containerfile_image(name, idx, echo)
+            ans_image = prepare_ansible_image(name, idx, echo)
+            time.sleep(1)
+            pbar.update(1)
 
+
+def collect_test_images(containerfile_names: List[str], n_proc: int):
+    echo = False
+    collect_test_images_worker((containerfile_names, 0, echo))
+
+    # may return parallel execution in the future
     """
-    diff_res = subprocess.run(['/bin/bash', '-c', diff_comm],
-                              stdout=PIPE, stderr=PIPE, text=True)
-
-    with open(log_path, "w") as outF:
-        outF.write(diff_res.stdout)
+    # with multiprocessing.Pool(processes=n_proc) as pool:
+        spans = parts.parts(containerfile_names, n_proc)
+        pool.map(collect_ansible_diff_worker,
+                 [(list(span), idx, echo) for span, idx in zip(spans, range(n_proc))])
     """
 
 
@@ -178,32 +183,22 @@ def rm_image(image: Optional[str], echo: bool):
     flag_print(f"RMing {image} - stderr - {rm_res.stderr}", echo=echo)
 
 
-def collect_ansible_diff_worker(args: Tuple[List[str], int, bool]):
-    names, idx, echo = args
+def diff_images_worker(image1: Optional[str], image2: Optional[str], echo: bool = True):
+    log_path = os.path.join(LOG_DIR, f"diff-{image1}.json")
 
-    with tqdm(total=len(names), position=idx, desc=f"Loop {idx}") as pbar:
-        for name in names:
-            cf_image = prepare_containerfile_image(name, idx, echo)
-            ans_image = prepare_ansible_image(name, idx, echo)
-            diff_images(cf_image, ans_image, idx, echo)
+    if image1 is None or image2 is None:
+        with open(log_path, "w") as outF:
+            outF.write("[]\n")
+            flag_print(f"image1: {image1}, image2: {image2}\n", echo=echo)
+        return
 
-            time.sleep(1)
-            rm_image(cf_image, echo)
-            time.sleep(1)
-            rm_image(ans_image, echo)
-            pbar.update(1)
+    diff_comm = f"container-diff diff --no-cache --json --type=file daemon://{image1}:latest daemon://{image2}:latest"
+    flag_print(diff_comm, echo=echo)
+    diff_res = subprocess.run(['/bin/bash', '-c', diff_comm],
+                              stdout=PIPE, stderr=PIPE, text=True)
 
-
-def collect_ansible_diff(containerfile_names: List[str], n_proc: int):
-    echo = False
-    collect_ansible_diff_worker((containerfile_names, 0, echo))
-
-    """
-    # with multiprocessing.Pool(processes=n_proc) as pool:
-        spans = parts.parts(containerfile_names, n_proc)
-        pool.map(collect_ansible_diff_worker,
-                 [(list(span), idx, echo) for span, idx in zip(spans, range(n_proc))])
-    """
+    with open(log_path, "w") as outF:
+        outF.write(diff_res.stdout)
 
 
 def main():
@@ -213,10 +208,22 @@ def main():
     setup_dir(LOG_DIR)
     setup_dir(TMP_DIR)
 
-    filenames = filenames_from_dir(GENERATOR_TESTS_DIR)
-    filenames.sort()
-    # filenames = filenames[0:500]
-    collect_ansible_diff(filenames, 1)
+    def collect():
+        filenames = filenames_from_dir(GENERATOR_TESTS_DIR)
+        filenames.sort()
+        collect_test_images(filenames, 1)
+
+    def diff():
+        with open(GENERATOR_TEST_IMAGES_FILE, "r") as inF:
+            image_hashes = [line.strip() for line in inF.readlines()]
+
+        for image_hash in tqdm(image_hashes, desc="Collecting diff"):
+            docker_image = "docker-test-" + image_hash
+            ansible_image = "ansible-test-" + image_hash
+            diff_images_worker(docker_image, ansible_image, echo=True)
+            time.sleep(1)
+
+    diff()
 
 
 if __name__ == "__main__":

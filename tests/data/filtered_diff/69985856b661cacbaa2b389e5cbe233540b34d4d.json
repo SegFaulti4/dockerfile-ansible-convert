@@ -1,0 +1,67 @@
+[
+    {
+        "Diff": {
+            "Adds": [
+                {
+                    "Name": "/var/cache/fontconfig/1de32de7-63b9-45da-bb68-801c7e3bf8b6-le64.cache-7",
+                    "Size": 144
+                },
+                {
+                    "Name": "/var/cache/fontconfig/4129c2af-5b33-413e-9f2f-554e28985ce6-le64.cache-7",
+                    "Size": 104
+                },
+                {
+                    "Name": "/var/cache/fontconfig/82a4fbbc-7d3f-4205-b95e-3a2e4f7e81ab-le64.cache-7",
+                    "Size": 15560
+                },
+                {
+                    "Name": "/var/cache/fontconfig/8e3882a0-f73a-43bf-983b-291f7b1c1eb9-le64.cache-7",
+                    "Size": 160
+                }
+            ],
+            "Dels": [
+                {
+                    "Name": "/var/cache/fontconfig/0335c549-4659-4165-b6fe-2250fbd56f9d-le64.cache-7",
+                    "Size": 144
+                },
+                {
+                    "Name": "/var/cache/fontconfig/2f887563-ad82-4d2c-8029-2d5be803e57e-le64.cache-7",
+                    "Size": 15560
+                },
+                {
+                    "Name": "/var/cache/fontconfig/9ec3b522-3e0c-4c5b-8fe3-cb0b20aa8b90-le64.cache-7",
+                    "Size": 160
+                },
+                {
+                    "Name": "/var/cache/fontconfig/ad35d8bc-b407-4989-aff8-6a22454f9aba-le64.cache-7",
+                    "Size": 104
+                }
+            ],
+            "Mods": [
+                {
+                    "Name": "/usr/local/share/fonts/.uuid",
+                    "Size1": 36,
+                    "Size2": 36
+                },
+                {
+                    "Name": "/usr/share/fonts/truetype/.uuid",
+                    "Size1": 36,
+                    "Size2": 36
+                },
+                {
+                    "Name": "/usr/share/fonts/truetype/dejavu/.uuid",
+                    "Size1": 36,
+                    "Size2": 36
+                },
+                {
+                    "Name": "/usr/share/fonts/.uuid",
+                    "Size1": 36,
+                    "Size2": 36
+                }
+            ]
+        },
+        "DiffType": "File",
+        "Image1": "docker-test-69985856b661cacbaa2b389e5cbe233540b34d4d:latest",
+        "Image2": "ansible-test-69985856b661cacbaa2b389e5cbe233540b34d4d:latest"
+    }
+]

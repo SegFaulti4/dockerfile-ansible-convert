@@ -1,0 +1,93 @@
+[
+    {
+        "Diff": {
+            "Adds": [],
+            "Dels": [
+                {
+                    "Name": "/dashcore/bin",
+                    "Size": 79451896
+                },
+                {
+                    "Name": "/dashcore/bin/dash-cli",
+                    "Size": 3338200
+                },
+                {
+                    "Name": "/dashcore/bin/dash-qt",
+                    "Size": 40493224
+                },
+                {
+                    "Name": "/dashcore/bin/dash-tx",
+                    "Size": 4056440
+                },
+                {
+                    "Name": "/dashcore/bin/dashd",
+                    "Size": 14339440
+                },
+                {
+                    "Name": "/dashcore/bin/test_dash",
+                    "Size": 17224592
+                },
+                {
+                    "Name": "/dashcore/include",
+                    "Size": 3034
+                },
+                {
+                    "Name": "/dashcore/include/dashconsensus.h",
+                    "Size": 3034
+                },
+                {
+                    "Name": "/dashcore/lib",
+                    "Size": 1460826
+                },
+                {
+                    "Name": "/dashcore/lib/libdashconsensus.so",
+                    "Size": 25
+                },
+                {
+                    "Name": "/dashcore/lib/libdashconsensus.so.0",
+                    "Size": 25
+                },
+                {
+                    "Name": "/dashcore/lib/libdashconsensus.so.0.0.0",
+                    "Size": 1460776
+                },
+                {
+                    "Name": "/dashcore/share",
+                    "Size": 41233
+                },
+                {
+                    "Name": "/dashcore/share/man",
+                    "Size": 41233
+                },
+                {
+                    "Name": "/dashcore/share/man/man1",
+                    "Size": 41233
+                },
+                {
+                    "Name": "/dashcore/share/man/man1/dash-cli.1",
+                    "Size": 2418
+                },
+                {
+                    "Name": "/dashcore/share/man/man1/dash-qt.1",
+                    "Size": 18184
+                },
+                {
+                    "Name": "/dashcore/share/man/man1/dash-tx.1",
+                    "Size": 2894
+                },
+                {
+                    "Name": "/dashcore/share/man/man1/dashd.1",
+                    "Size": 17737
+                },
+                {
+                    "Name": "/root/.wget-hsts",
+                    "Size": 165
+                }
+            ],
+            "Mods": []
+        },
+        "DiffType": "File",
+        "Image1": "docker-test-eafdd98d67a2f995735897f3a6ce150b5ab2bcf2:latest",
+        "Image2": "ansible-test-eafdd98d67a2f995735897f3a6ce150b5ab2bcf2:latest"
+    }
+]

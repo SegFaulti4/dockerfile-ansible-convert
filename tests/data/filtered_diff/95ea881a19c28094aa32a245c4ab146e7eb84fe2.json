@@ -1,0 +1,161 @@
+[
+    {
+        "Diff": {
+            "Adds": [
+                {
+                    "Name": "/etc/ssh/ssh_import_id",
+                    "Size": 342
+                },
+                {
+                    "Name": "/etc/wgetrc",
+                    "Size": 4942
+                },
+                {
+                    "Name": "/usr/bin/ssh-import-id",
+                    "Size": 985
+                },
+                {
+                    "Name": "/usr/bin/ssh-import-id-gh",
+                    "Size": 785
+                },
+                {
+                    "Name": "/usr/bin/ssh-import-id-lp",
+                    "Size": 785
+                },
+                {
+                    "Name": "/usr/bin/wget",
+                    "Size": 527376
+                },
+                {
+                    "Name": "/usr/lib/python3/dist-packages/ssh_import_id",
+                    "Size": 23773
+                },
+                {
+                    "Name": "/usr/lib/python3/dist-packages/ssh_import_id-5.11.egg-info",
+                    "Size": 454
+                },
+                {
+                    "Name": "/usr/lib/python3/dist-packages/ssh_import_id-5.11.egg-info/PKG-INFO",
+                    "Size": 385
+                },
+                {
+                    "Name": "/usr/lib/python3/dist-packages/ssh_import_id-5.11.egg-info/dependency_links.txt",
+                    "Size": 1
+                },
+                {
+                    "Name": "/usr/lib/python3/dist-packages/ssh_import_id-5.11.egg-info/entry_points.txt",
+                    "Size": 54
+                },
+                {
+                    "Name": "/usr/lib/python3/dist-packages/ssh_import_id-5.11.egg-info/requires.txt",
+                    "Size": 0
+                },
+                {
+                    "Name": "/usr/lib/python3/dist-packages/ssh_import_id-5.11.egg-info/top_level.txt",
+                    "Size": 14
+                },
+                {
+                    "Name": "/usr/lib/python3/dist-packages/ssh_import_id/__init__.py",
+                    "Size": 12299
+                },
+                {
+                    "Name": "/usr/lib/python3/dist-packages/ssh_import_id/__main__.py",
+                    "Size": 855
+                },
+                {
+                    "Name": "/usr/lib/python3/dist-packages/ssh_import_id/__pycache__",
+                    "Size": 10352
+                },
+                {
+                    "Name": "/usr/lib/python3/dist-packages/ssh_import_id/__pycache__/__init__.cpython-310.pyc",
+                    "Size": 9852
+                },
+                {
+                    "Name": "/usr/lib/python3/dist-packages/ssh_import_id/__pycache__/__main__.cpython-310.pyc",
+                    "Size": 235
+                },
+                {
+                    "Name": "/usr/lib/python3/dist-packages/ssh_import_id/__pycache__/version.cpython-310.pyc",
+                    "Size": 265
+                },
+                {
+                    "Name": "/usr/lib/python3/dist-packages/ssh_import_id/version.py",
+                    "Size": 267
+                },
+                {
+                    "Name": "/usr/share/doc/ssh-import-id",
+                    "Size": 2465
+                },
+                {
+                    "Name": "/usr/share/doc/ssh-import-id/changelog.Debian.gz",
+                    "Size": 1370
+                },
+                {
+                    "Name": "/usr/share/doc/ssh-import-id/copyright",
+                    "Size": 1095
+                },
+                {
+                    "Name": "/usr/share/doc/wget",
+                    "Size": 2429
+                },
+                {
+                    "Name": "/usr/share/doc/wget/changelog.Debian.gz",
+                    "Size": 1009
+                },
+                {
+                    "Name": "/usr/share/doc/wget/copyright",
+                    "Size": 1420
+                },
+                {
+                    "Name": "/usr/share/info/wget.info.gz",
+                    "Size": 71824
+                },
+                {
+                    "Name": "/var/lib/apt/lists/partial/cran.r-project.org_bin_linux_ubuntu_trusty_Release.FAILED",
+                    "Size": 3068
+                },
+                {
+                    "Name": "/var/lib/apt/lists/partial/cran.r-project.org_bin_linux_ubuntu_trusty_Release.gpg",
+                    "Size": 488
+                },
+                {
+                    "Name": "/var/lib/dpkg/info/ssh-import-id.conffiles",
+                    "Size": 23
+                },
+                {
+                    "Name": "/var/lib/dpkg/info/ssh-import-id.list",
+                    "Size": 1130
+                },
+                {
+                    "Name": "/var/lib/dpkg/info/ssh-import-id.md5sums",
+                    "Size": 1203
+                },
+                {
+                    "Name": "/var/lib/dpkg/info/ssh-import-id.postinst",
+                    "Size": 251
+                },
+                {
+                    "Name": "/var/lib/dpkg/info/ssh-import-id.prerm",
+                    "Size": 400
+                },
+                {
+                    "Name": "/var/lib/dpkg/info/wget.conffiles",
+                    "Size": 12
+                },
+                {
+                    "Name": "/var/lib/dpkg/info/wget.list",
+                    "Size": 390
+                },
+                {
+                    "Name": "/var/lib/dpkg/info/wget.md5sums",
+                    "Size": 556
+                }
+            ],
+            "Dels": [],
+            "Mods": []
+        },
+        "DiffType": "File",
+        "Image1": "docker-test-95ea881a19c28094aa32a245c4ab146e7eb84fe2:latest",
+        "Image2": "ansible-test-95ea881a19c28094aa32a245c4ab146e7eb84fe2:latest"
+    }
+]

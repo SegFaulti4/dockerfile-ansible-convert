@@ -1,0 +1,23 @@
+[
+    {
+        "Diff": {
+            "Adds": [],
+            "Dels": [
+                {
+                    "Name": "/etc/mailname",
+                    "Size": 1
+                }
+            ],
+            "Mods": [
+                {
+                    "Name": "/var/cache/debconf/config.dat",
+                    "Size1": 15272,
+                    "Size2": 15266
+                }
+            ]
+        },
+        "DiffType": "File",
+        "Image1": "docker-test-75d66c44f1b40e8464eab4266d279543831ad68b:latest",
+        "Image2": "ansible-test-75d66c44f1b40e8464eab4266d279543831ad68b:latest"
+    }
+]

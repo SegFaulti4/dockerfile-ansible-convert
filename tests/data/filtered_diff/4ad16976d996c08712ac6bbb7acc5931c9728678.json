@@ -1,0 +1,18 @@
+[
+    {
+        "Diff": {
+            "Adds": [],
+            "Dels": [],
+            "Mods": [
+                {
+                    "Name": "/etc/shadow",
+                    "Size1": 743,
+                    "Size2": 743
+                }
+            ]
+        },
+        "DiffType": "File",
+        "Image1": "docker-test-4ad16976d996c08712ac6bbb7acc5931c9728678:latest",
+        "Image2": "ansible-test-4ad16976d996c08712ac6bbb7acc5931c9728678:latest"
+    }
+]

@@ -1,0 +1,18 @@
+[
+    {
+        "Diff": {
+            "Adds": [],
+            "Dels": [],
+            "Mods": [
+                {
+                    "Name": "/var/lib/rabbitmq/.erlang.cookie",
+                    "Size1": 57,
+                    "Size2": 57
+                }
+            ]
+        },
+        "DiffType": "File",
+        "Image1": "docker-test-daf005868e39629862e88dafdcd88ac3a796b122:latest",
+        "Image2": "ansible-test-daf005868e39629862e88dafdcd88ac3a796b122:latest"
+    }
+]

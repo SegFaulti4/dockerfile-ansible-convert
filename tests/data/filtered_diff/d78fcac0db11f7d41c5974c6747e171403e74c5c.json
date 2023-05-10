@@ -1,0 +1,18 @@
+[
+    {
+        "Diff": {
+            "Adds": [],
+            "Dels": [],
+            "Mods": [
+                {
+                    "Name": "/usr/lib/x86_64-linux-gnu/libgmp.so.3",
+                    "Size1": 9,
+                    "Size2": 10
+                }
+            ]
+        },
+        "DiffType": "File",
+        "Image1": "docker-test-d78fcac0db11f7d41c5974c6747e171403e74c5c:latest",
+        "Image2": "ansible-test-d78fcac0db11f7d41c5974c6747e171403e74c5c:latest"
+    }
+]

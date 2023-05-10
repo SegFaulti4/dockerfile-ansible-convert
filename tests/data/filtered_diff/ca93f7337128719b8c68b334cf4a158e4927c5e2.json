@@ -1,0 +1,28 @@
+[
+    {
+        "Diff": {
+            "Adds": [],
+            "Dels": [],
+            "Mods": [
+                {
+                    "Name": "/var/cache/debconf/config.dat",
+                    "Size1": 24946,
+                    "Size2": 24937
+                },
+                {
+                    "Name": "/etc/localtime",
+                    "Size1": 24,
+                    "Size2": 27
+                },
+                {
+                    "Name": "/etc/timezone",
+                    "Size1": 5,
+                    "Size2": 8
+                }
+            ]
+        },
+        "DiffType": "File",
+        "Image1": "docker-test-ca93f7337128719b8c68b334cf4a158e4927c5e2:latest",
+        "Image2": "ansible-test-ca93f7337128719b8c68b334cf4a158e4927c5e2:latest"
+    }
+]

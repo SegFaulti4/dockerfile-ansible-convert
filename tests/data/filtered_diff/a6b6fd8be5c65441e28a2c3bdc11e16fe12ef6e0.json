@@ -1,0 +1,23 @@
+[
+    {
+        "Diff": {
+            "Adds": [],
+            "Dels": [],
+            "Mods": [
+                {
+                    "Name": "/var/cache/debconf/config.dat",
+                    "Size1": 15685,
+                    "Size2": 15678
+                },
+                {
+                    "Name": "/var/lib/apt-cacher-ng/backends_ubuntu.default",
+                    "Size1": 735,
+                    "Size2": 735
+                }
+            ]
+        },
+        "DiffType": "File",
+        "Image1": "docker-test-a6b6fd8be5c65441e28a2c3bdc11e16fe12ef6e0:latest",
+        "Image2": "ansible-test-a6b6fd8be5c65441e28a2c3bdc11e16fe12ef6e0:latest"
+    }
+]

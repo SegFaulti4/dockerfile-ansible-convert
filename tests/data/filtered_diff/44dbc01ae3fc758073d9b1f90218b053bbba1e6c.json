@@ -1,0 +1,23 @@
+[
+    {
+        "Diff": {
+            "Adds": [
+                {
+                    "Name": "/root/rti_perftest-2.2_x64Linux3gcc4.8.2",
+                    "Size": 0
+                }
+            ],
+            "Dels": [],
+            "Mods": [
+                {
+                    "Name": "/rti_perftest-2.2_x64Linux3gcc4.8.2/perftest",
+                    "Size1": 42,
+                    "Size2": 78
+                }
+            ]
+        },
+        "DiffType": "File",
+        "Image1": "docker-test-44dbc01ae3fc758073d9b1f90218b053bbba1e6c:latest",
+        "Image2": "ansible-test-44dbc01ae3fc758073d9b1f90218b053bbba1e6c:latest"
+    }
+]

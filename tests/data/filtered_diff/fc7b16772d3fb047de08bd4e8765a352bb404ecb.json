@@ -1,0 +1,38 @@
+[
+    {
+        "Diff": {
+            "Adds": [
+                {
+                    "Name": "/bats/.git/ORIG_HEAD",
+                    "Size": 41
+                }
+            ],
+            "Dels": [],
+            "Mods": [
+                {
+                    "Name": "/bats/.git/index",
+                    "Size1": 4864,
+                    "Size2": 4864
+                },
+                {
+                    "Name": "/bats/.git/logs/HEAD",
+                    "Size1": 355,
+                    "Size2": 681
+                },
+                {
+                    "Name": "/bats/.git/logs/refs/remotes/origin/HEAD",
+                    "Size1": 182,
+                    "Size2": 179
+                },
+                {
+                    "Name": "/bats/.git/logs/refs/heads/master",
+                    "Size1": 182,
+                    "Size2": 179
+                }
+            ]
+        },
+        "DiffType": "File",
+        "Image1": "docker-test-fc7b16772d3fb047de08bd4e8765a352bb404ecb:latest",
+        "Image2": "ansible-test-fc7b16772d3fb047de08bd4e8765a352bb404ecb:latest"
+    }
+]

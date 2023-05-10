@@ -1,0 +1,73 @@
+[
+    {
+        "Diff": {
+            "Adds": [],
+            "Dels": [],
+            "Mods": [
+                {
+                    "Name": "/var/lib/ldap/data.mdb",
+                    "Size1": 36864,
+                    "Size2": 36864
+                },
+                {
+                    "Name": "/etc/ldap/slapd.d/cn=config/cn=schema/cn={0}core.ldif",
+                    "Size1": 15593,
+                    "Size2": 15593
+                },
+                {
+                    "Name": "/etc/ldap/slapd.d/cn=config/cn=schema/cn={1}cosine.ldif",
+                    "Size1": 11379,
+                    "Size2": 11379
+                },
+                {
+                    "Name": "/etc/ldap/slapd.d/cn=config/cn=schema/cn={2}nis.ldif",
+                    "Size1": 6509,
+                    "Size2": 6509
+                },
+                {
+                    "Name": "/etc/ldap/slapd.d/cn=config/cn=schema/cn={3}inetorgperson.ldif",
+                    "Size1": 2873,
+                    "Size2": 2873
+                },
+                {
+                    "Name": "/etc/ldap/slapd.d/cn=config/olcDatabase={1}mdb.ldif",
+                    "Size1": 942,
+                    "Size2": 942
+                },
+                {
+                    "Name": "/etc/ldap/slapd.d/cn=config/olcDatabase={-1}frontend.ldif",
+                    "Size1": 657,
+                    "Size2": 657
+                },
+                {
+                    "Name": "/etc/ldap/slapd.d/cn=config/olcDatabase={0}config.ldif",
+                    "Size1": 543,
+                    "Size2": 543
+                },
+                {
+                    "Name": "/etc/ldap/slapd.d/cn=config.ldif",
+                    "Size1": 478,
+                    "Size2": 478
+                },
+                {
+                    "Name": "/etc/ldap/slapd.d/cn=config/cn=module{0}.ldif",
+                    "Size1": 454,
+                    "Size2": 454
+                },
+                {
+                    "Name": "/etc/ldap/slapd.d/cn=config/cn=schema.ldif",
+                    "Size1": 396,
+                    "Size2": 396
+                },
+                {
+                    "Name": "/run/slapd/slapd.pid",
+                    "Size1": 3,
+                    "Size2": 4
+                }
+            ]
+        },
+        "DiffType": "File",
+        "Image1": "docker-test-fd88be9259e9d7699574a4bbf9d07ae3f93c209f:latest",
+        "Image2": "ansible-test-fd88be9259e9d7699574a4bbf9d07ae3f93c209f:latest"
+    }
+]

@@ -1,0 +1,38 @@
+[
+    {
+        "Diff": {
+            "Adds": [
+                {
+                    "Name": "/tmp/hsperfdata_root/3782",
+                    "Size": 32768
+                }
+            ],
+            "Dels": [
+                {
+                    "Name": "/tmp/hsperfdata_root/3461",
+                    "Size": 32768
+                }
+            ],
+            "Mods": [
+                {
+                    "Name": "/usr/lib/jvm/java-11-openjdk-amd64/lib/server/classes.jsa",
+                    "Size1": 11866112,
+                    "Size2": 11870208
+                },
+                {
+                    "Name": "/etc/ssl/certs/java/cacerts",
+                    "Size1": 143233,
+                    "Size2": 142104
+                },
+                {
+                    "Name": "/usr/lib/pypy/lib-python/2.7/idlelib/__pycache__/help.pypy-73.pyc",
+                    "Size1": 11488,
+                    "Size2": 11484
+                }
+            ]
+        },
+        "DiffType": "File",
+        "Image1": "docker-test-cf89cc1405fb64a6dfab9755f0e956ed3af1db00:latest",
+        "Image2": "ansible-test-cf89cc1405fb64a6dfab9755f0e956ed3af1db00:latest"
+    }
+]

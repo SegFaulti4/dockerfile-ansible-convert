@@ -1,0 +1,82 @@
+[
+    {
+        "Diff": {
+            "Adds": [
+                {
+                    "Name": "/var/cache/fontconfig/21a57039-c239-4d9c-9d5b-d80f8ba2cb9d-le64.cache-7",
+                    "Size": 160
+                },
+                {
+                    "Name": "/var/cache/fontconfig/9592bc5e-f5cb-4289-9223-73537047d9fc-le64.cache-7",
+                    "Size": 15560
+                },
+                {
+                    "Name": "/var/cache/fontconfig/af60385f-1439-4550-aff7-3df9f2f79502-le64.cache-7",
+                    "Size": 104
+                },
+                {
+                    "Name": "/var/cache/fontconfig/b5e7d710-76b6-4e38-94bc-524dfaf6ab4d-le64.cache-7",
+                    "Size": 144
+                }
+            ],
+            "Dels": [
+                {
+                    "Name": "/var/cache/fontconfig/13bacacc-ba78-4348-8267-324f765da1b8-le64.cache-7",
+                    "Size": 104
+                },
+                {
+                    "Name": "/var/cache/fontconfig/19164e65-f24e-4b6f-b933-aac00abd2052-le64.cache-7",
+                    "Size": 160
+                },
+                {
+                    "Name": "/var/cache/fontconfig/d584fb8c-234a-456f-94d8-6a6b9b7bae48-le64.cache-7",
+                    "Size": 144
+                },
+                {
+                    "Name": "/var/cache/fontconfig/f9bbb5d8-d169-4c8f-99b1-7ee5e1cfc5c0-le64.cache-7",
+                    "Size": 15560
+                }
+            ],
+            "Mods": [
+                {
+                    "Name": "/var/cache/debconf/config.dat",
+                    "Size1": 16123,
+                    "Size2": 16114
+                },
+                {
+                    "Name": "/usr/share/fonts/.uuid",
+                    "Size1": 36,
+                    "Size2": 36
+                },
+                {
+                    "Name": "/usr/local/share/fonts/.uuid",
+                    "Size1": 36,
+                    "Size2": 36
+                },
+                {
+                    "Name": "/usr/share/fonts/truetype/dejavu/.uuid",
+                    "Size1": 36,
+                    "Size2": 36
+                },
+                {
+                    "Name": "/usr/share/fonts/truetype/.uuid",
+                    "Size1": 36,
+                    "Size2": 36
+                },
+                {
+                    "Name": "/etc/localtime",
+                    "Size1": 24,
+                    "Size2": 27
+                },
+                {
+                    "Name": "/etc/timezone",
+                    "Size1": 5,
+                    "Size2": 8
+                }
+            ]
+        },
+        "DiffType": "File",
+        "Image1": "docker-test-550a0972bd7d06123f378b1a81febf6e3ddd1bfc:latest",
+        "Image2": "ansible-test-550a0972bd7d06123f378b1a81febf6e3ddd1bfc:latest"
+    }
+]

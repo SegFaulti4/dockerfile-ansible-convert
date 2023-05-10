@@ -1,0 +1,18 @@
+[
+    {
+        "Diff": {
+            "Adds": [],
+            "Dels": [],
+            "Mods": [
+                {
+                    "Name": "/var/lib/apt/lists/security.ubuntu.com_ubuntu_dists_jammy-security_InRelease",
+                    "Size1": 110337,
+                    "Size2": 110337
+                }
+            ]
+        },
+        "DiffType": "File",
+        "Image1": "docker-test-e138024cecc967bb38c14b6e77d95ca2a333855e:latest",
+        "Image2": "ansible-test-e138024cecc967bb38c14b6e77d95ca2a333855e:latest"
+    }
+]

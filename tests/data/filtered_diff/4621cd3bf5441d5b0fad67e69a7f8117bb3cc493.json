@@ -1,0 +1,21 @@
+[
+    {
+        "Diff": {
+            "Adds": [
+                {
+                    "Name": "/var/lib/apt/lists/partial/cran.r-project.org_bin_linux_ubuntu_trusty_Release.FAILED",
+                    "Size": 3068
+                },
+                {
+                    "Name": "/var/lib/apt/lists/partial/cran.r-project.org_bin_linux_ubuntu_trusty_Release.gpg",
+                    "Size": 488
+                }
+            ],
+            "Dels": [],
+            "Mods": []
+        },
+        "DiffType": "File",
+        "Image1": "docker-test-4621cd3bf5441d5b0fad67e69a7f8117bb3cc493:latest",
+        "Image2": "ansible-test-4621cd3bf5441d5b0fad67e69a7f8117bb3cc493:latest"
+    }
+]

@@ -1,0 +1,38 @@
+[
+    {
+        "Diff": {
+            "Adds": [],
+            "Dels": [],
+            "Mods": [
+                {
+                    "Name": "/usr/share/nginx/html/16M",
+                    "Size1": 16777216,
+                    "Size2": 16777216
+                },
+                {
+                    "Name": "/usr/share/nginx/html/1M",
+                    "Size1": 1048576,
+                    "Size2": 1048576
+                },
+                {
+                    "Name": "/usr/share/nginx/html/128K",
+                    "Size1": 131072,
+                    "Size2": 131072
+                },
+                {
+                    "Name": "/var/lib/apt/lists/mirrors.ubuntu.com_mirrors.txt_dists_jammy-updates_InRelease",
+                    "Size1": 118747,
+                    "Size2": 118747
+                },
+                {
+                    "Name": "/var/lib/apt/lists/auxfiles/mirrors.ubuntu.com_mirrors.txt",
+                    "Size1": 311,
+                    "Size2": 311
+                }
+            ]
+        },
+        "DiffType": "File",
+        "Image1": "docker-test-3b54da16c5995c8fedbcbb479dafa8c39e9df03b:latest",
+        "Image2": "ansible-test-3b54da16c5995c8fedbcbb479dafa8c39e9df03b:latest"
+    }
+]

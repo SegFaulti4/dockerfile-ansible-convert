@@ -1,0 +1,18 @@
+[
+    {
+        "Diff": {
+            "Adds": [],
+            "Dels": [],
+            "Mods": [
+                {
+                    "Name": "/run/utmp",
+                    "Size1": 0,
+                    "Size2": 384
+                }
+            ]
+        },
+        "DiffType": "File",
+        "Image1": "docker-test-ea9ae97138e1b98d514323d9eda57d1001fddbd0:latest",
+        "Image2": "ansible-test-ea9ae97138e1b98d514323d9eda57d1001fddbd0:latest"
+    }
+]

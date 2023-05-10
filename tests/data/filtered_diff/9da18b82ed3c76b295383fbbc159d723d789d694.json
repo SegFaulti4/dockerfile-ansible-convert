@@ -1,0 +1,42 @@
+[
+    {
+        "Diff": {
+            "Adds": [
+                {
+                    "Name": "/FindGitHubEmail/.git/ORIG_HEAD",
+                    "Size": 41
+                },
+                {
+                    "Name": "/root/FindGitHubEmail",
+                    "Size": 0
+                }
+            ],
+            "Dels": [],
+            "Mods": [
+                {
+                    "Name": "/FindGitHubEmail/.git/index",
+                    "Size1": 289,
+                    "Size2": 289
+                },
+                {
+                    "Name": "/FindGitHubEmail/.git/logs/refs/remotes/origin/HEAD",
+                    "Size1": 194,
+                    "Size2": 191
+                },
+                {
+                    "Name": "/FindGitHubEmail/.git/logs/refs/heads/master",
+                    "Size1": 194,
+                    "Size2": 191
+                },
+                {
+                    "Name": "/FindGitHubEmail/.git/logs/HEAD",
+                    "Size1": 194,
+                    "Size2": 523
+                }
+            ]
+        },
+        "DiffType": "File",
+        "Image1": "docker-test-9da18b82ed3c76b295383fbbc159d723d789d694:latest",
+        "Image2": "ansible-test-9da18b82ed3c76b295383fbbc159d723d789d694:latest"
+    }
+]

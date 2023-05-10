@@ -1,0 +1,23 @@
+[
+    {
+        "Diff": {
+            "Adds": [],
+            "Dels": [],
+            "Mods": [
+                {
+                    "Name": "/usr/lib/jvm/java-11-openjdk-amd64/lib/server/classes.jsa",
+                    "Size1": 11866112,
+                    "Size2": 11870208
+                },
+                {
+                    "Name": "/etc/ssl/certs/java/cacerts",
+                    "Size1": 143233,
+                    "Size2": 142104
+                }
+            ]
+        },
+        "DiffType": "File",
+        "Image1": "docker-test-6fe9163e236f4e3cfe7db3cf856cd3e39cd0d61c:latest",
+        "Image2": "ansible-test-6fe9163e236f4e3cfe7db3cf856cd3e39cd0d61c:latest"
+    }
+]

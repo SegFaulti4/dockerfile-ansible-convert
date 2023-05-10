@@ -1,0 +1,22 @@
+[
+    {
+        "Diff": {
+            "Adds": [
+                {
+                    "Name": "/var/lib/dpkg/updates/tmp.i",
+                    "Size": 4608
+                }
+            ],
+            "Dels": [
+                {
+                    "Name": "/dummy.deb",
+                    "Size": 0
+                }
+            ],
+            "Mods": []
+        },
+        "DiffType": "File",
+        "Image1": "docker-test-4cebed983bbc18faac957683631d219be722eb77:latest",
+        "Image2": "ansible-test-4cebed983bbc18faac957683631d219be722eb77:latest"
+    }
+]

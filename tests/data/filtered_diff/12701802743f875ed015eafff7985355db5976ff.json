@@ -1,0 +1,23 @@
+[
+    {
+        "Diff": {
+            "Adds": [],
+            "Dels": [],
+            "Mods": [
+                {
+                    "Name": "/etc/passwd",
+                    "Size1": 1331,
+                    "Size2": 1331
+                },
+                {
+                    "Name": "/etc/passwd-",
+                    "Size1": 1319,
+                    "Size2": 1331
+                }
+            ]
+        },
+        "DiffType": "File",
+        "Image1": "docker-test-12701802743f875ed015eafff7985355db5976ff:latest",
+        "Image2": "ansible-test-12701802743f875ed015eafff7985355db5976ff:latest"
+    }
+]

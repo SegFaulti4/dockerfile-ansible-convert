@@ -1,0 +1,38 @@
+[
+    {
+        "Diff": {
+            "Adds": [
+                {
+                    "Name": "/openeyes/.git/ORIG_HEAD",
+                    "Size": 41
+                }
+            ],
+            "Dels": [],
+            "Mods": [
+                {
+                    "Name": "/openeyes/.git/index",
+                    "Size1": 4756,
+                    "Size2": 4756
+                },
+                {
+                    "Name": "/openeyes/.git/logs/refs/remotes/origin/HEAD",
+                    "Size1": 191,
+                    "Size2": 188
+                },
+                {
+                    "Name": "/openeyes/.git/logs/refs/heads/master",
+                    "Size1": 191,
+                    "Size2": 188
+                },
+                {
+                    "Name": "/openeyes/.git/logs/HEAD",
+                    "Size1": 191,
+                    "Size2": 520
+                }
+            ]
+        },
+        "DiffType": "File",
+        "Image1": "docker-test-ea4f18f55af1582e7ae4f44bc559704568b083d2:latest",
+        "Image2": "ansible-test-ea4f18f55af1582e7ae4f44bc559704568b083d2:latest"
+    }
+]

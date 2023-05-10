@@ -1,0 +1,86 @@
+[
+    {
+        "Diff": {
+            "Adds": [
+                {
+                    "Name": "/root/{{ spire_dir_fact }}",
+                    "Size": 0
+                }
+            ],
+            "Dels": [
+                {
+                    "Name": "/opt/spire/.data",
+                    "Size": 0
+                },
+                {
+                    "Name": "/opt/spire/LICENSE",
+                    "Size": 11358
+                },
+                {
+                    "Name": "/opt/spire/README.md",
+                    "Size": 13687
+                },
+                {
+                    "Name": "/opt/spire/conf",
+                    "Size": 7085
+                },
+                {
+                    "Name": "/opt/spire/conf/agent",
+                    "Size": 2347
+                },
+                {
+                    "Name": "/opt/spire/conf/agent/agent.conf",
+                    "Size": 857
+                },
+                {
+                    "Name": "/opt/spire/conf/agent/dummy_root_ca.crt",
+                    "Size": 684
+                },
+                {
+                    "Name": "/opt/spire/conf/agent/ha-postgres.conf",
+                    "Size": 806
+                },
+                {
+                    "Name": "/opt/spire/conf/compose",
+                    "Size": 1053
+                },
+                {
+                    "Name": "/opt/spire/conf/compose/ha-postgres.yml",
+                    "Size": 1053
+                },
+                {
+                    "Name": "/opt/spire/conf/server",
+                    "Size": 3685
+                },
+                {
+                    "Name": "/opt/spire/conf/server/dummy_upstream_ca.crt",
+                    "Size": 684
+                },
+                {
+                    "Name": "/opt/spire/conf/server/dummy_upstream_ca.key",
+                    "Size": 288
+                },
+                {
+                    "Name": "/opt/spire/conf/server/ha-postgres.conf",
+                    "Size": 1378
+                },
+                {
+                    "Name": "/opt/spire/conf/server/server.conf",
+                    "Size": 1335
+                },
+                {
+                    "Name": "/opt/spire/spire-agent",
+                    "Size": 18049669
+                },
+                {
+                    "Name": "/opt/spire/spire-server",
+                    "Size": 44729880
+                }
+            ],
+            "Mods": []
+        },
+        "DiffType": "File",
+        "Image1": "docker-test-50978793e7475b4f1e7e8db893e13c46cb34304f:latest",
+        "Image2": "ansible-test-50978793e7475b4f1e7e8db893e13c46cb34304f:latest"
+    }
+]
