@@ -27,11 +27,20 @@ class _GeneralRuntime:
         self.result_registers_num = 0
 
 
+class _RunRuntime:
+    stat_flag: bool
+
+    def __init__(self):
+        self.stat_flag = False
+
+
 class _Runtime:
     general: _GeneralRuntime
+    run: _RunRuntime
 
     def __init__(self):
         self.general = _GeneralRuntime()
+        self.run = _RunRuntime()
 
 
 class RoleGenerator:
@@ -40,6 +49,7 @@ class RoleGenerator:
     default_workdir: str
 
     stats: Optional[RoleGeneratorStatistics]
+    run_stats: Optional[RunStatistics]
     matcher_tests: Optional[List[str]]
 
     # stat flags
@@ -60,6 +70,7 @@ class RoleGenerator:
         self.default_workdir = default_workdir
 
         self.stats = None
+        self.run_stats = None
         self.matcher_tests = None
 
     def generate(self) -> List[Dict[str, Any]]:
@@ -86,6 +97,7 @@ class RoleGenerator:
         }
 
         self.stats = RoleGeneratorStatistics()
+        self.run_stats = RunStatistics()
         self.matcher_tests = list()
         self._runtime = _Runtime()
         # setting up global_user also sets `HOME` global env
@@ -172,6 +184,7 @@ class RoleGenerator:
 
         parts: List[Union[List[Dict], ShellOperatorObject]] = []
         for obj in directive.script.parts:
+            self._runtime.run.stat_flag = self.collect_stats
             parts.append(handle_run_map[type(obj)](obj=obj))
 
         self._handle_run_parts(parts)
@@ -654,6 +667,14 @@ class RoleGenerator:
         self._context.clear_local_context()
 
     def _handle_run_command_raw(self, obj: ShellRawObject) -> List[Dict]:
+        if self._runtime.run.stat_flag:
+            self._runtime.run.stat_flag = False
+            self.run_stats.name.append("raw")
+            self.run_stats.supported.append(False)
+            self.run_stats.coverage.append(0.0)
+            self.run_stats.length.append(len(obj.value))
+            self.run_stats.stat_id.append(self.stat_id)
+
         task = self._create_shell_task(obj.value)
         task = self._prepare_task(task, user=self._context.get_user(), environment=self._context.get_environment(),
                                   variables=self._context.workdir_local_vars)
@@ -670,6 +691,14 @@ class RoleGenerator:
         # return [] if task is None else [task]
 
     def _handle_run_command(self, obj: ShellCommandObject) -> List[Dict]:
+        if self._runtime.run.stat_flag:
+            self._runtime.run.stat_flag = False
+            self.run_stats.name.append("command")
+            self.run_stats.supported.append(True)
+            self.run_stats.coverage.append(1.0)
+            self.run_stats.length.append(len(obj.line))
+            self.run_stats.stat_id.append(self.stat_id)
+
         resolved = self._context.resolve_shell_command(obj)
 
         if resolved is None:
@@ -712,6 +741,14 @@ class RoleGenerator:
         return handle_map[comm_name](extracted_call, local_vars, line, obj)
 
     def _handle_run_assignment(self, obj: ShellAssignmentObject) -> List[Dict]:
+        if self._runtime.run.stat_flag:
+            self._runtime.run.stat_flag = False
+            self.run_stats.name.append("assignment")
+            self.run_stats.supported.append(True)
+            self.run_stats.coverage.append(1.0)
+            self.run_stats.length.append(len(obj.name) + 1 + len(obj.value.line))
+            self.run_stats.stat_id.append(self.stat_id)
+
         # local vars are always added regardless of nearby shell operators
         #
         # self._shell_expr_values is not used
@@ -730,16 +767,37 @@ class RoleGenerator:
             self._context.add_local_env(name=obj.name, value=value)
             return []
 
-    @staticmethod
-    def _handle_run_operator_or(obj: ShellOperatorOrObject) -> ShellOperatorObject:
+    def _handle_run_operator_or(self, obj: ShellOperatorOrObject) -> ShellOperatorObject:
+        if self._runtime.run.stat_flag:
+            self._runtime.run.stat_flag = False
+            self.run_stats.name.append("operator or")
+            self.run_stats.supported.append(True)
+            self.run_stats.coverage.append(1.0)
+            self.run_stats.length.append(4)
+            self.run_stats.stat_id.append(self.stat_id)
+
         return obj
 
-    @staticmethod
-    def _handle_run_operator_and(obj: ShellOperatorAndObject) -> ShellOperatorObject:
+    def _handle_run_operator_and(self, obj: ShellOperatorAndObject) -> ShellOperatorObject:
+        if self._runtime.run.stat_flag:
+            self._runtime.run.stat_flag = False
+            self.run_stats.name.append("operator and")
+            self.run_stats.supported.append(True)
+            self.run_stats.coverage.append(1.0)
+            self.run_stats.length.append(4)
+            self.run_stats.stat_id.append(self.stat_id)
+
         return obj
 
-    @staticmethod
-    def _handle_run_operator_end(obj: ShellOperatorEndObject) -> ShellOperatorObject:
+    def _handle_run_operator_end(self, obj: ShellOperatorEndObject) -> ShellOperatorObject:
+        if self._runtime.run.stat_flag:
+            self._runtime.run.stat_flag = False
+            self.run_stats.name.append("command separator")
+            self.run_stats.supported.append(True)
+            self.run_stats.coverage.append(1.0)
+            self.run_stats.length.append(3)
+            self.run_stats.stat_id.append(self.stat_id)
+
         return obj
 
     def _handle_run_parts(self, parts: List[Union[List[Dict], ShellOperatorObject]]) -> None:

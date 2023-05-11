@@ -11,6 +11,15 @@ class RoleGeneratorStatistics:
     stat_id: List[int] = field(default_factory=list)
 
 
+@dataclass
+class RunStatistics:
+    name: List[str] = field(default_factory=list)
+    supported: List[bool] = field(default_factory=list)
+    coverage: List[float] = field(default_factory=list)
+    length: List[int] = field(default_factory=list)
+    stat_id: List[int] = field(default_factory=list)
+
+
 def unsupported_directive(func):
     def new_func(*args, **kwargs):
         res = func(*args, **kwargs)

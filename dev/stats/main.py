@@ -13,7 +13,8 @@ from src.shell.bashlex.main import *
 from dev.utils.data_utils import *
 
 
-def tabulize_stats(stats: Union[RoleGeneratorStatistics, TaskMatcherStatistics], cut_name: bool = False):
+def tabulize_stats(stats: Union[RoleGeneratorStatistics, TaskMatcherStatistics, RunStatistics],
+                   cut_name: bool = False):
     name_supp_coverages = defaultdict(list)
     name_supp_lengths = defaultdict(list)
     name_supp_stat_ids = defaultdict(list)
@@ -23,7 +24,7 @@ def tabulize_stats(stats: Union[RoleGeneratorStatistics, TaskMatcherStatistics],
         name_supp_lengths[(n, s)].append(l)
         name_supp_stat_ids[(n, s)].append(stat_id)
 
-    headers = ["name", "supported", "usages", "occurrences", "use_coverage", "text_coverage"]
+    headers = ["name", "supported", "usages", "occurrences", "use_coverage", "text_coverage", "text_len_sum"]
     table = []
 
     for n, s in name_supp_coverages:
@@ -41,23 +42,31 @@ def tabulize_stats(stats: Union[RoleGeneratorStatistics, TaskMatcherStatistics],
             return st if len(st) < max_len else st[:max_len] + "..."
 
         name = cut(n) if cut_name else n
-        table.append([name, s, usages, occurrences, f"{use_coverage * 100}%", f"{text_coverage * 100}%"])
+        table.append([name, s, usages, occurrences, f"{use_coverage * 100}%", f"{text_coverage * 100}%", sum(lengths)])
 
     table.sort(key=lambda x: x[2], reverse=True)
     return [headers] + table
 
 
-def extract_coverage_distribution(stats: TaskMatcherStatistics) -> List[float]:
+def extract_coverage_distribution(stats: TaskMatcherStatistics, stat_names: Dict[int, str]):
     stat_id_cases = defaultdict(int)
     stat_id_coverage = defaultdict(float)
+    stat_ids = []
     for cov, stat_id in zip(stats.coverage, stats.stat_id):
+        stat_ids.append(stat_id)
         stat_id_cases[stat_id] += 1
         stat_id_coverage[stat_id] += cov
-    res = []
-    for stat_id in stat_id_cases:
+    stat_ids = list(set(stat_ids))
+    stat_ids.sort()
+
+    header = ["coverage", "filename"]
+    table = []
+    for stat_id in stat_ids:
+        filename = stat_names[stat_id]
         cases, coverage = stat_id_cases[stat_id], stat_id_coverage[stat_id]
-        res.append(coverage / cases)
-    return res
+        table.append([coverage / cases, filename])
+
+    return [header] + table
 
 
 def print_containerfile_stats(generator_stats: RoleGeneratorStatistics, matcher_stats: TaskMatcherStatistics):
@@ -75,7 +84,7 @@ def print_task_matcher_stats(matcher_stats: TaskMatcherStatistics):
 
 
 def save_containerfile_stats(generator_stats: RoleGeneratorStatistics, matcher_stats: TaskMatcherStatistics,
-                             stats_dir: str):
+                             run_stats: RunStatistics, stat_names: Dict[int, str], stats_dir: str):
     matched_dir = os.path.join(stats_dir, "supported_commands/matched")
     unmatched_dir = os.path.join(stats_dir, "supported_commands/unmatched")
 
@@ -85,14 +94,17 @@ def save_containerfile_stats(generator_stats: RoleGeneratorStatistics, matcher_s
 
     generator_table = tabulize_stats(generator_stats)
     matcher_table = tabulize_stats(matcher_stats)
-    coverage_distribution = extract_coverage_distribution(matcher_stats)
+    run_table = tabulize_stats(run_stats)
+    coverage_distribution_table = extract_coverage_distribution(matcher_stats, stat_names)
 
     with open(os.path.join(stats_dir, "role_generator.csv"), "w", encoding='UTF8', newline='') as outF:
         csv.writer(outF).writerows(generator_table)
     with open(os.path.join(stats_dir, "task_matcher.csv"), "w", encoding='UTF8', newline='') as outF:
         csv.writer(outF).writerows(matcher_table)
     with open(os.path.join(stats_dir, "coverage.csv"), "w", encoding='UTF8', newline='') as outF:
-        csv.writer(outF).writerows([[d] for d in coverage_distribution])
+        csv.writer(outF).writerows(coverage_distribution_table)
+    with open(os.path.join(stats_dir, "run_directive.csv"), "w", encoding='UTF8', newline='') as outF:
+        csv.writer(outF).writerows(run_table)
 
     supported_matched = defaultdict(list)
     supported_unmatched = defaultdict(list)
@@ -114,13 +126,17 @@ def save_containerfile_stats(generator_stats: RoleGeneratorStatistics, matcher_s
 
 
 def collect_containerfile_stats(files_dir: str, dockerfile_parser: DockerfileParser, task_matcher: TaskMatcher)\
-        -> Tuple[RoleGeneratorStatistics, TaskMatcherStatistics]:
+        -> Tuple[RoleGeneratorStatistics, TaskMatcherStatistics, RunStatistics, Dict[int, str]]:
     task_matcher.collect_stats = True
     generator_stats = RoleGeneratorStatistics()
+    run_stats = RunStatistics()
     filenames = filenames_from_dir(files_dir)
+    filenames.sort()
 
+    stat_names = dict()
     for stat_id, name in enumerate(tqdm(filenames, desc="Collecting stats")):
         path = os.path.join(files_dir, name)
+        stat_names[stat_id] = name
         try:
             with open(path.strip(), "r") as df:
                 source = "".join(df.readlines())
@@ -130,17 +146,23 @@ def collect_containerfile_stats(files_dir: str, dockerfile_parser: DockerfilePar
             task_matcher.stat_id, generator.collect_stats, generator.stat_id = stat_id, True, stat_id
             generator.generate()
 
-            generator_stats.name.extend(generator.stats.name)
-            generator_stats.supported.extend(generator.stats.supported)
-            generator_stats.coverage.extend(generator.stats.coverage)
-            generator_stats.length.extend(generator.stats.length)
-            generator_stats.stat_id.extend(generator.stats.stat_id)
+            def extend_stats(stats: Union[RoleGeneratorStatistics, RunStatistics],
+                             local_stats: Union[RoleGeneratorStatistics, RunStatistics]):
+                stats.name.extend(local_stats.name)
+                stats.supported.extend(local_stats.supported)
+                stats.coverage.extend(local_stats.coverage)
+                stats.length.extend(local_stats.length)
+                stats.stat_id.extend(local_stats.stat_id)
+                return stats
+
+            generator_stats = extend_stats(generator_stats, generator.stats)
+            run_stats = extend_stats(run_stats, generator.run_stats)
 
         except Exception as exc:
             globalLog.error(type(exc), exc)
 
     matcher_stats = task_matcher.stats
-    return generator_stats, matcher_stats
+    return generator_stats, matcher_stats, run_stats, stat_names
 
 
 def collect_task_matcher_stats(shell_parser: ShellParser, task_matcher: TaskMatcher,
@@ -173,8 +195,9 @@ def collect_and_save_containerfile_stats(files_dir: str, stats_dir: str):
     dockerfile_parser = TPDockerfileParser(shell_parser=shell_parser)
     task_matcher = TaskMatcher()
 
-    generator_stats, matcher_stats = collect_containerfile_stats(files_dir, dockerfile_parser, task_matcher)
-    save_containerfile_stats(generator_stats, matcher_stats, stats_dir)
+    generator_stats, matcher_stats, run_stats, stat_names = \
+        collect_containerfile_stats(files_dir, dockerfile_parser, task_matcher)
+    save_containerfile_stats(generator_stats, matcher_stats, run_stats, stat_names, stats_dir)
 
 
 def main():
@@ -186,8 +209,13 @@ def main():
     # commands_file = UBUNTU_MATCHER_TESTS_FILTERED_FILE
     # collect_and_print_task_matcher_stats(commands_file)
 
+    # files_dir = UBUNTU_FILES_DIR
+    # stats_dir = UBUNTU_STATS_DIR
     files_dir = UBUNTU_FILES_FILTERED_DIR
     stats_dir = os.path.join(UBUNTU_DATA_DIR, "stats_filtered")
+    # files_dir = os.path.join(UBUNTU_DATA_DIR, "fully_covered_files")
+    # stats_dir = os.path.join(UBUNTU_DATA_DIR, "fully_covered_stats")
+
     collect_and_save_containerfile_stats(files_dir, stats_dir)
 
 
