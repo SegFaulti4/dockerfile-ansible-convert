@@ -36,23 +36,25 @@
         "examples": {
             "ln -s <<globs : m>> <<dest : p>>": [
                 {
-                    "ansible.builtin.shell": {
-                        "cmd": "realpath -sm {{ files }}",
-                        "chdir": "<<cwd>>"
-                    },
-                    "vars": {
-                        "files": "<<globs>>"
-                    },
-                    "changed_when": false,
-                    "register": "ls_reg"
-                },
-                {
                     "ansible.builtin.stat": {
                         "path": "<<dest>>",
                         "follow": false
                     },
                     "changed_when": false,
                     "register": "st_reg"
+                },
+                {
+                    "ansible.builtin.shell": {
+                        "cmd": "realpath -sm {{ files }}",
+                        "chdir": "{{ dest if dest_is_dir else (dest | dirname) }}"
+                    },
+                    "vars": {
+                        "files": "<<globs>>",
+                        "dest": "<<dest>>",
+                        "dest_is_dir": "{{ (st_reg.stat.isdir is defined and st_reg.stat.isdir) | ternary(true, false) }}"
+                    },
+                    "changed_when": false,
+                    "register": "ls_reg"
                 },
                 {
                     "ansible.builtin.fail": {
@@ -67,6 +69,7 @@
                     "ansible.builtin.file": {
                         "state": "link",
                         "force": true,
+			            "follow": false,
                         "src": "{{ item }}",
                         "path": "{{ ((dest, item | basename) | path_join) if dest_is_dir else dest }}"
                     },
@@ -82,6 +85,7 @@
                     "ansible.builtin.file": {
                         "state": "link",
                         "force": true,
+			            "follow": false,
                         "src": "{{ src }}",
                         "path": "{{ (cwd, src | basename) | path_join }}"
                     },

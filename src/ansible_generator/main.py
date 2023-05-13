@@ -219,7 +219,7 @@ class RoleGenerator:
 
             if gid is None:
                 tasks.append({
-                    "group": {
+                    "ansible.builtin.group": {
                         "state": "present",
                         "name": group
                     },
@@ -227,7 +227,7 @@ class RoleGenerator:
                 })
             else:
                 tasks.append({
-                    "group": {
+                    "ansible.builtin.group": {
                         "state": "present",
                         "name": group,
                         "gid": gid
@@ -243,22 +243,24 @@ class RoleGenerator:
 
         if uid is None:
             tasks.append({
-                "user": {
+                "ansible.builtin.user": {
                     "name": name,
                     "group": group if group else "root",
                     "state": "present",
-                    "create_home": False
+                    "create_home": False,
+                    "shell": "/bin/bash"
                 },
                 "become": True
             })
         else:
             tasks.append({
-                "user": {
+                "ansible.builtin.user": {
                     "name": name,
                     "group": group if group else "root",
                     "uid": uid,
                     "state": "present",
-                    "create_home": False
+                    "create_home": False,
+                    "shell": "/bin/bash"
                 },
                 "become": True
             })
@@ -272,7 +274,7 @@ class RoleGenerator:
         path = self._shell_expr_values([directive.path], strict=False)[0]
         if path != "/":
             mkdir_task = self._create_mkdir_task(path)
-            self._add_task(mkdir_task, user=self._context.get_user())
+            self._add_task(mkdir_task, user="root")
         self._context.set_global_workdir(path)
 
     @supported_directive
@@ -387,12 +389,11 @@ class RoleGenerator:
     # WORKDIR DIRECTIVE METHODS #
     #############################
 
-    @staticmethod
-    def _create_mkdir_task(path: str) -> Dict:
+    def _create_mkdir_task(self, path: str) -> Dict:
         task = {
-            "file": {
+            "ansible.builtin.file": {
                 "state": "directory",
-                "path": path
+                "path": self._context.path_str_wrapper(path)
             }
         }
         return task
@@ -642,7 +643,8 @@ class RoleGenerator:
     def _create_shell_task(self, line: str) -> Dict[str, Any]:
         task = {
             "shell": {
-                "cmd": line
+                "cmd": line,
+                "executable": "/bin/bash"
             }
         }
         wd = self._context.get_workdir()

@@ -5,9 +5,10 @@ import os.path
 
 from tests.utils.data_utils import *
 
-
 diff_dir = "/home/popovms/course/tests/data/log/"
 diff_glob = os.path.join(diff_dir, "diff-docker-test-*.json")
+# diff_dir = "/home/popovms/course/tests/data/filtered_diff_backup"
+# diff_glob = os.path.join(diff_dir, "*.json")
 diff_files = list(glob.glob(diff_glob))
 diff_files.sort()
 
@@ -32,12 +33,33 @@ file_prefix_blacklist = [
     '/var/log/apt',
     '/var/log/lastlog',
     '/var/log/wtmp',
-    '/var/cache/ldconfig/aux-cache',  # this one is pretty suspicious
+    '/var/cache/ldconfig/aux-cache',  # (this one is pretty suspicious) actually it is not even changed between images
     '/var/log/apt/eipp.log.xz',
-    '/var/lib/apt/extended_states',  # this one is somewhat suspicious
-    '/var/lib/dpkg/status',  # this one is somewhat suspicious
+    '/var/lib/apt/extended_states',  # (this one is somewhat suspicious) probably because of apt instead of apt-get
+    '/var/lib/dpkg/status',  # (this one is somewhat suspicious) same
     '/run/sshd.pid',
     '/var/log/alternatives.log',
+    # anything with .ansible
+
+    # temporarily ignored
+    '/root/.wget-hsts',
+    '/etc/passwd',
+    '/etc/passwd-',
+    '/etc/shadow',
+    '/var/cache/debconf/config.dat',
+    '/etc/localtime',
+    '/etc/timezone'
+]
+file_prefix_same_size_mod_blacklist = [
+    '/var/lib/apt-cacher-ng/backends_ubuntu.default',
+    '/root/miniconda3/lib/python3.6/__pycache__',
+    '/var/lib/mysql/',
+    '/etc/mysql/debian.cnf',
+    '/var/lib/apt/lists/archive.ubuntu.com_ubuntu_dists_jammy',
+    '/var/lib/apt/lists/security.ubuntu.com_ubuntu_dists_jammy',
+    '/var/lib/apt/lists/mirrors.ubuntu.com_mirrors.txt_dists_jammy',
+    '/usr/local/lib/python3.10/dist-packages',
+    '/var/www/wailer/venv/lib/python3.9/site-packages/ansible_collections'
 ]
 
 add_counts = dict()
@@ -68,6 +90,21 @@ def save_filtered_diffs():
         res = [d for d in diff_list if not any(d["Name"].startswith(prefix) for prefix in file_prefix_blacklist)]
         return res
 
+    def filter_ansible_files(diff_list):
+        if diff_list is None:
+            return []
+
+        res = [d for d in diff_list if '.ansible' not in d["Name"]]
+        return res
+
+    def filter_same_size_mods(mods):
+        if mods is None:
+            return []
+
+        res = [d for d in mods if d["Size1"] != d["Size2"] or
+               not any(d["Name"].startswith(prefix) for prefix in file_prefix_same_size_mod_blacklist)]
+        return res
+
     for diff_file in diff_files:
         with open(diff_file, "r") as inF:
             diff_arr = json.load(inF)
@@ -79,9 +116,17 @@ def save_filtered_diffs():
             diff["Diff"]["Dels"] = filter_diff(diff["Diff"]["Dels"])
             diff["Diff"]["Mods"] = filter_diff(diff["Diff"]["Mods"])
 
+            diff["Diff"]["Adds"] = filter_ansible_files(diff["Diff"]["Adds"])
+            diff["Diff"]["Dels"] = filter_ansible_files(diff["Diff"]["Dels"])
+            diff["Diff"]["Mods"] = filter_ansible_files(diff["Diff"]["Mods"])
+
+            diff["Diff"]["Mods"] = filter_same_size_mods(diff["Diff"]["Mods"])
+
         if all(not diff["Diff"]["Adds"] and not diff["Diff"]["Dels"] and not diff["Diff"]["Mods"]
                for diff in diff_arr):
             continue
+        else:
+            print()
 
         with open(os.path.join(filtered_diff_dir, out_filename), "w") as outF:
             json.dump(diff_arr, outF, indent=4, sort_keys=True)
@@ -90,7 +135,7 @@ def save_filtered_diffs():
 def collect_filtered_adm_names_counts():
     global diff_files
     diff_files = [os.path.join(filtered_diff_dir, f) for f in os.listdir(filtered_diff_dir)
-                       if os.path.isfile(os.path.join(filtered_diff_dir, f))]
+                  if os.path.isfile(os.path.join(filtered_diff_dir, f))]
     diff_files.sort()
     collect_adm_names_counts()
 
@@ -188,8 +233,8 @@ def print_adm_uniques():
     print(*add_uniques, sep='\n')
     print(f"delete uniques: {len(delete_uniques)}")
     print(*delete_uniques, sep='\n')
-    print(f"add uniques: {len(add_uniques)}")
-    print(*add_uniques, sep='\n')
+    print(f"mod uniques: {len(mod_uniques)}")
+    print(*mod_uniques, sep='\n')
     print(f"all uniques: {len(all_uniques)}")
     print(*all_uniques, sep='\n')
 
@@ -209,8 +254,8 @@ if __name__ == "__main__":
 
     # collect_adm_names_counts(), delete_adm_blacklist_files()
 
-    # collect_adm_singles(), print_adm_singles()
-    collect_adm_uniques(), print_adm_uniques()
-    # print_adm()
+    collect_adm_singles(), print_adm_singles()
+    # collect_adm_uniques(), print_adm_uniques()
+    print_adm()
 
     print()

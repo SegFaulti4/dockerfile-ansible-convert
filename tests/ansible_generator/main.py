@@ -161,7 +161,7 @@ def collect_test_images_worker(args: Tuple[List[str], int, bool]):
 
 
 def collect_test_images(containerfile_names: List[str], n_proc: int):
-    echo = False
+    echo = True
     collect_test_images_worker((containerfile_names, 0, echo))
 
     # may return parallel execution in the future
@@ -223,7 +223,8 @@ def main():
             diff_images_worker(docker_image, ansible_image, echo=True)
             time.sleep(1)
 
-    diff()
+    collect()
+    # diff()
 
 
 if __name__ == "__main__":

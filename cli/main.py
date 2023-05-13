@@ -66,6 +66,7 @@ def generate(containerfile_path: str, output=sys.stdout) -> None:
             "hosts": "all",
             "remote_user": "root",
             "become_method": "su",
+            "become_flags": "--preserve-environment",
             "tasks": tasks
         }
     ]

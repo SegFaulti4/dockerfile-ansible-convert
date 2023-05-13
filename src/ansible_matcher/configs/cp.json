@@ -101,8 +101,9 @@
                     "name": "Handle 'cp' single source",
                     "when": "src_paths.stdout_lines | length == 1",
                     "vars": {
+                        "raw_dest": "<<dest>>",
                         "source": "{{ src_paths.stdout_lines[0] }}",
-                        "destination": "{{ '<<dest>>' | regex_replace('/$') }}"
+                        "destination": "{{ raw_dest | regex_replace('/$') }}"
                     },
                     "block": [
                         {
@@ -132,7 +133,7 @@
                                         "src": "{{ source }}/",
                                         "dest": "{{ destination }}",
                                         "remote_src": true,
-                                        "force": false
+                                        "force": true
                                     }
                                 }
                             ]
@@ -144,7 +145,7 @@
                                 "src": "{{ source }}",
                                 "dest": "{{ destination }}",
                                 "remote_src": true,
-                                "force": false
+                                "force": true
                             }
                         }
                     ]
@@ -153,25 +154,22 @@
                     "name": "Handle 'cp' multiple sources",
                     "when": "src_paths.stdout_lines | length > 1",
                     "vars": {
+                        "raw_dest": "<<dest>>",
                         "sources": "{{ src_paths.stdout_lines }}",
-                        "destination": "{{ '<<dest>>' | regex_replace('/$') }}"
+                        "destination": "{{ raw_dest | regex_replace('/$') }}"
                     },
                     "loop": "{{ sources }}",
                     "copy": {
                         "src": "{{ item }}",
                         "dest": "{{ destination }}",
                         "remote_src": true,
-                        "force": false
+                        "force": true
                     }
                 }
             ]
         },
         "opts_postprocess": {
-            "--force": {
-                "ansible.builtin.copy": {
-                    "force": true
-                }
-            },
+            "--force": {},
             "--verbose": {},
             "-r": {},
             "--backup": {
