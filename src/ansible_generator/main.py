@@ -217,23 +217,15 @@ class RoleGenerator:
             else:
                 gid = None
 
-            if gid is None:
-                tasks.append({
-                    "ansible.builtin.group": {
-                        "state": "present",
-                        "name": group
-                    },
-                    "become": True
-                })
-            else:
-                tasks.append({
-                    "ansible.builtin.group": {
-                        "state": "present",
-                        "name": group,
-                        "gid": gid
-                    },
-                    "become": True
-                })
+            tasks.append({
+                "ansible.builtin.group": {
+                    "state": "present",
+                    "name": group
+                },
+                "become": True
+            })
+            if gid is not None:
+                tasks[-1]["ansible.builtin.group"]["gid"] = gid
 
         if name.isnumeric():
             uid = int(name)
@@ -241,29 +233,19 @@ class RoleGenerator:
         else:
             uid = None
 
-        if uid is None:
-            tasks.append({
-                "ansible.builtin.user": {
-                    "name": name,
-                    "group": group if group else "root",
-                    "state": "present",
-                    "create_home": False,
-                    "shell": "/bin/bash"
-                },
-                "become": True
-            })
-        else:
-            tasks.append({
-                "ansible.builtin.user": {
-                    "name": name,
-                    "group": group if group else "root",
-                    "uid": uid,
-                    "state": "present",
-                    "create_home": False,
-                    "shell": "/bin/bash"
-                },
-                "become": True
-            })
+        tasks.append({
+            "ansible.builtin.user": {
+                "name": name,
+                "state": "present",
+                "create_home": False,
+                "shell": "/bin/bash"
+            },
+            "become": True
+        })
+        if uid is not None:
+            tasks[-1]["ansible.builtin.user"]["uid"] = uid
+        if group:
+            tasks[-1]["ansible.builtin.user"]["group"] = group
 
         for task in tasks:
             self._add_task(task)
@@ -393,7 +375,7 @@ class RoleGenerator:
         task = {
             "ansible.builtin.file": {
                 "state": "directory",
-                "path": self._context.path_str_wrapper(path)
+                "path": path if path.startswith("~") else self._context.path_str_wrapper(path)
             }
         }
         return task

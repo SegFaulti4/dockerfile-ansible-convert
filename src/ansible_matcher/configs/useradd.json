@@ -118,19 +118,10 @@
                         "create_home": false
                     }
                 }
-            ],
-            "useradd --user-group <<group>> <<name>>": [
-                {
-                    "ansible.builtin.user": {
-                        "state": "present",
-                        "name": "<<name>>",
-                        "group": "<<group>>",
-                        "create_home": false
-                    }
-                }
             ]
         },
         "opts_postprocess": {
+            "--user-group": {},
             "--base-dir <<dir : p>>": {
                 "ansible.builtin.user": {
                     "home": "{{ ('<<dir>>', username) | path_join }}"
@@ -158,7 +149,8 @@
             },
             "--groups <<groups>>": {
                 "ansible.builtin.user": {
-                    "groups": "<<groups>>"
+                    "groups": "<<groups>>",
+                    "append": true
                 }
             },
             "--skel <<dir : p>>": {
@@ -189,6 +181,9 @@
             "--uid <<uid>>": {
                 "ansible.builtin.user": {
                     "uid": "<<uid>>"
+                },
+                "ansible.builtin.group": {
+                    "gid": "<<uid>>"
                 }
             },
             "--password <<password>>": {
