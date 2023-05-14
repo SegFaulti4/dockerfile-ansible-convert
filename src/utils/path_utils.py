@@ -5,7 +5,7 @@ from typing import Optional
 from src.log import globalLog
 
 
-def path_str_wrapper(path: str, cwd: str, usr: Optional[str]) -> str:
+def path_str_wrapper(path: str, cwd: str, usr: Optional[str], ignore_tilde: bool = False) -> str:
 
     def custom_strip(s: str, c: str) -> str:
         return s.strip(c) if s.startswith(c) and s.endswith(c) else s
@@ -21,7 +21,7 @@ def path_str_wrapper(path: str, cwd: str, usr: Optional[str]) -> str:
 
     if path.startswith("/"):
         return path
-    if path.startswith("~"):
+    if path.startswith("~") and not ignore_tilde:
         if usr is None:
             globalLog.info(f"Could not change path string - {path}, usr is None")
             return path

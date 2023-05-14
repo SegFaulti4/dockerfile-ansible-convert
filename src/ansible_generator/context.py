@@ -161,9 +161,9 @@ class AnsiblePlayContext:
         self.local_env[self.WORKDIR_KEY] = value
         self.old_workdir_local_vars = new_local_vars
 
-    def set_global_workdir(self, path: str) -> None:
+    def set_global_workdir(self, path: str, ignore_tilde: bool = False) -> None:
         self.set_global_old_workdir(self.get_global_workdir())
-        self.global_env[self.WORKDIR_KEY] = self.path_str_wrapper(path)
+        self.global_env[self.WORKDIR_KEY] = self.path_str_wrapper(path, ignore_tilde=ignore_tilde)
 
     def set_local_workdir(self, path: str, local_vars: Optional[Dict[str, str]]) -> None:
         new_local_vars = dict() if local_vars is None else deepcopy(local_vars)
@@ -227,7 +227,7 @@ class AnsiblePlayContext:
             return None
         return rendered
 
-    def path_str_wrapper(self, path: str, override_user: str = None) -> str:
+    def path_str_wrapper(self, path: str, override_user: str = None, ignore_tilde: bool = False) -> str:
         if override_user is None:
             usr = self.get_user()
         else:
@@ -238,7 +238,7 @@ class AnsiblePlayContext:
         else:
             cwd = self.get_workdir()
 
-        return path_utils.path_str_wrapper(path, cwd=cwd, usr=usr)
+        return path_utils.path_str_wrapper(path, cwd=cwd, usr=usr, ignore_tilde=ignore_tilde)
 
     @staticmethod
     def _local_var_name_wrapper(name: str) -> str:

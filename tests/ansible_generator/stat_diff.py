@@ -2,11 +2,12 @@ import glob
 import json
 import os
 import os.path
+from tqdm import tqdm
 
 from tests.utils.data_utils import *
 
-diff_dir = "/home/popovms/course/tests/data/log/"
-diff_glob = os.path.join(diff_dir, "diff-docker-test-*.json")
+diff_dir = "/home/popovms/course/tests/data/diff/"
+diff_glob = os.path.join(diff_dir, "*.json")
 # diff_dir = "/home/popovms/course/tests/data/filtered_diff_backup"
 # diff_glob = os.path.join(diff_dir, "*.json")
 diff_files = list(glob.glob(diff_glob))
@@ -42,13 +43,13 @@ file_prefix_blacklist = [
     # anything with .ansible
 
     # temporarily ignored
-    '/root/.wget-hsts',
-    '/etc/passwd',
-    '/etc/passwd-',
-    '/etc/shadow',
-    '/var/cache/debconf/config.dat',
-    '/etc/localtime',
-    '/etc/timezone'
+    #'/root/.wget-hsts',
+    #'/etc/passwd',
+    #'/etc/passwd-',
+    #'/etc/shadow',
+    #'/var/cache/debconf/config.dat',
+    #'/etc/localtime',
+    #'/etc/timezone'
 ]
 file_prefix_same_size_mod_blacklist = [
     '/var/lib/apt-cacher-ng/backends_ubuntu.default',
@@ -105,7 +106,7 @@ def save_filtered_diffs():
                not any(d["Name"].startswith(prefix) for prefix in file_prefix_same_size_mod_blacklist)]
         return res
 
-    for diff_file in diff_files:
+    for diff_file in tqdm(diff_files):
         with open(diff_file, "r") as inF:
             diff_arr = json.load(inF)
 
@@ -249,13 +250,13 @@ def print_adm():
 
 
 if __name__ == "__main__":
-    # save_filtered_diffs()
-    collect_filtered_adm_names_counts()
+    save_filtered_diffs()
+    # collect_filtered_adm_names_counts()
 
     # collect_adm_names_counts(), delete_adm_blacklist_files()
 
-    collect_adm_singles(), print_adm_singles()
+    # collect_adm_singles(), print_adm_singles()
     # collect_adm_uniques(), print_adm_uniques()
-    print_adm()
+    # print_adm()
 
     print()

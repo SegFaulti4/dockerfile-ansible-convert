@@ -183,8 +183,10 @@ def rm_image(image: Optional[str], echo: bool):
     flag_print(f"RMing {image} - stderr - {rm_res.stderr}", echo=echo)
 
 
-def diff_images_worker(image1: Optional[str], image2: Optional[str], echo: bool = True):
-    log_path = os.path.join(LOG_DIR, f"diff-{image1}.json")
+def diff_images_worker(image_hash: str, echo: bool = True):
+    log_path = os.path.join(DIFF_DIR, f"{image_hash}.json")
+    image1 = "docker-test-" + image_hash
+    image2 = "ansible-test-" + image_hash
 
     if image1 is None or image2 is None:
         with open(log_path, "w") as outF:
@@ -214,17 +216,16 @@ def main():
         collect_test_images(filenames, 1)
 
     def diff():
-        with open(GENERATOR_TEST_IMAGES_FILE, "r") as inF:
+        setup_dir(DIFF_DIR)
+        with open(DIFF_IMAGES_FILE, "r") as inF:
             image_hashes = [line.strip() for line in inF.readlines()]
 
         for image_hash in tqdm(image_hashes, desc="Collecting diff"):
-            docker_image = "docker-test-" + image_hash
-            ansible_image = "ansible-test-" + image_hash
-            diff_images_worker(docker_image, ansible_image, echo=True)
+            diff_images_worker(image_hash, echo=True)
             time.sleep(1)
 
-    collect()
-    # diff()
+    # collect()
+    diff()
 
 
 if __name__ == "__main__":

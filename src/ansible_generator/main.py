@@ -237,8 +237,7 @@ class RoleGenerator:
             "ansible.builtin.user": {
                 "name": name,
                 "state": "present",
-                "create_home": False,
-                "shell": "/bin/bash"
+                "create_home": False
             },
             "become": True
         })
@@ -257,7 +256,7 @@ class RoleGenerator:
         if path != "/":
             mkdir_task = self._create_mkdir_task(path)
             self._add_task(mkdir_task, user="root")
-        self._context.set_global_workdir(path)
+        self._context.set_global_workdir(path, ignore_tilde=True)
 
     @supported_directive
     def _handle_add(self, directive: AddDirective) -> None:

@@ -10,7 +10,8 @@ TMP_DIR = os.path.join(DATA_DIR, "tmp")
 
 GENERATOR_TESTS_DIR = os.path.join(DATA_DIR, "generator_tests")
 PATCHED_GENERATOR_TESTS_DIR = os.path.join(DATA_DIR, "patched_generator_tests")
-GENERATOR_TEST_IMAGES_FILE = os.path.join(DATA_DIR, "generator_test_images.txt")
+DIFF_IMAGES_FILE = os.path.join(DATA_DIR, "diff_images.txt")
+DIFF_DIR = os.path.join(DATA_DIR, "diff")
 
 
 def copy_file(src: str, dst: str) -> None:
