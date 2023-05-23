@@ -1,13 +1,9 @@
 import logging
-import oyaml as yaml
-import sys
 import os.path
-from tqdm import tqdm
 
 from dev.sandbox.shell.main import SandboxShellParser
 from dev.sandbox.containerfile.main import SandboxDockerfileParser
 from dev.sandbox.ansible_matcher.main import SandboxTaskMatcher
-from src.containerfile.main import *
 from src.ansible_generator.main import RoleGenerator as SandboxRoleGenerator
 import dev.utils.data_utils as data_utils
 from cli.main import dump_ansible

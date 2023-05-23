@@ -2,20 +2,11 @@ import parts
 import multiprocessing
 import subprocess
 from subprocess import PIPE
-
 from collections import defaultdict
+
+import dev.stats.utils as utils
 from src.containerfile.tpdockerfile.main import *
 from dev.utils.data_utils import *
-
-
-def log_header(s: str) -> str:
-    return f"{s.upper()}:"
-
-
-def flag_print(*args, **kwargs):
-    if "echo" in kwargs and kwargs["echo"]:
-        del kwargs["echo"]
-        print(*args, **kwargs)
 
 
 def os_specific_containerfiles(os_names: List[str], directory: str) -> Dict[str, List[str]]:
@@ -41,7 +32,7 @@ def os_specific_containerfiles(os_names: List[str], directory: str) -> Dict[str,
     return res
 
 
-def filter_containerfiles_worker(args: Tuple[List[str], int, bool, str]) -> List[str]:
+def _filter_containerfiles_worker(args: Tuple[List[str], int, bool, str]) -> List[str]:
     paths, idx, echo, log_dir = args
     res = []
 
@@ -54,7 +45,7 @@ def filter_containerfiles_worker(args: Tuple[List[str], int, bool, str]) -> List
             rm_comm = f"docker image rm {image_name}"
 
             try:
-                flag_print(build_comm, echo=echo)
+                utils.flag_print(build_comm, echo=echo)
                 build_res = subprocess.run(["/bin/bash", "-c", build_comm],
                                            stdout=PIPE, stderr=PIPE, text=True, timeout=240)
 
@@ -63,27 +54,28 @@ def filter_containerfiles_worker(args: Tuple[List[str], int, bool, str]) -> List
             except subprocess.TimeoutExpired:
                 success = False
                 build_stdout, build_stderr = "", "Time limit exceeded"
+            # Sometimes build output might have weird symbols - such builds are ignored
             except UnicodeDecodeError:
                 success = False
                 build_stdout, build_stderr = "", "Unicode shenanigans"
             if success:
                 res.append(path)
 
-            flag_print(rm_comm, echo=echo)
+            utils.flag_print(rm_comm, echo=echo)
             rm_res = subprocess.run(["/bin/bash", "-c", rm_comm], stdout=PIPE, stderr=PIPE, text=True)
 
             log_path = os.path.join(log_dir, image_name)
             with open(log_path, "w") as outF:
                 outF.writelines([
-                    log_header("IMAGE NAME") + f"{image_name}\n\n",
-                    log_header("CONTAINERFILE PATH") + f"{path}\n\n",
-                    log_header("BUILD COMMAND") + f"{build_comm}\n\n",
-                    log_header("BUILD SUCCESS") + f"{success}\n\n",
-                    log_header("BUILD STDOUT") + f"{build_stdout.strip()}\n\n",
-                    log_header("BUILD STDERR") + f"{build_stderr.strip()}\n\n",
-                    log_header("RM COMMAND") + f"{rm_comm}\n\n",
-                    log_header("RM STDOUT") + f"{rm_res.stdout}\n\n",
-                    log_header("RM STDERR") + f"{rm_res.stderr}\n\n"
+                    utils.log_header("IMAGE NAME") + f"{image_name}\n\n",
+                    utils.log_header("CONTAINERFILE PATH") + f"{path}\n\n",
+                    utils.log_header("BUILD COMMAND") + f"{build_comm}\n\n",
+                    utils.log_header("BUILD SUCCESS") + f"{success}\n\n",
+                    utils.log_header("BUILD STDOUT") + f"{build_stdout.strip()}\n\n",
+                    utils.log_header("BUILD STDERR") + f"{build_stderr.strip()}\n\n",
+                    utils.log_header("RM COMMAND") + f"{rm_comm}\n\n",
+                    utils.log_header("RM STDOUT") + f"{rm_res.stdout}\n\n",
+                    utils.log_header("RM STDERR") + f"{rm_res.stderr}\n\n"
                 ])
             pbar.update(1)
 
@@ -91,13 +83,7 @@ def filter_containerfiles_worker(args: Tuple[List[str], int, bool, str]) -> List
 
 
 def filter_containerfiles(paths: List[str], n_proc: int, log_dir: str) -> List[str]:
-    echo = False
-    with multiprocessing.Pool(processes=n_proc) as pool:
-        spans = parts.parts(paths, n_proc)
-        per_proc = pool.map(filter_containerfiles_worker,
-                            [(list(span), idx, echo, log_dir) for span, idx in zip(spans, range(n_proc))])
-        res = [good_run for p in per_proc for good_run in p]
-    return res
+    return utils.map_reduce(worker=_filter_containerfiles_worker, data=paths, n_proc=n_proc, log_dir=log_dir)
 
 
 def collect_containerfiles():
@@ -113,25 +99,6 @@ def collect_containerfiles():
         copy_files(paths, os_dir)
 
 
-def pulpify_containerfiles(names: List[str], in_dir: str, out_dir: str):
-    for name in tqdm(names):
-        with open(os.path.join(in_dir, name), "r") as in_f:
-            lines = []
-            flag = True
-            for line in in_f:
-                if line.startswith("FROM"):
-                    lines.append("FROM ubuntu-pulp\n")
-                elif line.startswith("COPY"):
-                    flag = False
-                    break
-                else:
-                    lines.append(line)
-
-        if flag:
-            with open(os.path.join(out_dir, name), "w") as out_f:
-                out_f.writelines(lines)
-
-
 def filter_and_copy_containerfiles(in_dir: str, out_dir: str, log_dir: str, n_proc: int):
     filepaths = filepaths_from_dir(in_dir)
     setup_dir(log_dir)
@@ -140,17 +107,13 @@ def filter_and_copy_containerfiles(in_dir: str, out_dir: str, log_dir: str, n_pr
 
 
 def main():
-    # collect_containerfiles()
+    collect_containerfiles()
 
-    # pulpify_containerfiles(filenames_from_dir(UBUNTU_FILES_DIR), UBUNTU_FILES_DIR, pulped_dir)
-    pulped_dir = os.path.join(UBUNTU_DATA_DIR, "pulped")
-    in_dir = pulped_dir
-    # in_dir = UBUNTU_FILES_DIR
+    in_dir = UBUNTU_FILES_DIR
     out_dir = UBUNTU_FILES_FILTERED_DIR
     log_dir = UBUNTU_LOG_FILES_FILTERED_DIR
     n_proc = 4
 
-    setup_dir(pulped_dir)
     setup_dir(out_dir)
     setup_dir(log_dir)
 

@@ -1,9 +1,9 @@
-from typing import Type, List
+from typing import List
 from dataclasses import dataclass, field
 
 
 @dataclass
-class RoleGeneratorStatistics:
+class GeneratorStatisticsBase:
     name: List[str] = field(default_factory=list)
     supported: List[bool] = field(default_factory=list)
     coverage: List[float] = field(default_factory=list)
@@ -12,12 +12,13 @@ class RoleGeneratorStatistics:
 
 
 @dataclass
-class RunStatistics:
-    name: List[str] = field(default_factory=list)
-    supported: List[bool] = field(default_factory=list)
-    coverage: List[float] = field(default_factory=list)
-    length: List[int] = field(default_factory=list)
-    stat_id: List[int] = field(default_factory=list)
+class PlaybookGeneratorStatistics(GeneratorStatisticsBase):
+    pass
+
+
+@dataclass
+class RunStatistics(GeneratorStatisticsBase):
+    pass
 
 
 def unsupported_directive(func):

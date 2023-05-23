@@ -48,7 +48,7 @@ class RoleGenerator:
     default_user: str
     default_workdir: str
 
-    stats: Optional[RoleGeneratorStatistics]
+    stats: Optional[PlaybookGeneratorStatistics]
     run_stats: Optional[RunStatistics]
     matcher_tests: Optional[List[str]]
 
@@ -96,7 +96,7 @@ class RoleGenerator:
             ShellDirective: self._handle_shell
         }
 
-        self.stats = RoleGeneratorStatistics()
+        self.stats = PlaybookGeneratorStatistics()
         self.run_stats = RunStatistics()
         self.matcher_tests = list()
         self._runtime = _Runtime()

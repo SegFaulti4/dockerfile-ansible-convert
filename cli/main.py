@@ -3,7 +3,6 @@ import sys
 import yaml
 import logging
 from typing import List, Dict, Any
-from io import TextIOWrapper
 
 from src.shell.bashlex.main import BashlexShellParser as MainShellParser
 from src.containerfile.tpdockerfile.main import TPDockerfileParser as MainDockerfileParser

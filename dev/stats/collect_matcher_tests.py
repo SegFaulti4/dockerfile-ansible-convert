@@ -1,10 +1,7 @@
-import logging
-import parts
-import multiprocessing
 import subprocess
-import time
 from subprocess import PIPE
 
+import dev.stats.utils as utils
 from src.ansible_generator.main import *
 from src.ansible_matcher.main import *
 from src.containerfile.tpdockerfile.main import *
@@ -12,44 +9,35 @@ from src.shell.bashlex.main import *
 from dev.utils.data_utils import *
 
 
-def log_header(s: str) -> str:
-    return f"{s.upper()}:"
-
-
-def flag_print(*args, **kwargs):
-    if "echo" in kwargs and kwargs["echo"]:
-        del kwargs["echo"]
-        print(*args, **kwargs)
-
-
 def mine_matcher_tests(df_parser: DockerfileParser, task_matcher: TaskMatcher,
                        filepaths: List[str], tests_file: str) -> List[str]:
     matcher_tests = []
 
-    def worker(filepath: str) -> List[str]:
-        try:
-            with open(filepath.strip(), "r") as df:
-                source = "".join(df.readlines())
-
-            content = df_parser.from_str(source)
-            generator = RoleGenerator(tm=task_matcher, dc=content, collect_matcher_tests=True)
-            generator.generate()
-            tests = generator.matcher_tests
-
-        except Exception as exc:
-            globalLog.info(type(exc), exc)
-            tests = []
-
-        return tests
-
     for path in tqdm(filepaths, desc="Collecting matcher tests", smoothing=1.0):
-        matcher_tests.extend(worker(path))
+        matcher_tests.extend(_matcher_tests_miner(path, df_parser=df_parser, task_matcher=task_matcher))
 
-    # matcher_tests = p_tqdm.p_map(worker, filenames, num_cpus=n_proc)
     matcher_tests = list(dict.fromkeys(matcher_tests))
     with open(tests_file, "w") as outF:
         outF.writelines(t + "\n" for t in matcher_tests)
     return matcher_tests
+
+
+def _matcher_tests_miner(filepath: str, df_parser: DockerfileParser, task_matcher: TaskMatcher) -> List[str]:
+    try:
+        with open(filepath.strip(), "r") as df:
+            source = "".join(df.readlines())
+
+        content = df_parser.from_str(source)
+        generator = RoleGenerator(tm=task_matcher, dc=content)
+        generator.collect_matcher_tests = True
+        generator.generate()
+        tests = generator.matcher_tests
+
+    except Exception as exc:
+        globalLog.info(type(exc), exc)
+        tests = []
+
+    return tests
 
 
 def read_matcher_tests(tests_file: str) -> List[str]:
@@ -58,7 +46,11 @@ def read_matcher_tests(tests_file: str) -> List[str]:
     return tests
 
 
-def filter_tests_worker(args: Tuple[List[str], int, bool, str]) -> List[str]:
+def filter_matcher_tests(matcher_tests: List[str], n_proc: int, log_dir: str) -> List[str]:
+    return utils.map_reduce(worker=_filter_tests_worker, data=matcher_tests, n_proc=n_proc, log_dir=log_dir)
+
+
+def _filter_tests_worker(args: Tuple[List[str], int, bool, str]) -> List[str]:
     tests, idx, echo, log_dir = args
     filtered = []
 
@@ -72,10 +64,10 @@ def filter_tests_worker(args: Tuple[List[str], int, bool, str]) -> List[str]:
                 stop_rm_comm = f'docker stop {container_name} && docker rm {container_name}'
 
                 try:
-                    flag_print(run_comm, echo=echo)
+                    utils.flag_print(run_comm, echo=echo)
                     run_result = subprocess.run(['/bin/bash', '-c', run_comm],
                                                 stdout=PIPE, stderr=PIPE, text=True, timeout=120)
-                    flag_print(inspect_comm, echo=echo)
+                    utils.flag_print(inspect_comm, echo=echo)
                     inspect_result = subprocess.run(['/bin/bash', '-c', inspect_comm], stdout=PIPE, stderr=PIPE, text=True)
 
                     success = True if not inspect_result.stderr and inspect_result.stdout.strip() == "0" else False
@@ -86,41 +78,34 @@ def filter_tests_worker(args: Tuple[List[str], int, bool, str]) -> List[str]:
                 if success:
                     filtered.append(test)
 
-                flag_print(stop_rm_comm, echo=echo)
+                utils.flag_print(stop_rm_comm, echo=echo)
                 subprocess.run(['/bin/bash', '-c', stop_rm_comm], stdout=PIPE, stderr=PIPE, text=True)
 
                 logF.writelines([
-                    log_header("run command") + f"{run_comm}\n\n",
-                    log_header("run stdout") + f"{run_stdout}\n\n",
-                    log_header("run stderr") + f"{run_stderr}\n\n",
-                    log_header("success") + f"{success}\n\n"
+                    utils.log_header("run command") + f"{run_comm}\n\n",
+                    utils.log_header("run stdout") + f"{run_stdout}\n\n",
+                    utils.log_header("run stderr") + f"{run_stderr}\n\n",
+                    utils.log_header("success") + f"{success}\n\n"
                 ])
                 pbar.update(1)
 
     return filtered
 
 
-def filter_matcher_tests(matcher_tests: List[str], n_proc: int, log_dir: str) -> List[str]:
-    echo = False
-    with multiprocessing.Pool(processes=n_proc) as pool:
-        spans = parts.parts(matcher_tests, n_proc)
-        per_proc = pool.map(filter_tests_worker,
-                            [(list(span), idx, echo, log_dir) for span, idx in zip(spans, range(n_proc))])
-        res = [good_run for p in per_proc for good_run in p]
-    return res
-
-
 def main():
     files_dir = UBUNTU_FILES_FILTERED_DIR
-    mined_tests_file = UBUNTU_MATCHER_TESTS_MINED_FILE
+    filepaths = filepaths_from_dir(files_dir)
+    tests_file = UBUNTU_MATCHER_TESTS_MINED_FILE
     log_dir = UBUNTU_LOG_MATCHER_TESTS_FILTERED_DIR
     filtered_tests_file = UBUNTU_MATCHER_TESTS_FILTERED_FILE
     setup_dir(log_dir)
 
     n_proc = 2
-    # collected_matcher_tests = mine_matcher_tests(df_parser=TPDockerfileParser(shell_parser=BashlexShellParser()), task_matcher=TaskMatcher(), filepaths=filepaths_from_dir(files_dir), tests_file=mined_tests_file)
-    collected_matcher_tests = read_matcher_tests(mined_tests_file)
-    filtered_matcher_tests = filter_matcher_tests(collected_matcher_tests, n_proc=n_proc, log_dir=log_dir)
+    dfp, tm = TPDockerfileParser(shell_parser=BashlexShellParser()), TaskMatcher()
+
+    matcher_tests = mine_matcher_tests(df_parser=dfp, task_matcher=tm, filepaths=filepaths, tests_file=tests_file)
+    # matcher_tests = read_matcher_tests(tests_file)
+    filtered_matcher_tests = filter_matcher_tests(matcher_tests, n_proc=n_proc, log_dir=log_dir)
 
     with open(filtered_tests_file, "w") as outF:
         outF.writelines(t + "\n" for t in filtered_matcher_tests)

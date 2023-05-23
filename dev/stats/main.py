@@ -1,6 +1,4 @@
-import logging
 import csv
-import os
 from collections import defaultdict
 from tabulate import tabulate
 
@@ -13,7 +11,7 @@ from src.shell.bashlex.main import *
 from dev.utils.data_utils import *
 
 
-def tabulize_stats(stats: Union[RoleGeneratorStatistics, TaskMatcherStatistics, RunStatistics],
+def tabulize_stats(stats: Union[PlaybookGeneratorStatistics, TaskMatcherStatistics, RunStatistics],
                    cut_name: bool = False):
     name_supp_coverages = defaultdict(list)
     name_supp_lengths = defaultdict(list)
@@ -69,7 +67,7 @@ def extract_coverage_distribution(stats: TaskMatcherStatistics, stat_names: Dict
     return [header] + table
 
 
-def print_containerfile_stats(generator_stats: RoleGeneratorStatistics, matcher_stats: TaskMatcherStatistics):
+def print_containerfile_stats(generator_stats: PlaybookGeneratorStatistics, matcher_stats: TaskMatcherStatistics):
     generator_table = tabulize_stats(generator_stats, cut_name=True)
     matcher_table = tabulize_stats(matcher_stats, cut_name=True)
 
@@ -78,12 +76,7 @@ def print_containerfile_stats(generator_stats: RoleGeneratorStatistics, matcher_
     print(tabulate(matcher_table, headers='firstrow', numalign="left"))
 
 
-def print_task_matcher_stats(matcher_stats: TaskMatcherStatistics):
-    matcher_table = tabulize_stats(matcher_stats, cut_name=True)
-    print(tabulate(matcher_table, headers='firstrow', numalign="left"))
-
-
-def save_containerfile_stats(generator_stats: RoleGeneratorStatistics, matcher_stats: TaskMatcherStatistics,
+def save_containerfile_stats(generator_stats: PlaybookGeneratorStatistics, matcher_stats: TaskMatcherStatistics,
                              run_stats: RunStatistics, stat_names: Dict[int, str], stats_dir: str):
     matched_dir = os.path.join(stats_dir, "supported_commands/matched")
     unmatched_dir = os.path.join(stats_dir, "supported_commands/unmatched")
@@ -126,9 +119,9 @@ def save_containerfile_stats(generator_stats: RoleGeneratorStatistics, matcher_s
 
 
 def collect_containerfile_stats(files_dir: str, dockerfile_parser: DockerfileParser, task_matcher: TaskMatcher)\
-        -> Tuple[RoleGeneratorStatistics, TaskMatcherStatistics, RunStatistics, Dict[int, str]]:
+        -> Tuple[PlaybookGeneratorStatistics, TaskMatcherStatistics, RunStatistics, Dict[int, str]]:
     task_matcher.collect_stats = True
-    generator_stats = RoleGeneratorStatistics()
+    generator_stats = PlaybookGeneratorStatistics()
     run_stats = RunStatistics()
     filenames = filenames_from_dir(files_dir)
     filenames.sort()
@@ -146,8 +139,8 @@ def collect_containerfile_stats(files_dir: str, dockerfile_parser: DockerfilePar
             task_matcher.stat_id, generator.collect_stats, generator.stat_id = stat_id, True, stat_id
             generator.generate()
 
-            def extend_stats(stats: Union[RoleGeneratorStatistics, RunStatistics],
-                             local_stats: Union[RoleGeneratorStatistics, RunStatistics]):
+            def extend_stats(stats: Union[PlaybookGeneratorStatistics, RunStatistics],
+                             local_stats: Union[PlaybookGeneratorStatistics, RunStatistics]):
                 stats.name.extend(local_stats.name)
                 stats.supported.extend(local_stats.supported)
                 stats.coverage.extend(local_stats.coverage)
@@ -182,14 +175,6 @@ def collect_task_matcher_stats(shell_parser: ShellParser, task_matcher: TaskMatc
     return matcher_stats
 
 
-def collect_and_print_task_matcher_stats(commands_file: str):
-    shell_parser = BashlexShellParser()
-    task_matcher = TaskMatcher()
-
-    matcher_stats = collect_task_matcher_stats(shell_parser, task_matcher, commands_file)
-    print_task_matcher_stats(matcher_stats)
-
-
 def collect_and_save_containerfile_stats(files_dir: str, stats_dir: str):
     shell_parser = BashlexShellParser()
     dockerfile_parser = TPDockerfileParser(shell_parser=shell_parser)
@@ -200,21 +185,49 @@ def collect_and_save_containerfile_stats(files_dir: str, stats_dir: str):
     save_containerfile_stats(generator_stats, matcher_stats, run_stats, stat_names, stats_dir)
 
 
+def mine_shell_commands(files_dir: str, output_file: str) -> None:
+    sh_parser = BashlexShellParser()
+    cf_parser = TPDockerfileParser(shell_parser=sh_parser)
+
+    commands = []
+    filenames = filenames_from_dir(files_dir)
+    for name in tqdm(filenames, desc="Mining shell"):
+        path = os.path.join(files_dir, name)
+        try:
+            with open(path.strip(), "r") as cf:
+                source = "".join(cf.readlines())
+                source.replace("\t", " ")
+
+            content = cf_parser.from_str(source)
+            for run_dir in content.directives:
+                if isinstance(run_dir, RunDirective):
+                    line = run_dir.line
+                    line.replace("\n", " ")
+
+                    for comm in run_dir.script.parts:
+                        if isinstance(comm, ShellCommandObject):
+                            line = comm.line
+                            line.replace("\t", " ")
+                            commands.append(line + "\n")
+        except Exception:
+            pass
+
+    with open(output_file, "w") as outF:
+        outF.writelines(commands)
+
+
 def main():
     globalLog.setLevel(logging.ERROR)
 
-    # mine_shell_commands(UBUNTU_FILES_DIR, UBUNTU_MINED_SHELL_COMMANDS_FILE)
-    # collect_and_print_task_matcher_stats(os.path.join(DATA_DIR, UBUNTU_MINED_SHELL_COMMANDS_FILE))
+    mine_shell_commands(UBUNTU_FILES_DIR, UBUNTU_SHELL_COMMANDS_MINED_FILE)
 
-    # commands_file = UBUNTU_MATCHER_TESTS_FILTERED_FILE
-    # collect_and_print_task_matcher_stats(commands_file)
+    commands_file = UBUNTU_MATCHER_TESTS_FILTERED_FILE
+    collect_and_print_task_matcher_stats(commands_file)
 
-    # files_dir = UBUNTU_FILES_DIR
-    # stats_dir = UBUNTU_STATS_DIR
-    files_dir = UBUNTU_FILES_FILTERED_DIR
-    stats_dir = os.path.join(UBUNTU_DATA_DIR, "stats_filtered")
-    # files_dir = os.path.join(UBUNTU_DATA_DIR, "fully_covered_files")
-    # stats_dir = os.path.join(UBUNTU_DATA_DIR, "fully_covered_stats")
+    files_dir = UBUNTU_FILES_DIR
+    stats_dir = UBUNTU_STATS_DIR
+    # files_dir = UBUNTU_FILES_FILTERED_DIR
+    # stats_dir = os.path.join(UBUNTU_DATA_DIR, "stats_filtered")
 
     collect_and_save_containerfile_stats(files_dir, stats_dir)
 
