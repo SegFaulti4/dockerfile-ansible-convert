@@ -1,13 +1,12 @@
 import logging
-import oyaml as yaml
-import sys
+import os.path
 
 from dev.sandbox.shell.main import SandboxShellParser
 from dev.sandbox.containerfile.main import SandboxDockerfileParser
 from dev.sandbox.ansible_matcher.main import SandboxTaskMatcher
-from src.containerfile.main import *
 from src.ansible_generator.main import RoleGenerator as SandboxRoleGenerator
-import dev.utils.data_utils as file_utils
+import dev.utils.data_utils as data_utils
+from cli.main import dump_ansible
 
 from src.log import globalLog
 
@@ -22,6 +21,7 @@ if __name__ == "__main__":
     dockerfile_parser = SandboxDockerfileParser(shell_parser=shell_parser)
     task_matcher = SandboxTaskMatcher()
 
+    FILES_DIR = data_utils.UBUNTU_FILES_DIR
     SHOW_PATH = True
     SHOW_SOURCE = True
     SHOW_DOCKERFILE_PARSER = True
@@ -29,7 +29,7 @@ if __name__ == "__main__":
 
     with open("input", "r") as inF:
         for name in inF.readlines():
-            path = f"{file_utils.CONTAINERFILES_DIR}/{name.strip()}"
+            path = os.path.join(FILES_DIR, name.strip())
 
             with open(path, "r") as df:
                 source = "".join(df.readlines())
@@ -49,5 +49,5 @@ if __name__ == "__main__":
                 print(f"{rep}\n")
             if SHOW_ROLE_GENERATOR:
                 print_header("ROLE GENERATOR:")
-                yaml.safe_dump(tasks, sys.stdout)
+                print(dump_ansible(tasks))
                 print()

@@ -1,0 +1,148 @@
+{
+    "chown": {
+        "entry": "chown <<parameters : m>>",
+        "opts": {
+            "quiet": {
+                "aliases": ["--quiet", "--silent", "-f"],
+                "arg_required": false,
+                "many_args": false
+            },
+            "recursive": {
+                "aliases": ["--recursive", "-R"],
+                "arg_required": false,
+                "many_args": false
+            },
+            "no dereference": {
+                "arg_required": false,
+                "many_args": false,
+                "aliases": ["-h", "--no-dereference"]
+            },
+            "verbose": {
+                "aliases": [ "--verbose",  "-v"],
+                "arg_required": false,
+                "many_args": false
+            }
+        },
+        "examples": {
+            "chown <<owner>>:<<group>> <<files : m>>": [
+                {
+                    "ansible.builtin.shell": {
+                        "cmd": "realpath -sm {{ files }}",
+                        "chdir": "<<cwd>>"
+                    },
+                    "vars": {
+                        "files": "<<files>>"
+                    },
+                    "changed_when": false,
+                    "register": "ls_reg"
+                },
+                {
+                    "ansible.builtin.file": {
+                        "path": "{{ item }}",
+                        "recurse": false,
+                        "follow": true,
+                        "owner": "<<owner>>",
+                        "group": "<<group>>"
+                    },
+                    "loop": "{{ ls_reg.stdout_lines }}"
+                }
+            ],
+            "chown <<owner>> <<files : m>>": [
+                {
+                    "ansible.builtin.shell": {
+                        "cmd": "realpath -sm {{ files }}",
+                        "chdir": "<<cwd>>"
+                    },
+                    "vars": {
+                        "files": "<<files>>"
+                    },
+                    "changed_when": false,
+                    "register": "ls_reg"
+                },
+                {
+                    "ansible.builtin.file": {
+                        "path": "{{ item }}",
+                        "recurse": false,
+                        "follow": true,
+                        "owner": "<<owner>>"
+                    },
+                    "loop": "{{ ls_reg.stdout_lines }}"
+                }
+            ],
+            "chown -R <<owner>>:<<group>> <<files : m>>": [
+                {
+                    "ansible.builtin.shell": {
+                        "cmd": "realpath -sm {{ files }}",
+                        "chdir": "<<cwd>>"
+                    },
+                    "vars": {
+                        "files": "<<files>>"
+                    },
+                    "changed_when": false,
+                    "register": "ls_reg"
+                },
+                {
+                    "ansible.builtin.stat": {
+                        "follow": false,
+                        "path": "{{ item }}"
+                    },
+                    "changed_when": false,
+                    "loop": "{{ ls_reg.stdout_lines }}",
+                    "register": "st_reg"
+                },
+                {
+                    "ansible.builtin.file": {
+                        "state": "{{ (item.stat.isdir is defined and item.stat.isdir) | ternary('directory', 'file') }}",
+                        "recurse":  "{{ (item.stat.isdir is defined and item.stat.isdir) | ternary(true, false) }}",
+                        "follow": false,
+                        "path": "{{ item.stat.path }}",
+                        "owner": "<<owner>>",
+                        "group": "<<group>>"
+                    },
+                    "loop": "{{ st_reg.results }}"
+                }
+            ],
+            "chown -R <<owner>> <<files : m>>": [
+                {
+                    "ansible.builtin.shell": {
+                        "cmd": "realpath -sm {{ files }}",
+                        "chdir": "<<cwd>>"
+                    },
+                    "vars": {
+                        "files": "<<files>>"
+                    },
+                    "changed_when": false,
+                    "register": "ls_reg"
+                },
+                {
+                    "ansible.builtin.stat": {
+                        "follow": false,
+                        "path": "{{ item }}"
+                    },
+                    "changed_when": false,
+                    "loop": "{{ ls_reg.stdout_lines }}",
+                    "register": "st_reg"
+                },
+                {
+                    "ansible.builtin.file": {
+                        "state": "{{ (item.stat.isdir is defined and item.stat.isdir) | ternary('directory', 'file') }}",
+                        "recurse":  "{{ (item.stat.isdir is defined and item.stat.isdir) | ternary(true, false) }}",
+                        "follow": false,
+                        "path": "{{ item.stat.path }}",
+                        "owner": "<<owner>>"
+                    },
+                    "loop": "{{ st_reg.results }}"
+                }
+            ]
+        },
+        "opts_postprocess": {
+            "--quiet": {},
+            "--verbose": {},
+            "--no-dereference": {
+                "ansible.builtin.file": {
+                    "follow": false
+                }
+            }
+        }
+    }
+}

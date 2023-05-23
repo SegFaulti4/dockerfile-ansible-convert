@@ -29,16 +29,25 @@ class DockerfileCommandTransformer:
 
     @staticmethod
     def transform_arg(directive) -> Tuple[Type, Dict]:
-        arr = [v.strip('"') for v in directive.value]
-        if len(directive.value) == 1:
-            arr.append('""')
+        arr = [v for v in directive.value]
+        if len(arr) == 1:
+            # I hate some people, why would you do that???
+            # ARG "var=value"
+            if arr[0].startswith('"') and arr[0].endswith('"'):
+                arr[0] = arr[0].strip('"')
+
+            if "=" not in arr[0]:
+                arr.append('""')
+            else:
+                pos = arr[0].find('=')
+                arr = [arr[0][:pos], arr[0][pos + 1:]]
         return ArgDirective, {"name": arr[0], "value": arr[1]}
 
     @staticmethod
     def transform_user(directive) -> Tuple[Type, Dict]:
         value = directive.value[0].strip('"')
         name = value[:value.find(':')] if ':' in value else value
-        group = value[value.find(':'):] if ':' in value else '""'
+        group = value[value.find(':') + 1:] if ':' in value else ""
         return UserDirective, {"name": name, "group": group}
 
     @staticmethod
@@ -48,13 +57,31 @@ class DockerfileCommandTransformer:
 
     @staticmethod
     def transform_add(directive) -> Tuple[Type, Dict]:
-        source, destinations = directive.value[0], directive.value[1:]
-        return AddDirective, {"source": source, "destinations": destinations}
+        sources, destination = directive.value[:-1], directive.value[-1]
+        chown_name, chown_group = "", ""
+
+        for flag in directive.flags:
+            if flag.startswith("--chown="):
+                value = flag[len("--chown="):].strip('"')
+                chown_name = value[:value.find(':')] if ':' in value else value
+                chown_group = value[value.find(':') + 1:] if ':' in value else ""
+
+        return AddDirective, {"sources": sources, "destination": destination,
+                              "chown_name": chown_name, "chown_group": chown_group}
 
     @staticmethod
     def transform_copy(directive) -> Tuple[Type, Dict]:
-        source, destinations = directive.value[0], directive.value[1:]
-        return CopyDirective, {"source": source, "destinations": destinations}
+        sources, destination = directive.value[:-1], directive.value[-1]
+        chown_name, chown_group = "", ""
+
+        for flag in directive.flags:
+            if flag.startswith("--chown="):
+                value = flag[len("--chown="):].strip('"')
+                chown_name = value[:value.find(':')] if ':' in value else value
+                chown_group = value[value.find(':') + 1:] if ':' in value else ""
+
+        return CopyDirective, {"sources": sources, "destination": destination,
+                               "chown_name": chown_name, "chown_group": chown_group}
 
     @staticmethod
     def transform_from(directive) -> Tuple[Type, Dict]:

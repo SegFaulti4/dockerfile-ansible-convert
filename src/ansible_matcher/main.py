@@ -1,5 +1,5 @@
 import copy
-from typing import Union, Any
+from typing import Any
 
 from src.ansible_matcher.template_lang import \
     TemplatePart, TemplateMatchResult, TemplateTweaks, TemplateFiller
@@ -13,40 +13,48 @@ from src.ansible_matcher.statistics import *
 class TaskMatcher:
     stats = TaskMatcherStatistics()
 
+    # stat flags
+    collect_stats: bool = False
+    stat_id: int = -1
+
     _tweaks: TemplateTweaks
     _config_loader: CommandConfigLoader
 
     def __init__(self, config_loader: CommandConfigLoader = init_command_config_loader):
         self._config_loader = config_loader
 
-    def match_command(self, comm: CommandCallParts, cwd: Optional[str] = None, usr: Optional[str] = None,
-                      collect_stats: bool = False) \
-            -> Union[Dict[str, Any], None]:
+    def match_command(self, comm: CommandCallParts, cwd: Optional[str] = None, usr: Optional[str] = None) \
+            -> Optional[List[Dict[str, Any]]]:
+        if cwd is None:
+            cwd = "/"
+        if usr is None:
+            usr = "root"
+
         if not TaskMatcher._check_requirements(comm):
             return None
 
         command_config = self._config_loader.load(comm)
         if command_config is None:
-            self._stat_unknown(comm, collect_stats)
+            self._stat_unknown(comm)
             return None
 
         self._tweaks = TemplateTweaks(cwd=cwd, usr=usr)
 
         extracted_call = TaskMatcher._extract_command_call(command_config, comm)
         if extracted_call is None:
-            self._stat_unmatched(comm, command_config, collect_stats)
+            self._stat_unmatched(comm, command_config)
             return None
 
-        for command_template, task_template in command_config.examples:
-            task_call = self._match_template(command_config, command_template,
-                                             extracted_call, task_template)
-            if task_call is None:
+        for command_template, task_templates in command_config.examples:
+            task_calls = self._match_template(command_config, command_template,
+                                              extracted_call, task_templates)
+            if task_calls is None:
                 continue
 
-            self._stat_matched(comm, command_config, collect_stats)
-            return task_call
+            self._stat_matched(comm, command_config)
+            return task_calls
 
-        self._stat_unmatched(comm, command_config, collect_stats)
+        self._stat_unmatched(comm, command_config)
         return None
 
     def extract_command(self, comm: CommandCallParts) -> Optional[ExtractedCommandCall]:
@@ -60,39 +68,36 @@ class TaskMatcher:
         extracted_call = TaskMatcher._extract_command_call(command_config, comm)
         return extracted_call
 
-    def _stat_unknown(self, comm: CommandCallParts, collect_stat: bool) -> None:
-        if not collect_stat:
+    def _stat_unknown(self, comm: CommandCallParts) -> None:
+        if not self.collect_stats:
             return
         self.stats.name.append(comm[0].value)
-        self.stats.supported.append(False)
-        self.stats.coverage.append(0.)
+        self.stats.supported.append(False), self.stats.coverage.append(0.)
         line = " ".join(map(lambda x: x.value, comm))
-        self.stats.length.append(len(line))
-        self.stats.line.append(line)
+        self.stats.length.append(len(line)), self.stats.line.append(line)
+        self.stats.stat_id.append(self.stat_id)
 
-    def _stat_unmatched(self, comm: CommandCallParts, command_config: CommandConfig, collect_stat: bool) -> None:
-        if not collect_stat:
+    def _stat_unmatched(self, comm: CommandCallParts, command_config: CommandConfig) -> None:
+        if not self.collect_stats:
             return
         self.stats.name.append(" ".join(
             map(lambda x: x.value, filter(lambda x: not x.parts, command_config.entry))
         ))
-        self.stats.supported.append(True)
-        self.stats.coverage.append(0.)
+        self.stats.supported.append(True), self.stats.coverage.append(0.)
         line = " ".join(map(lambda x: x.value, comm))
-        self.stats.length.append(len(line))
-        self.stats.line.append(line)
+        self.stats.length.append(len(line)), self.stats.line.append(line)
+        self.stats.stat_id.append(self.stat_id)
 
-    def _stat_matched(self, comm: CommandCallParts, command_config: CommandConfig, collect_stat: bool) -> None:
-        if not collect_stat:
+    def _stat_matched(self, comm: CommandCallParts, command_config: CommandConfig) -> None:
+        if not self.collect_stats:
             return
         self.stats.name.append(" ".join(
             map(lambda x: x.value, filter(lambda x: not x.parts, command_config.entry))
         ))
-        self.stats.supported.append(True)
-        self.stats.coverage.append(1.)
+        self.stats.supported.append(True), self.stats.coverage.append(1.)
         line = " ".join(map(lambda x: x.value, comm))
-        self.stats.length.append(len(line))
-        self.stats.line.append(line)
+        self.stats.length.append(len(line)), self.stats.line.append(line)
+        self.stats.stat_id.append(self.stat_id)
 
     @staticmethod
     def _check_requirements(comm: CommandCallParts) -> bool:
@@ -111,8 +116,8 @@ class TaskMatcher:
         return opts_extractor.extract(tmp)
 
     def _match_template(self, command_config: CommandConfig, command_template: CommandTemplateParts,
-                        extracted_call: ExtractedCommandCall, example_task_template: Dict[str, Any]) \
-            -> Optional[Dict[str, Any]]:
+                        extracted_call: ExtractedCommandCall, example_task_templates: List[Dict[str, Any]]) \
+            -> Optional[List[Dict[str, Any]]]:
 
         extracted_template = TaskMatcher._extract_command_template(command_config, command_template)
         if extracted_template is None:
@@ -127,18 +132,20 @@ class TaskMatcher:
         if postprocess_res is None:
             return None
         opt_fields, postprocess_task_template = postprocess_res
+
         fields_dict = CommandTemplateMatcher.merge_match_results(parameter_fields, opt_fields)
-
-        # needed for referencing current working directory
-        fields_dict = self._merge_special_fields(fields_dict)
-
-        task_template = TaskMatcher._merge_task_templates(example_task_template,
-                                                          postprocess_task_template)
-        task_call = TaskMatcher._fill_in_task_template(task_template, fields_dict)
-        if task_call is None:
+        if fields_dict is None:
             return None
 
-        return task_call
+        # needed for referencing current working directory and current user
+        fields_dict = self._merge_special_fields(fields_dict)
+
+        task_templates = TaskMatcher._merge_postprocess_task_template(example_task_templates, postprocess_task_template)
+        # task_templates = TaskMatcher._merge_task_templates(example_task_templates, postprocess_task_template)
+        task_calls = [TaskMatcher._fill_in_task_template(t, fields_dict) for t in task_templates]
+        if any(task_call is None for task_call in task_calls):
+            return None
+        return task_calls
 
     @staticmethod
     def _extract_command_template(command_config: CommandConfig, templ: CommandTemplateParts) \
@@ -162,6 +169,9 @@ class TaskMatcher:
         opt_fields, unmatched_opts = opt_match
 
         fields_dict = CommandTemplateMatcher.merge_match_results(param_fields, opt_fields)
+        if fields_dict is None:
+            return None
+
         return fields_dict, unmatched_opts
 
     def match_opts(self, call_opts: Dict[str, CommandCallParts], templ_opts: Dict[str, CommandTemplateParts]) \
@@ -188,6 +198,9 @@ class TaskMatcher:
             tmp_fields, unmatched = opt_match
 
             opt_fields = CommandTemplateMatcher.merge_match_results(opt_fields, tmp_fields)
+            if opt_fields is None:
+                return None
+
             if not unmatched:
                 del unmatched_opts[k]
             else:
@@ -211,6 +224,9 @@ class TaskMatcher:
             opt_fields, unmatched_opts = opt_match
 
             fields_dict = CommandTemplateMatcher.merge_match_results(fields_dict, opt_fields)
+            if fields_dict is None:
+                return None
+
             opts_dict = unmatched_opts
             task_template = TaskMatcher._merge_task_templates(task_template, opt_task_template)
 
@@ -221,38 +237,91 @@ class TaskMatcher:
     @staticmethod
     def _fill_in_task_template(task_template: Dict[str, Any], fields_dict: TemplateMatchResult) \
             -> Optional[Dict[str, Any]]:
-
-        class TaskTemplateFiller:
-            def __init__(self, f_dict: TemplateMatchResult):
-                self.fields_dict = f_dict
-                self.success = True
-
-            def __call__(self, templ: CommandTemplateParts):
-                if not self.success:
-                    return ""
-
-                template_filler = TemplateFiller(templ)
-                res = template_filler.fill(self.fields_dict)
-                if res is None:
-                    self.success = False
-                    return ""
-                return res
-
-        def is_template(x) -> bool:
-            return isinstance(x, list) and all(isinstance(y, TemplatePart) for y in x)
-
-        filler = TaskTemplateFiller(fields_dict)
-        task_call = visit_dict(task_template, is_template, filler)
-        if not filler.success:
+        expand_filler = _TaskTemplateExpandFiller(fields_dict, strict=False)
+        task_call = visit_dict(task_template, _TaskTemplateExpandFiller.predicate, expand_filler)
+        if not expand_filler.success:
             return None
+
+        flatten_filler = _TaskTemplateFlattenFiller(fields_dict, strict=False)
+        task_call = visit_dict(task_call, _TaskTemplateFlattenFiller.predicate, flatten_filler)
+        if not flatten_filler.success:
+            return None
+
         return task_call
 
     @staticmethod
     def _merge_task_templates(into_templ: Dict[str, Any], from_templ: Dict[str, Any]) -> Dict[str, Any]:
         tmp = copy.deepcopy(into_templ)
-        return merge_dicts(tmp, from_templ)
+        return merge_dicts(tmp, from_templ, override=False)
+
+    @staticmethod
+    def _merge_postprocess_task_template(task_templates: List[Dict[str, Any]], pp_task_templ: Dict[str, Any]) \
+            -> List[Dict[str, any]]:
+        res = []
+        for templ in task_templates:
+            res.append(copy.deepcopy(templ))
+            for module in pp_task_templ:
+                if module in templ:
+                    merge_dicts(res[-1][module], pp_task_templ[module], override=True)
+
+        return res
 
     def _merge_special_fields(self, fields_dict: TemplateMatchResult) -> TemplateMatchResult:
-        if self._tweaks.cwd is not None:
-            fields_dict["cwd"] = self._tweaks.cwd
+        fields_dict["cwd"] = self._tweaks.cwd
+        fields_dict["usr"] = self._tweaks.usr
         return fields_dict
+
+
+def _is_template(x) -> bool:
+    return isinstance(x, list) and all(isinstance(y, TemplatePart) for y in x)
+
+
+class _TaskTemplateFlattenFiller:
+
+    def __init__(self, f_dict: TemplateMatchResult, strict: bool):
+        self.fields_dict = f_dict
+        self.success = True
+        self.strict = strict
+
+    def __call__(self, templ: CommandTemplateParts):
+        if not self.success:
+            return ""
+
+        template_filler = TemplateFiller(templ)
+        filled = template_filler.fill_flatten(self.fields_dict, strict=self.strict)
+        if filled is None:
+            self.success = False
+            return ""
+        return filled
+
+    @staticmethod
+    def predicate(x) -> bool:
+        return _is_template(x)
+
+
+class _TaskTemplateExpandFiller:
+
+    def __init__(self, f_dict: TemplateMatchResult, strict: bool):
+        self.fields_dict = f_dict
+        self.success = True
+        self.strict = strict
+
+    def __call__(self, arr: List):
+        if not self.success:
+            return []
+
+        res = []
+        for x in arr:
+            if _is_template(x):
+                filled = TemplateFiller(x).fill_expand(self.fields_dict, strict=self.strict)
+                if filled is None:
+                    self.success = False
+                    return []
+                res.extend(filled)
+            else:
+                res.append(x)
+        return res
+
+    @staticmethod
+    def predicate(x) -> bool:
+        return isinstance(x, list)

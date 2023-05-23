@@ -1,0 +1,76 @@
+{
+    "curl": {
+        "entry": "curl <<parameters : m>>",
+        "opts": {
+            "fail": {
+                "arg_required": false,
+                "many_args": false,
+                "aliases": ["-f", "--fail"]
+            },
+            "location": {
+                "arg_required": false,
+                "many_args": false,
+                "aliases": ["-L", "--location"]
+            },
+            "output": {
+                "arg_required": true,
+                "many_args": false,
+                "aliases": [ "-o", "--output"]
+            },
+            "remote name": {
+                "arg_required": true,
+                "many_args": false,
+                "aliases": ["-O", "--remote-name"]
+            },
+            "show error": {
+                "arg_required": false,
+                "many_args": false,
+                "aliases": ["-S", "--show-error"]
+            },
+            "silent": {
+                "arg_required": false,
+                "many_args": false,
+                "aliases": ["-s", "--silent"]
+            }
+        },
+        "opts_postprocess": {
+            "-L": {
+                "ansible.builtin.uri": {
+                    "follow_redirects": "safe"
+                }
+            },
+            "-f": {},
+            "-S": {},
+            "-s": {}
+        },
+        "examples": {
+            "curl -o <<output : p>> git.io/scope": [
+                {
+                    "ansible.builtin.uri": {
+                        "method": "GET",
+                        "dest": "<<output>>",
+                        "url": "https://git.io/scope"
+                    }
+                }
+            ],
+            "curl -o <<output : p>> <<url>>": [
+                {
+                    "ansible.builtin.uri": {
+                        "method": "GET",
+                        "dest": "<<output>>",
+                        "url": "<<url>>"
+                    }
+                }
+            ],
+            "curl -O <<url>>": [
+                {
+                    "ansible.builtin.uri": {
+                        "method": "GET",
+                        "dest": "<<cwd>>",
+                        "url": "<<url>>"
+                    }
+                }
+            ]
+        }
+    }
+}

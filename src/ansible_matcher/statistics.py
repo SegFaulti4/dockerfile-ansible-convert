@@ -1,4 +1,4 @@
-from typing import Type, List
+from typing import List
 from dataclasses import dataclass, field
 
 
@@ -9,3 +9,4 @@ class TaskMatcherStatistics:
     coverage: List[float] = field(default_factory=list)
     length: List[int] = field(default_factory=list)
     line: List[str] = field(default_factory=list)
+    stat_id: List[int] = field(default_factory=list)

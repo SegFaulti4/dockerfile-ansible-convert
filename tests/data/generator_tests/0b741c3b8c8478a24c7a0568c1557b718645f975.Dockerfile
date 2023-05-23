@@ -1,0 +1,13 @@
+FROM ubuntu-test-stand
+MAINTAINER Docker Education Team <education@docker.com>  
+  
+RUN apt-get update  
+RUN apt-get install -y nginx  
+RUN apt-get install -y puppet  
+RUN echo 'Hi, I am in your container' \  
+>/usr/share/nginx/html/index.html  
+  
+CMD [ "nginx", "-g", "daemon off;" ]  
+  
+EXPOSE 80  
+

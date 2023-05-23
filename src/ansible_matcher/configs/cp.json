@@ -1,0 +1,183 @@
+{
+    "cp": {
+        "entry": "cp <<parameters : m>>",
+        "opts": {
+            "archive": {
+                "aliases": ["--archive", "-a"],
+                "arg_required": false,
+                "many_args": false
+            },
+            "force": {
+                "arg_required": false,
+                "many_args": false,
+                "aliases": ["-f",  "--force"]
+            },
+            "recursive": {
+                "aliases": ["--recursive", "-R", "-r"],
+                "arg_required": false,
+                "many_args": false
+            },
+            "verbose": {
+                "aliases": [ "--verbose",  "-v"],
+                "arg_required": false,
+                "many_args": false
+            },
+            "backup": {
+                "aliases": [ "--backup"],
+                "arg_required": false,
+                "many_args": false
+            },
+            "no dereference reserve links": {
+                "aliases": [ "-d"],
+                "arg_required": false,
+                "many_args": false
+            },
+            "no clobber": {
+                "aliases": ["-n", "--no-clobber"],
+                "arg_required": false,
+                "many_args": false
+            },
+            "preserve mode ownership timestamps": {
+                "aliases": ["-p"],
+                "arg_required": false,
+                "many_args": false
+            },
+            "dereference": {
+                "aliases": ["-L", "--dereference"],
+                "arg_required": false,
+                "many_args": false
+            },
+            "symbolic": {
+                "arg_required": false,
+                "many_args": false,
+                "aliases": ["-s", "--symbolic-link"]
+            },
+            "target directory": {
+                "arg_required": true,
+                "many_args": false,
+                "aliases": ["-t", "--target-directory"]
+            }
+        },
+        "examples": {
+            "cp <<globs : m>> <<dest : p>>": [
+                {
+                    "name": "Inspect 'cp' parameters",
+                    "vars": {
+                        "sources": "<<globs>>",
+                        "destination": "<<dest>>"
+                    },
+                    "block": [
+                        {
+                            "name": "Resolve 'cp' source paths",
+                            "ansible.builtin.shell": {
+                                "cmd": "realpath -se {{ sources }}",
+                                "chdir": "<<cwd>>"
+                            },
+                            "changed_when": false,
+                            "register": "src_paths"
+                        },
+                        {
+                            "name": "Inspect 'cp' destination",
+                            "ansible.builtin.stat": {
+                                "path": "{{ destination }}",
+                                "follow": false
+                            },
+                            "changed_when": false,
+                            "register": "dst_info"
+                        },
+                        {
+                            "name": "Fail 'cp' if multiple sources and destination is not a directory",
+                            "ansible.builtin.fail": {
+                                "msg": "Failed to move files"
+                            },
+                            "when": [
+                                "src_paths.stdout_lines | length > 1",
+                                "dst_info.stat.isdir is undefined or dst_info.stat.isdir == False"
+                            ]
+                        }
+                    ]
+                },
+                {
+                    "name": "Handle 'cp' single source",
+                    "when": "src_paths.stdout_lines | length == 1",
+                    "vars": {
+                        "raw_dest": "<<dest>>",
+                        "source": "{{ src_paths.stdout_lines[0] }}",
+                        "destination": "{{ raw_dest | regex_replace('/$') }}"
+                    },
+                    "block": [
+                        {
+                            "name": "Inspect 'cp' single source",
+                            "ansible.builtin.stat": {
+                                "path": "{{ source }}",
+                                "follow": false
+                            },
+                            "changed_when": false,
+                            "register": "src_info"
+                        },
+                        {
+                            "name": "Handle 'cp' renamed directory",
+                            "when":[
+                                "src_info.stat.isdir == True",
+                                "dst_info.stat.isdir is undefined"
+                            ],
+                            "block": [
+                                {
+                                    "file": {
+                                        "path": "{{ destination }}",
+                                        "state": "directory"
+                                    }
+                                },
+                                {
+                                    "copy": {
+                                        "src": "{{ source }}/",
+                                        "dest": "{{ destination }}",
+                                        "remote_src": true,
+                                        "force": true
+                                    }
+                                }
+                            ]
+                        },
+                        {
+                           "name": "Copy file or directory",
+                            "when": "src_info.stat.isdir == False or dst_info.stat.isdir is defined",
+                            "copy": {
+                                "src": "{{ source }}",
+                                "dest": "{{ destination }}",
+                                "remote_src": true,
+                                "force": true
+                            }
+                        }
+                    ]
+                },
+                {
+                    "name": "Handle 'cp' multiple sources",
+                    "when": "src_paths.stdout_lines | length > 1",
+                    "vars": {
+                        "raw_dest": "<<dest>>",
+                        "sources": "{{ src_paths.stdout_lines }}",
+                        "destination": "{{ raw_dest | regex_replace('/$') }}"
+                    },
+                    "loop": "{{ sources }}",
+                    "copy": {
+                        "src": "{{ item }}",
+                        "dest": "{{ destination }}",
+                        "remote_src": true,
+                        "force": true
+                    }
+                }
+            ]
+        },
+        "opts_postprocess": {
+            "--force": {},
+            "--verbose": {},
+            "-r": {},
+            "--backup": {
+                "ansible.builtin.copy": {
+                    "backup": true
+                }
+            },
+            "--dereference": {}
+        }
+    }
+}

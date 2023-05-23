@@ -22,13 +22,5 @@ class TaskMatcherException(BaseException):
     pass
 
 
-class ExampleBasedMatcherException(TaskMatcherException):
-    pass
-
-
-class AnsiblePlayContextException(BaseException):
-    pass
-
-
-class RoleGeneratorException(BaseException):
+class CommandConfigLoaderException(TaskMatcherException):
     pass

@@ -118,13 +118,57 @@ class ShellParser:
         return ShellExpression.allowed_parts(parts)
 
     def parse_as_script(self, line: str) -> ShellScript:
+
+        def custom_strip(s: str, c: str) -> str:
+            if s.startswith(c) and s.endswith(c):
+                return s.strip(c)
+            return s
+
+        line = custom_strip(line, '"')
+        line = custom_strip(line, "'")
+        line = custom_strip(line, '"')
         parts = self.parse(line)
         if self.allowed_script_parts(parts):
             return ShellScript(parts=parts, line=line)
         raise ShellParserException("Found unallowed script parts")
 
     def parse_as_expression(self, line: str) -> ShellExpression:
+        if not line:
+            return ShellExpression(parts=[], line="")
+
+        unquoted_flag = not line.startswith('"') or not line.endswith('"')
+
+        # dirty workaround to skip some unwanted node types
+        if unquoted_flag:
+            line = '"' + line + '"'
         parts = self.parse(line)
         if self.allowed_expression_parts(parts):
+            if unquoted_flag:
+                line = line[1:-1]
+                parts = self._unquote_parts(parts)
             return ShellExpression(parts=parts, line=line)
         raise ShellParserException("Found unallowed expression parts")
+
+    @staticmethod
+    def _unquote_parts(parts: List[ShellExpressionPart]) -> List[ShellExpressionPart]:
+        last_part = parts[-1]
+        if isinstance(last_part, ShellCommandObject):
+            last_word = last_part.parts[-1]
+            if last_word.value.endswith('"'):
+                last_word.value = last_word.value[:-1]
+        elif isinstance(last_part, ShellRawObject):
+            if last_part.value.endswith('"'):
+                last_part.value = last_part.value[:-1]
+
+        first_part = parts[0]
+        if isinstance(first_part, ShellCommandObject):
+            first_word = first_part.parts[0]
+            if first_word.value.startswith('"'):
+                first_word.value = first_word.value[1:]
+                for part in first_word.parts:
+                    part.pos = part.pos[0] - 1, part.pos[1] - 1
+        elif isinstance(first_part, ShellRawObject):
+            if first_part.value.startswith('"'):
+                first_part.value = first_part.value[1:]
+
+        return parts

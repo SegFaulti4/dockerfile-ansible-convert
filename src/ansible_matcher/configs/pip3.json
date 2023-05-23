@@ -1,0 +1,8 @@
+{
+    "pip3": {
+        "entry": "pip3 <<parameters : m>>",
+        "opts": {},
+        "examples": {},
+        "opts_postprocess": {}
+    }
+}

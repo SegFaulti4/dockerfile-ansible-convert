@@ -118,7 +118,7 @@ class CommandOptsExtractor:
         word = self._rt.words.pop(0)
 
         # try to match whole word as an option name (e.g. `gcc -dumpspecs`)
-        opt = self._opt_match("-" + word.value)
+        opt = self._opt_match(word.value)
         if opt is not None:
             if not opt.arg_required:
                 self._rt.opts.append((opt, None))
@@ -185,13 +185,16 @@ class CommandOptsExtractor:
             part.pos = part.pos[0] - start_pos, part.pos[1] - start_pos
         return token
 
-    def _group_opt_args(self):
+    def _group_opt_args(self) \
+            -> Dict[str, List[Union[ShellWordObject, TemplatePart]]]:
         opts = dict()
         for opt, arg in self._rt.opts:
             if opt.many_args:
                 if opt.name not in opts:
                     opts[opt.name] = []
                 opts[opt.name].append(arg)
+            elif arg is None:
+                opts[opt.name] = []
             else:
-                opts[opt.name] = arg
+                opts[opt.name] = [arg]
         return opts

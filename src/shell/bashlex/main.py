@@ -70,9 +70,11 @@ class BashlexNodeTransformer:
         eq_pos = node.word.find('=')
         name, value = node.word[0:eq_pos], node.word[eq_pos + 1:]
 
+        # workaround added to parse_as_expression
+        # if not value.startswith('"') or not value.endswith('"'):
+        #     value = '"' + value + '"'
+
         # Circular dependency
-        if not value.startswith('"') or not value.endswith('"'):
-            value = '"' + value + '"'
         part = BashlexShellParser().parse_as_expression(value)
         return [ShellAssignmentObject(name=name, value=part)]
 
@@ -106,5 +108,12 @@ class BashlexShellParser(ShellParser):
         nodes = bashlex.parse(val)
         res = []
         for node in nodes:
-            res.extend(BashlexNodeTransformer.transform_node(node, val))
+            transformed = BashlexNodeTransformer.transform_node(node, val)
+
+            # transform_node can return empty list
+            # in that case we create ShellRawObject
+            if not transformed:
+                res.append(ShellRawObject(value=val[node.pos[0]:node.pos[1]]))
+            else:
+                res.extend(transformed)
         return res

@@ -1,0 +1,8 @@
+{
+    "ansible.builtin.pip": {
+        "entry": "pip <<parameters : m>>",
+        "opts": {},
+        "examples": {},
+        "opts_postprocess": {}
+    }
+}

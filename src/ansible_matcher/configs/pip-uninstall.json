@@ -1,0 +1,50 @@
+{
+    "pip uninstall": {
+        "entry": "pip uninstall <<parameters : m>>",
+        "opts": {
+            "yes": {
+                "aliases": ["-y", "--yes"],
+                "arg_required": false,
+                "many_args": false
+            },
+            "no cache dir": {
+                "aliases": ["--no-cache-dir"],
+                "arg_required": false,
+                "many_args": false
+            },
+            "requirement": {
+                "aliases": ["-r", "--requirement"],
+                "arg_required": true,
+                "many_args": false
+            }
+        },
+        "examples": {
+            "pip uninstall <<packages : m>>": [
+                {
+                    "ansible.builtin.pip": {
+                        "name": ["<<packages>>"],
+                        "state": "absent",
+                        "chdir": "<<cwd>>"
+                    }
+                }
+            ],
+            "pip uninstall -r <<requirement : p>>": [
+                {
+                    "ansible.builtin.pip": {
+                        "requirement": "<<requirement>>",
+                        "state": "absent",
+                        "chdir": "<<cwd>>"
+                    }
+                }
+            ]
+        },
+        "opts_postprocess": {
+            "--yes": {},
+            "--no-cache-dir": {
+                "ansible.builtin.pip": {
+                    "extra_args": "--no-cache-dir "
+                }
+            }
+        }
+    }
+}

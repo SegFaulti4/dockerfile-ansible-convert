@@ -7,6 +7,7 @@ from bashlex.errors import ParsingError
 import dev.stats.bashlex.stat_node as stat_node
 
 from src.log import globalLog
+from dev.utils.data_utils import *
 
 globalLog.setLevel(logging.ERROR)
 
@@ -99,16 +100,17 @@ def mine_bash_line(line):
     stats['last_line_appearances'] = BLANK_BASHLEX_NODE_INDEX.copy()
 
 
-with open('../../data/mined', 'r') as inF:
-    CUR_BASH_LINE_IDX = 0
+if __name__ == "__main__":
+    with open(UBUNTU_SHELL_COMMANDS_MINED_FILE, 'r') as inF:
+        CUR_BASH_LINE_IDX = 0
 
-    for line in inF.readlines():
-        try:
-            mine_bash_line(line)
-        except ParsingError as er:
-            continue
-        except NotImplementedError as er:
-            continue
+        for line in inF.readlines():
+            try:
+                mine_bash_line(line)
+            except ParsingError as er:
+                continue
+            except NotImplementedError as er:
+                continue
 
-    pass
-    # dump_examples()
+        pass
+        # dump_examples()

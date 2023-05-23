@@ -1,0 +1,523 @@
+{
+    "ansible.builtin.apt": {
+        "entry": "apt-get <<parameters : m>>",
+        "examples": {
+            "apt-get install <<pkg_string>>": [
+                {
+                    "ansible.builtin.apt": {
+                        "name": "{{ packages | split }}"
+                    },
+                    "vars": {
+                        "packages": "<<pkg_string>>"
+                    }
+                }
+            ],
+            "apt-get install <<packages : m>>": [
+                {
+                    "ansible.builtin.apt": {
+                        "name": ["<<packages>>"],
+                        "force_apt_get": true
+                    }
+                }
+            ],
+            "apt-get autoclean": [
+                {
+                    "ansible.builtin.apt": {
+                        "autoclean": true,
+                        "force_apt_get": true
+                    }
+                }
+            ],
+            "apt-get clean": [
+                {
+                    "ansible.builtin.apt": {
+                        "clean": true,
+                        "force_apt_get": true
+                    }
+                }
+            ],
+            "apt-get autoremove": [
+                {
+                    "ansible.builtin.apt": {
+                        "autoremove": "yes",
+                        "force_apt_get": true
+                    }
+                }
+            ],
+            "apt-get build-dep <<packages : m>>": [
+                {
+                    "ansible.builtin.apt": {
+                        "name": ["<<packages>>"],
+                        "state": "build-dep",
+                        "force_apt_get": true
+                    }
+                }
+            ],
+            "apt-get dist-upgrade": [
+                {
+                    "ansible.builtin.apt": {
+                        "upgrade": "dist",
+                        "force_apt_get": true
+                    }
+                }
+            ],
+            "apt-get remove <<pkg :m>>": [
+                {
+                    "ansible.builtin.apt": {
+                        "name":[ "<<pkg>>" ],
+                        "state": "absent",
+                        "force_apt_get": true
+                    }
+                }
+            ],
+            "apt-get update": [
+                {
+                    "ansible.builtin.apt": {
+                        "update_cache": "yes",
+                        "force_apt_get": true
+                    }
+                }
+            ],
+            "apt-get upgrade": [
+                {
+                    "ansible.builtin.apt": {
+                        "upgrade": "yes",
+                        "force_apt_get": true
+                    }
+                }
+            ]
+        },
+        "opts": {
+            "allow-change-held-packages": {
+                "aliases": [
+                    "--allow-change-held-packages"
+                ],
+                "arg_required": false,
+                "many_args": false
+            },
+            "allow-downgrades": {
+                "aliases": [
+                    "--allow-downgrades"
+                ],
+                "arg_required": false,
+                "many_args": false
+            },
+            "allow-releaseinfo-change": {
+                "aliases": [
+                    "--allow-releaseinfo-change"
+                ],
+                "arg_required": false,
+                "many_args": false
+            },
+            "allow-remove-essential": {
+                "aliases": [
+                    "--allow-remove-essential"
+                ],
+                "arg_required": false,
+                "many_args": false
+            },
+            "allow-unauthenticated": {
+                "aliases": [
+                    "--allow-unauthenticated"
+                ],
+                "arg_required": false,
+                "many_args": false
+            },
+            "arch-only": {
+                "aliases": [
+                    "--arch-only"
+                ],
+                "arg_required": false,
+                "many_args": false
+            },
+            "assume-no": {
+                "aliases": [
+                    "--assume-no"
+                ],
+                "arg_required": false,
+                "many_args": false
+            },
+            "assume-yes": {
+                "aliases": [
+                    "-y",
+                    "--yes",
+                    "--assume-yes"
+                ],
+                "arg_required": false,
+                "many_args": false
+            },
+            "autoremove": {
+                "aliases": [
+                    "--auto-remove",
+                    "--autoremove"
+                ],
+                "arg_required": false,
+                "many_args": false
+            },
+            "build": {
+                "aliases": [
+                    "-b",
+                    "--compile",
+                    "--build"
+                ],
+                "arg_required": false,
+                "many_args": false
+            },
+            "build-profiles": {
+                "aliases": [
+                    "-P",
+                    "--build-profiles"
+                ],
+                "arg_required": true,
+                "many_args": false
+            },
+            "config-file": {
+                "aliases": [
+                    "-c",
+                    "--config-file"
+                ],
+                "arg_required": true,
+                "many_args": false
+            },
+            "default-release": {
+                "aliases": [
+                    "-t",
+                    "--target-release",
+                    "--default-release"
+                ],
+                "arg_required": true,
+                "many_args": false
+            },
+            "diff-only": {
+                "aliases": [
+                    "--diff-only"
+                ],
+                "arg_required": false,
+                "many_args": false
+            },
+            "download-only": {
+                "aliases": [
+                    "-d",
+                    "--download-only"
+                ],
+                "arg_required": false,
+                "many_args": false
+            },
+            "dsc-only": {
+                "aliases": [
+                    "--dsc-only"
+                ],
+                "arg_required": false,
+                "many_args": false
+            },
+            "fix-broken": {
+                "aliases": [
+                    "-f",
+                    "--fix-broken"
+                ],
+                "arg_required": false,
+                "many_args": false
+            },
+            "fix-missing": {
+                "aliases": [
+                    "-m",
+                    "--ignore-missing",
+                    "--fix-missing"
+                ],
+                "arg_required": false,
+                "many_args": false
+            },
+            "force-yes": {
+                "aliases": [
+                    "--force-yes"
+                ],
+                "arg_required": false,
+                "many_args": false
+            },
+            "help": {
+                "aliases": [
+                    "-h",
+                    "--help"
+                ],
+                "arg_required": false,
+                "many_args": false
+            },
+            "host-architecture": {
+                "aliases": [
+                    "-a",
+                    "--host-architecture"
+                ],
+                "arg_required": true,
+                "many_args": false
+            },
+            "ignore-hold": {
+                "aliases": [
+                    "--ignore-hold"
+                ],
+                "arg_required": false,
+                "many_args": false
+            },
+            "indep-only": {
+                "aliases": [
+                    "--indep-only"
+                ],
+                "arg_required": false,
+                "many_args": false
+            },
+            "install-suggests": {
+                "aliases": [
+                    "--install-suggests"
+                ],
+                "arg_required": false,
+                "many_args": false
+            },
+            "list-cleanup": {
+                "aliases": [
+                    "--list-cleanup"
+                ],
+                "arg_required": false,
+                "many_args": false
+            },
+            "no-allow-insecure-repositories": {
+                "aliases": [
+                    "--no-allow-insecure-repositories"
+                ],
+                "arg_required": false,
+                "many_args": false
+            },
+            "no-download": {
+                "aliases": [
+                    "--no-download"
+                ],
+                "arg_required": false,
+                "many_args": false
+            },
+            "no-install-recommends": {
+                "aliases": [
+                    "--no-install-recommends"
+                ],
+                "arg_required": false,
+                "many_args": false
+            },
+            "no-install-suggests": {
+                "aliases": [
+                    "--no-install-suggests"
+                ],
+                "arg_required": false,
+                "many_args": false
+            },
+            "no-list-cleanup": {
+                "aliases": [
+                    "--no-list-cleanup"
+                ],
+                "arg_required": false,
+                "many_args": false
+            },
+            "no-remove": {
+                "aliases": [
+                    "--no-remove"
+                ],
+                "arg_required": false,
+                "many_args": false
+            },
+            "no-show-upgraded": {
+                "aliases": [
+                    "--no-show-upgraded"
+                ],
+                "arg_required": false,
+                "many_args": false
+            },
+            "no-upgrade": {
+                "aliases": [
+                    "--no-upgrade"
+                ],
+                "arg_required": false,
+                "many_args": false
+            },
+            "only-source": {
+                "aliases": [
+                    "--only-source"
+                ],
+                "arg_required": false,
+                "many_args": false
+            },
+            "only-upgrade": {
+                "aliases": [
+                    "--only-upgrade"
+                ],
+                "arg_required": false,
+                "many_args": false
+            },
+            "option": {
+                "aliases": [
+                    "-o",
+                    "--option"
+                ],
+                "arg_required": true,
+                "many_args": true
+            },
+            "print-uris": {
+                "aliases": [
+                    "--print-uris"
+                ],
+                "arg_required": false,
+                "many_args": false
+            },
+            "purge": {
+                "aliases": [
+                    "--purge"
+                ],
+                "arg_required": false,
+                "many_args": false
+            },
+            "quiet": {
+                "aliases": [
+                    "-q",
+                    "--quiet"
+                ],
+                "arg_required": false,
+                "many_args": false
+            },
+            "reinstall": {
+                "aliases": [
+                    "--reinstall"
+                ],
+                "arg_required": false,
+                "many_args": false
+            },
+            "show-progress": {
+                "aliases": [
+                    "--show-progress"
+                ],
+                "arg_required": false,
+                "many_args": false
+            },
+            "simulate": {
+                "aliases": [
+                    "-s",
+                    "--simulate",
+                    "--just-print",
+                    "--dry-run",
+                    "--recon",
+                    "--no-act"
+                ],
+                "arg_required": false,
+                "many_args": false
+            },
+            "tar-only": {
+                "aliases": [
+                    "--tar-only"
+                ],
+                "arg_required": false,
+                "many_args": false
+            },
+            "trivial-only": {
+                "aliases": [
+                    "--trivial-only"
+                ],
+                "arg_required": false,
+                "many_args": false
+            },
+            "verbose-versions": {
+                "aliases": [
+                    "-V",
+                    "--verbose-versions"
+                ],
+                "arg_required": false,
+                "many_args": false
+            },
+            "version": {
+                "aliases": [
+                    "-v",
+                    "--version"
+                ],
+                "arg_required": false,
+                "many_args": false
+            },
+            "with-new-pkgs": {
+                "aliases": [
+                    "--with-new-pkgs"
+                ],
+                "arg_required": false,
+                "many_args": false
+            },
+            "with-source": {
+                "aliases": [
+                    "--with-source"
+                ],
+                "arg_required": true,
+                "many_args": false
+            }
+        },
+        "opts_postprocess": {
+            "--force-yes": {
+                "ansible.builtin.apt": {
+                    "force": "yes"
+                }
+            },
+            "--allow-unauthenticated --allow-downgrades": {
+                "ansible.builtin.apt": {
+                    "force": "yes"
+                }
+            },
+            "--allow-change-held-packages": {
+                "ansible.builtin.apt": {
+                    "--allow-change-held-packages": "yes"
+                }
+            },
+            "--allow-downgrades": {
+                "ansible.builtin.apt": {
+                    "allow_downgrade": "yes"
+                }
+            },
+            "--allow-unauthenticated": {
+                "ansible.builtin.apt": {
+                    "allow_unauthenticated": "yes"
+                }
+            },
+            "--autoremove": {
+                "ansible.builtin.apt": {
+                    "autoremove": true
+                }
+            },
+            "--assume-yes": {},
+            "--default-release <<value>>": {
+                "ansible.builtin.apt": {
+                    "default_release": "<<value>>"
+                }
+            },
+            "-o Dpkg::Options::=<<value>>": {
+                "ansible.builtin.apt": {
+                    "dpkg_options": "<<value>>,"
+                }
+            },
+            "--no-remove": {
+                "ansible.builtin.apt": {
+                    "fail_on_autoremove": true
+                }
+            },
+            "--list-cleanup": {},
+            "--no-install-recommends": {
+                "ansible.builtin.apt": {
+                    "install_recommends": false
+                }
+            },
+            "--no-install-suggests": {},
+            "--no-list-cleanup": {},
+            "--no-show-upgraded": {},
+            "--only-upgrade": {
+                "ansible.builtin.apt": {
+                    "only_upgrade": "yes"
+                }
+            },
+            "--print-uris": {},
+            "--purge": {
+                "ansible.builtin.apt": {
+                    "purge": "yes"
+                }
+            },
+            "--quiet": {},
+            "--verbose-versions": {}
+        }
+    }
+}

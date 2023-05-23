@@ -1,10 +1,10 @@
 import regex
 import dataclasses
 import itertools
-import os
 from src.ansible_matcher.antlr.src.CommandTemplateLexer import CommandTemplateLexer
 from src.ansible_matcher.antlr.src.CommandTemplateParser import CommandTemplateParser
 from src.ansible_matcher.antlr.src.CommandTemplateParserVisitor import CommandTemplateParserVisitor
+from src.utils import path_utils
 from antlr4 import *
 from typing import Union, Optional, Dict
 
@@ -66,27 +66,42 @@ class TemplateConstructor(CommandTemplateParserVisitor):
         )
 
         templ = template_parser.command_template()
-        if not templ or not isinstance(templ, CommandTemplateParser.Command_templateContext):
+
+        # we need to check that whole string was parsed as command template
+        if not templ \
+                or not isinstance(templ, CommandTemplateParser.Command_templateContext) \
+                or templ.stop.stop != len(template_str) - 1:
             return None
         return self.visitCommand_template(templ)
+        # TODO: check that all duplicate fields have same options
 
     def visitCommand_template(self, ctx: CommandTemplateParser.Command_templateContext) \
             -> Optional[CommandTemplateParts]:
-        obj_contexts = ctx.template_part()
-        if obj_contexts is None or not obj_contexts:
+        parts = ctx.template_part()
+        if parts is None or not parts:
             return None
 
         objects = []
-        for obj_ctx in obj_contexts:
-            if isinstance(obj_ctx, CommandTemplateParser.Template_partContext):
-                obj = self.visitTemplate_part(obj_ctx)
-                if obj is None:
-                    return None
-                objects.append(obj)
+        for part_ctx in parts:
+            if isinstance(part_ctx, CommandTemplateParser.Template_partContext):
+                obj = self.visitTemplate_part(part_ctx)
             else:
+                obj = None
+            if obj is None:
                 return None
+            objects.append(obj)
+
+        prefix = ctx.template_postfix()
+        if prefix is not None:
+            obj = self.visitTemplate_postfix(prefix)
+            if obj is None:
+                return None
+            objects.append(obj)
 
         return objects
+
+    def visitTemplate_postfix(self, ctx: CommandTemplateParser.Template_postfixContext) -> Optional[TemplatePart]:
+        return None if ctx.SPACE() is None else TemplatePart(parts=[], value="")
 
     def visitTemplate_part(self, ctx: CommandTemplateParser.Template_partContext) -> Optional[TemplatePart]:
         if ctx.children is None or not ctx.children or \
@@ -156,24 +171,11 @@ class TemplateConstructor(CommandTemplateParserVisitor):
 
 @dataclasses.dataclass
 class TemplateTweaks:
-    cwd: Optional[str] = None
-    usr: Optional[str] = None
+    cwd: str
+    usr: str
 
     def tweak_spec_path(self, path: str):
-        if path.startswith("/"):
-            return path
-        if path.startswith("~"):
-            if self.usr is None:
-                globalLog.info(f"Could not change path string - {path}, usr is None")
-                return path
-            if self.usr == "root":
-                return os.path.join(f"/root/", path[1:])
-            return os.path.join(f"/home/{self.usr}/", path[1:])
-
-        if self.cwd is None:
-            globalLog.info(f"Could not change path string - {path}, cwd is None")
-            return path
-        return os.path.join(self.cwd, path)
+        return path_utils.path_str_wrapper(path, cwd=self.cwd, usr=self.usr)
 
 
 TemplateMatchResult = Dict[str, Union[str, List[str]]]
@@ -189,12 +191,11 @@ class CommandTemplateMatcher:
     _RE_SHELL_WORD_SEP = "ω"
 
     @staticmethod
-    def merge_match_results(d1: TemplateMatchResult, d2: TemplateMatchResult) -> TemplateMatchResult:
+    def merge_match_results(d1: TemplateMatchResult, d2: TemplateMatchResult) -> Optional[TemplateMatchResult]:
         for k, v in d2.items():
-            if isinstance(v, list):
-                if k not in d1:
-                    d1[k] = []
-                d1[k].extend(v)
+            if k in d1:
+                globalLog.debug("Couldn't merge match results - found two values for the same key")
+                return None
             else:
                 d1[k] = v
         return d1
@@ -235,12 +236,13 @@ class CommandTemplateMatcher:
         return fr"(?P<field_{template_field.name}>[^{CommandTemplateMatcher._RE_SHELL_WORD_SEP}]*)"
 
     @staticmethod
-    def _gen_template_part_regex(template_part: TemplatePart) -> Tuple[str, List[TemplateField], bool]:
+    def _gen_template_part_regex(template_part: TemplatePart) -> Tuple[str, List[TemplateField], bool, bool]:
         subpart_list = template_part.subpart_list()
         res_str = ""
         res_list = []
 
         many_flag = False
+        optional_flag = False
 
         for subpart in subpart_list:
             if isinstance(subpart, str):
@@ -249,8 +251,9 @@ class CommandTemplateMatcher:
                 res_str += CommandTemplateMatcher._gen_template_field_regex(subpart)
                 res_list.append(subpart)
                 many_flag = many_flag or subpart.spec_many
+                optional_flag = optional_flag or subpart.spec_optional
 
-        return res_str, res_list, many_flag
+        return res_str, res_list, many_flag, optional_flag
 
     @staticmethod
     def _gen_command_template_regex(command_template: CommandTemplateParts) -> Tuple[str, List[TemplateField]]:
@@ -258,16 +261,15 @@ class CommandTemplateMatcher:
         res_str = ""
         res_list = []
 
-        for part in command_template[:-1]:
-            regex_str, field_list, many_flag = CommandTemplateMatcher._gen_template_part_regex(part)
+        for part in command_template:
+            regex_str, field_list, many_flag, optional_flag = CommandTemplateMatcher._gen_template_part_regex(part)
             part_regex = f"{regex_str}{sep}"
 
-            res_str += f"({part_regex})*" if many_flag else part_regex
-            res_list.extend(field_list)
+            part_regex = f"({part_regex})*" if many_flag else part_regex
+            part_regex = f"({part_regex})?" if optional_flag else part_regex
 
-        last_str, last_list, last_flag = CommandTemplateMatcher._gen_template_part_regex(command_template[-1])
-        res_str += f"({last_str}{sep})*({last_str})?" if last_flag else last_str
-        res_list.extend(last_list)
+            res_str += part_regex
+            res_list.extend(field_list)
 
         return res_str, res_list
 
@@ -292,7 +294,7 @@ class CommandTemplateMatcher:
 
         return CommandTemplateMatcher._RE_SHELL_WORD_SEP.join(
             prep[0] for prep in preprocessed
-        ), [
+        ) + CommandTemplateMatcher._RE_SHELL_WORD_SEP, [
             w for prep in preprocessed for w in prep[1]
         ]
 
@@ -395,62 +397,86 @@ class CommandTemplateMatcher:
 
 
 class TemplateFiller:
-    template: TemplatePart
+    template: CommandTemplateParts
 
     def __init__(self, templ: CommandTemplateParts):
-        value = templ[0].value
-        parts = templ[0].parts
-
-        for part in templ[1:]:
-            value += " "
-            for f in part.parts:
-                parts.append(TemplateField(name=f.name, pos=(f.pos[0] + len(value), f.pos[1] + len(value)),
-                                           spec_many=False, spec_optional=False, spec_path=False))
-        self.template = TemplatePart(value=value, parts=parts)
-
-    def fill(self, fields_dict: TemplateMatchResult, strict: bool = False) -> Optional[Union[str, List[str]]]:
-        res_size = 0
-        single_value_fields = []
-        list_values_fields = []
-        for f in self.template.parts:
-            if f.name not in fields_dict and strict:
-                return None
-            if isinstance(fields_dict[f.name], list):
-                if res_size == 0:
-                    res_size = len(fields_dict[f.name])
-                elif res_size != len(fields_dict[f.name]):
-                    return None
-                list_values_fields.append(f.name)
-            else:
-                single_value_fields.append(f.name)
-
-        if res_size == 0:
-            return TemplateFiller.fill_single_values(self.template, fields_dict, strict)
-        else:
-            res = []
-            values_dict = {f: fields_dict[f] for f in single_value_fields}
-            for i in range(res_size):
-                for f in list_values_fields:
-                    values_dict[f] = fields_dict[f][i]
-                res.append(TemplateFiller.fill_single_values(self.template, values_dict, strict))
-                if res[-1] is None:
-                    return None
-            return res
+        assert all(isinstance(p, TemplatePart) for p in templ)
+        self.template = templ
 
     @staticmethod
-    def fill_single_values(templ_part: TemplatePart, values_dict: Dict[str, str], strict: bool) -> Optional[str]:
+    def _fill_template_part(part: TemplatePart, values_dict: Dict[str, str]) -> str:
         res = ""
-        for subpart in templ_part.subpart_list():
+        for subpart in part.subpart_list():
             if isinstance(subpart, str):
                 res += subpart
             elif isinstance(subpart, TemplateField):
-                if subpart.name not in values_dict:
-                    if strict:
-                        return None
-                    else:
-                        res += templ_part.value[subpart.pos[0]:subpart.pos[1]]
+                res += values_dict.get(subpart.name, "")
+        return res
 
-                res += values_dict[subpart.name]
+    @staticmethod
+    def _get_multiples(fields_dict: TemplateMatchResult, field_names: List[str]) \
+            -> List[int]:
+        return list(set(len(fields_dict[name]) for name in field_names
+                        if name in fields_dict and isinstance(fields_dict[name], list)))
+
+    def fill_flatten(self, fields_dict: TemplateMatchResult, strict: bool = False) -> Optional[str]:
+        res = []
+        for part in self.template:
+            field_names = list(f.name for f in part.parts)
+            if any(name not in fields_dict for name in field_names) and strict:
+                return None
+            multiples = TemplateFiller._get_multiples(fields_dict, field_names)
+
+            if not multiples:
+                values_dict = {name: fields_dict[name] for name in field_names if name in fields_dict}
+                res.append(TemplateFiller._fill_template_part(part, values_dict))
+            elif len(multiples) > 1:
+                globalLog.debug("Found multiple different sized lists in fields dict - filling failed")
+                return None
+            elif multiples[0] == 0 and strict:
+                return None
+            else:
+                values = []
+                for i in range(multiples[0]):
+                    values_dict = {}
+                    for name in field_names:
+                        if name not in fields_dict:
+                            continue
+                        if isinstance(fields_dict[name], list):
+                            values_dict[name] = fields_dict[name][i]
+                        else:
+                            values_dict[name] = fields_dict[name]
+                    values.append(TemplateFiller._fill_template_part(part, values_dict))
+                res.append(" ".join(values))
+
+        return " ".join(res)
+
+    def fill_expand(self, fields_dict: TemplateMatchResult, strict: bool = False) -> Optional[List[str]]:
+        res = []
+        field_names = list(f.name for part in self.template for f in part.parts)
+        if any(name not in fields_dict for name in field_names) and strict:
+            return None
+        multiples = TemplateFiller._get_multiples(fields_dict, field_names)
+
+        if not multiples:
+            values_dict = {name: fields_dict[name] for name in field_names if name in fields_dict}
+            res.append(" ".join(TemplateFiller._fill_template_part(part, values_dict) for part in self.template))
+        elif len(multiples) > 1:
+            globalLog.debug("Found multiple different sized lists in fields dict - filling failed")
+            return None
+        elif multiples[0] == 0 and strict:
+            return None
+        else:
+            for i in range(multiples[0]):
+                values_dict = {}
+                for name in field_names:
+                    if name not in fields_dict:
+                        continue
+                    if isinstance(fields_dict[name], list):
+                        values_dict[name] = fields_dict[name][i]
+                    else:
+                        values_dict[name] = fields_dict[name]
+                res.append(" ".join(TemplateFiller._fill_template_part(part, values_dict) for part in self.template))
         return res
 
 

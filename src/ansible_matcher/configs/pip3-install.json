@@ -1,0 +1,206 @@
+{
+    "pip3 install": {
+        "entry": "pip3 install <<parameters : m>>",
+        "opts": {
+            "default timeout": {
+                "aliases": ["--default-timeout", "timeout"],
+                "arg_required": true,
+                "many_args": false
+            },
+            "editable": {
+                "aliases": ["-e", "--editable"],
+                "arg_required": false,
+                "many_args": false
+            },
+            "exists action": {
+                "aliases": ["--exists-action"],
+                "arg_required": true,
+                "many_args": false
+            },
+            "force-reinstall": {
+                "aliases": ["--force-reinstall"],
+                "arg_required": false,
+                "many_args": false
+            },
+            "ignore-installed": {
+                "aliases": ["-I", "--ignore-installed"],
+                "arg_required": false,
+                "many_args": false
+            },
+            "index-url": {
+                "aliases": ["-i", "--index-url"],
+                "arg_required": true,
+                "many_args": false
+            },
+            "verbose": {
+                "aliases": ["-v", "--verbose"],
+                "arg_required": false,
+                "many_args": false
+            },
+            "no-binary": {
+                "aliases": ["--no-binary"],
+                "arg_required": true,
+                "many_args": true
+            },
+            "no-cache-dir": {
+                "aliases": ["--no-cache", "--no-cache-dir"],
+                "arg_required": false,
+                "many_args": false
+            },
+            "no-index": {
+                "aliases": ["--no-index"],
+                "arg_required": false,
+                "many_args": false
+            },
+            "pre": {
+                "aliases": ["--pre"],
+                "arg_required": false,
+                "many_args": false
+            },
+            "quiet": {
+                "aliases": ["-q", "--quiet"],
+                "arg_required": false,
+                "many_args": false
+            },
+            "requirements": {
+                "aliases": ["-r", "--requirement"],
+                "arg_required": true,
+                "many_args": false
+            },
+            "require-hashes": {
+                "aliases": ["--require-hashes"],
+                "arg_required": false,
+                "many_args": false
+            },
+            "system": {
+                "aliases": ["--system"],
+                "arg_required": false,
+                "many_args": false
+            },
+            "trusted-host": {
+                "aliases": ["--trusted-host"],
+                "arg_required": true,
+                "many_args": false
+            },
+            "upgrade": {
+                "aliases": ["-U", "--upgrade"],
+                "arg_required": false,
+                "many_args": false
+            },
+            "user": {
+                "aliases": ["--user"],
+                "arg_required": false,
+                "many_args": false
+            }
+        },
+        "examples": {
+            "pip3 install <<packages : m>>": [
+                {
+                    "ansible.builtin.pip": {
+                        "name": ["<<packages>>"],
+                        "state": "present",
+                        "chdir": "<<cwd>>",
+                        "executable": "pip3"
+                    }
+                }
+            ],
+            "pip3 install -r <<requirement : p>>": [
+                {
+                    "ansible.builtin.pip": {
+                        "requirement": "<<requirement>>",
+                        "state": "present",
+                        "chdir": "<<cwd>>",
+                        "executable": "pip3"
+                    }
+                }
+            ]
+        },
+        "opts_postprocess": {
+            "--default-timeout <<default_timeout_arg>>": {
+                "ansible.builtin.pip": {
+                    "extra_args": "--default-timeout <<default_timeout_arg>> "
+                }
+            },
+            "--editable": {
+                "ansible.builtin.pip": {
+                    "editable": true
+                }
+            },
+            "--exists-action <<exists_action_arg>>": {
+                "ansible.builtin.pip": {
+                    "extra_args": "--exists-action <<exists_action_arg>> "
+                }
+            },
+            "--force-reinstall": {
+                "ansible.builtin.pip": {
+                    "state": "forcereinstall"
+                }
+            },
+            "--ignore-installed": {
+                "ansible.builtin.pip": {
+                    "extra_args": "--ignore-installed "
+                }
+            },
+            "--index-url <<index_url_arg>>": {
+                "ansible.builtin.pip": {
+                    "extra_args": "--index-url <<index_url_arg>> "
+                }
+            },
+            "--verbose": {
+                "ansible.builtin.pip": {
+                    "extra_args": "--verbose "
+                }
+            },
+            "--no-binary <<no_binary_arg : m>>": {
+                "ansible.builtin.pip": {
+                    "extra_args": "--no-binary=<<no_binary_arg>> "
+                }
+            },
+            "--no-cache-dir": {
+                "ansible.builtin.pip": {
+                    "extra_args": "--no-cache-dir "
+                }
+            },
+            "--no-index": {
+                "ansible.builtin.pip": {
+                    "extra_args": "--no-index "
+                }
+            },
+            "--pre": {
+                "ansible.builtin.pip": {
+                    "extra_args": "--pre "
+                }
+            },
+            "--quiet": {
+                "ansible.builtin.pip": {
+                    "extra_args": "--quiet "
+                }
+            },
+            "require-hashes": {
+                "aliases": ["--require-hashes"],
+                "arg_required": false,
+                "many_args": false
+            },
+            "system": {
+                "aliases": ["--system"],
+                "arg_required": false,
+                "many_args": false
+            },
+            "--trusted-host <<trusted_host_arg>>": {
+                "ansible.builtin.pip": {
+                    "extra_args": "--trusted-host <<trusted_host_arg>> "
+                }
+            },
+            "--upgrade": {
+                "ansible.builtin.pip": {
+                    "state": "latest"
+                }
+            },
+            "--user": {
+                "ansible.builtin.pip": {
+                    "extra_args": "--user "
+                }
+            }
+        }
+    }
+}

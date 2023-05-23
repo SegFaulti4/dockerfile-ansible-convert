@@ -1,5 +1,5 @@
 from enum import Enum
-import itertools
+import validators
 
 from src.ansible_matcher.main import *
 from src.containerfile.main import *
@@ -16,45 +16,61 @@ class _ScriptPartType(Enum):
     NONE = 4
 
 
-@dataclass
-class _LocalRuntime:
-    prev_part_type: _ScriptPartType = None
-    prev_part_value: Union[Dict, None] = None
-
-
-@dataclass
 class _GeneralRuntime:
-    # directive: DockerfileDirective = None
-    role_tasks: List = field(default_factory=list)
-    echo_registers_num: int = 0
-    result_registers_num: int = 0
+    role_tasks: List
+    echo_registers_num: int
+    result_registers_num: int
+
+    def __init__(self):
+        self.role_tasks = list()
+        self.echo_registers_num = 0
+        self.result_registers_num = 0
 
 
-@dataclass
+class _RunRuntime:
+    stat_flag: bool
+
+    def __init__(self):
+        self.stat_flag = False
+
+
 class _Runtime:
-    general: _GeneralRuntime = _GeneralRuntime()
-    local: _LocalRuntime = _LocalRuntime()
+    general: _GeneralRuntime
+    run: _RunRuntime
+
+    def __init__(self):
+        self.general = _GeneralRuntime()
+        self.run = _RunRuntime()
 
 
 class RoleGenerator:
     task_matcher: TaskMatcher
-    collect_stats: bool
     default_user: str
-    stats: Optional[RoleGeneratorStatistics]
+    default_workdir: str
+
+    stats: Optional[PlaybookGeneratorStatistics]
+    run_stats: Optional[RunStatistics]
     matcher_tests: Optional[List[str]]
+
+    # stat flags
+    collect_stats: bool = False
+    collect_matcher_tests: bool = False
+    stat_id: int = -1
+
+    _DEFAULT_PATH = "/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin"
 
     _df_content: DockerfileContent
     _context: Union[AnsiblePlayContext, None] = None
     _runtime: Union[_Runtime, None] = None
 
-    def __init__(self, dc: DockerfileContent, tm: TaskMatcher, default_user: str = "root",
-                 collect_stats: bool = False, collect_matcher_tests: bool = False):
+    def __init__(self, dc: DockerfileContent, tm: TaskMatcher, default_user: str = "root", default_workdir: str = "/"):
         self._df_content = dc
         self.task_matcher = tm
-        self.collect_stats = collect_stats
-        self.collect_matcher_tests = collect_matcher_tests
         self.default_user = default_user
+        self.default_workdir = default_workdir
+
         self.stats = None
+        self.run_stats = None
         self.matcher_tests = None
 
     def generate(self) -> List[Dict[str, Any]]:
@@ -80,12 +96,15 @@ class RoleGenerator:
             ShellDirective: self._handle_shell
         }
 
-        self.stats = RoleGeneratorStatistics()
+        self.stats = PlaybookGeneratorStatistics()
+        self.run_stats = RunStatistics()
         self.matcher_tests = list()
         self._runtime = _Runtime()
-        self._context = AnsiblePlayContext(global_env=dict(), local_env=dict(),
-                                           global_user=self.default_user,
-                                           facts=dict(), vars=dict())
+        # setting up global_user also sets `HOME` global env
+        self._context = AnsiblePlayContext(global_user=self.default_user,
+                                           global_workdir=self.default_workdir)
+        self._add_default_context_vars()
+
         for directive in self._df_content.directives:
             handle_map[type(directive)](directive=directive)
 
@@ -98,37 +117,54 @@ class RoleGenerator:
     def _return(self):
         self._runtime.general.result_registers_num = 0
         self._runtime.general.echo_registers_num = 0
-        self._runtime.local = _LocalRuntime()
 
         return self._runtime.general.role_tasks
 
-    def _add_task(self, task: Dict,
-                  user: str = "",
-                  variables: Dict[str, str] = None,
-                  environment: Dict[str, str] = None,
-                  set_condition: bool = False) -> Union[Dict, None]:
+    def _add_default_context_vars(self):
+        default_vars = {
+            "PATH": "{{ ansible_env.PATH }}"
+        }
+        task = {"set_fact": dict()}
+
+        for name, value in default_vars.items():
+            fact_name = self._fact_name_wrapper(name)
+            task["set_fact"][fact_name] = value
+            self._context.add_global_env(name=name, value="{{ " + fact_name + " }}")
+        self._add_task(task, user="")
+
+    def _prepare_task(self, task: Dict, user: str = "", variables: Dict[str, str] = None,
+                      environment: Dict[str, str] = None) -> Union[Dict, None]:
         if user:
             self._add_task_user(task, user)
         if variables:
             self._add_task_vars(task, variables)
         if environment:
             self._add_task_environment(task, environment)
-        if set_condition:
-            if self._set_task_condition(task):
-                self._runtime.general.role_tasks.append(task)
-                return self._runtime.general.role_tasks[-1]
-            else:
-                return None
+        return task
 
+    def _add_task(self, task: Dict, user: str = "", variables: Dict[str, str] = None,
+                  environment: Dict[str, str] = None) -> Union[Dict, None]:
+        task = self._prepare_task(task, user, variables, environment)
         self._runtime.general.role_tasks.append(task)
         return self._runtime.general.role_tasks[-1]
+
+    def _shell_expr_values(self, exps: List[ShellExpression], strict: bool = True, empty_missing: bool = False) \
+            -> List[str]:
+        res = []
+        for expr in exps:
+            val = self._context.resolve_shell_expression(expr, strict, empty_missing)
+            if val is None:
+                task = self._create_echo_task(expr.line)
+                register = self._add_echo_register(task)
+                self._add_task(task, user="root", environment=self._context.get_environment())
+                res.append("{{ " + register + ".stdout }}")
+            else:
+                res.append(val)
+        return res
 
     ###################
     # HANDLER METHODS #
     ###################
-
-    # def _handle_directive(self, directive: DockerfileDirective) -> None:
-    #    getattr(self, "_handle_" + type(directive).__name__.replace('Node', '').lower())(directive)
 
     @staticmethod
     def _handle_default(directive) -> None:
@@ -146,76 +182,108 @@ class RoleGenerator:
             ShellOperatorEndObject: self._handle_run_operator_end
         }
 
+        parts: List[Union[List[Dict], ShellOperatorObject]] = []
         for obj in directive.script.parts:
-            part_type, part_value = handle_run_map[type(obj)](obj=obj)
-            self._runtime.local.prev_part_type = part_type
-            self._runtime.local.prev_part_value = part_value
+            self._runtime.run.stat_flag = self.collect_stats
+            parts.append(handle_run_map[type(obj)](obj=obj))
 
+        self._handle_run_parts(parts)
         self._clear_local_context()
 
     @supported_directive
     def _handle_env(self, directive: EnvDirective) -> None:
-        for name, value in zip(directive.names, directive.values):
-            fact_name = self._add_fact(name, value)
+        fact_names = self._add_facts(directive.names, directive.values)
+        for name, fact_name in zip(directive.names, fact_names):
             self._context.add_global_env(name=name, value="{{ " + fact_name + " }}")
 
     @supported_directive
     def _handle_arg(self, directive: ArgDirective) -> None:
-        name = directive.name
-        fact_name = self._add_fact(name, directive.value)
-        self._context.add_global_env(name=name, value="{{ " + fact_name + " }}")
+        fact_name = self._add_fact(directive.name, directive.value)
+        self._context.add_global_env(name=directive.name, value="{{ " + fact_name + " }}")
 
     @supported_directive
     def _handle_user(self, directive: UserDirective) -> None:
-        val = self._context.shell_expression_value(directive.name)
-        if val is None:
-            task = self._create_echo_task(directive.name.line)
-            register = self._add_echo_register(task)
-            self._add_task(task, user=self._context.get_user(), environment=self._context.get_environment(),
-                           set_condition=False)
-            self._context.set_global_user("{{ " + register + " }}")
+        name = self._shell_expr_values([directive.name], strict=False, empty_missing=True)[0]
+        group = self._shell_expr_values([directive.group], strict=False, empty_missing=True)[0]
+
+        if not name:
+            return
+        tasks = []
+
+        if group:
+            if group.isnumeric():
+                gid = int(group)
+                group = f"autogen_gid_{gid}"
+            else:
+                gid = None
+
+            tasks.append({
+                "ansible.builtin.group": {
+                    "state": "present",
+                    "name": group
+                },
+                "become": True
+            })
+            if gid is not None:
+                tasks[-1]["ansible.builtin.group"]["gid"] = gid
+
+        if name.isnumeric():
+            uid = int(name)
+            name = f"autogen_uid_{uid}"
         else:
-            self._context.set_global_user(name=val)
+            uid = None
+
+        tasks.append({
+            "ansible.builtin.user": {
+                "name": name,
+                "state": "present",
+                "create_home": False
+            },
+            "become": True
+        })
+        if uid is not None:
+            tasks[-1]["ansible.builtin.user"]["uid"] = uid
+        if group:
+            tasks[-1]["ansible.builtin.user"]["group"] = group
+
+        for task in tasks:
+            self._add_task(task)
+        self._context.set_global_user(name=name)
 
     @supported_directive
     def _handle_workdir(self, directive: WorkdirDirective) -> None:
-        val = self._context.shell_expression_value(directive.path)
-        if val is None:
-            task = self._create_echo_task(directive.path.line)
-            register = self._add_echo_register(task)
-            self._add_task(task, user=self._context.get_user(), environment=self._context.get_environment(),
-                           set_condition=False)
-            self._context.set_global_workdir("{{ " + register + " }}")
-        else:
-            self._context.set_global_workdir(path=val)
+        path = self._shell_expr_values([directive.path], strict=False)[0]
+        if path != "/":
+            mkdir_task = self._create_mkdir_task(path)
+            self._add_task(mkdir_task, user="root")
+        self._context.set_global_workdir(path, ignore_tilde=True)
 
     @supported_directive
     def _handle_add(self, directive: AddDirective) -> None:
-        paths = [directive.source] + [dest for dest in directive.destinations]
-        vals = []
-        for path in paths:
-            val = self._context.shell_expression_value(path)
-            if val is None:
-                task = self._create_echo_task(path.line)
-                register = self._add_echo_register(task)
-                self._add_task(task, user=self._context.get_user(), environment=self._context.get_environment(),
-                               set_condition=False)
-                val = "{{ " + register + " }}"
-            vals.append(val)
+        sources, destination = self._prepare_sources_and_destination(directive)
+        name, group = directive.chown_name.line, directive.chown_group.line
 
-        for dest in vals[1:]:
-            task = {
-                "copy": {
-                    "src": vals[0],
-                    "dest": dest
-                }
-            }
-            self._add_task(task, user=self._context.get_user(), set_condition=False)
+        urls, archives, files = [], [], []
+        for source in sources:
+            if self._is_url(source):
+                urls.append(source)
+            elif self._is_archive(source) and not self._is_url(source):
+                archives.append(source)
+            else:
+                files.append(source)
+
+        tasks = self._create_add_directive_tasks(urls, archives, files, destination, name=name, group=group)
+        for task in tasks:
+            self._add_task(task, user="root")
 
     @supported_directive
     def _handle_copy(self, directive: CopyDirective) -> None:
-        return self._handle_add(directive=AddDirective(source=directive.source,
-                                                       destinations=directive.destinations))
+        sources, destination = self._prepare_sources_and_destination(directive)
+        name, group = directive.chown_name.line, directive.chown_group.line
+
+        tasks = self._create_file_copy_tasks(sources, destination, name=name, group=group)
+        for task in tasks:
+            self._add_task(task, user="root")
 
     @unsupported_directive
     def _handle_from(self, directive) -> None:
@@ -266,45 +334,254 @@ class RoleGenerator:
     #################################
 
     @staticmethod
-    def _create_set_fact_task(fact_name: str, value: str) -> Dict[str, Any]:
-        task = {
-            "set_fact": {
-                fact_name: value
-            }
-        }
-        return task
+    def _fact_name_wrapper(s: str) -> str:
+        fact_name = s.strip().lower().replace('-', '_') + "_fact"
+        return fact_name
 
-    @staticmethod
-    def _create_etc_env_task(name: str, value: str) -> Dict[str, Any]:
-        task = {
-            "lineinfile": {
-                "dest": "/etc/environment",
-                "state": "present",
-                "regexp": f"^{name}=",
-                "line": f"{name}={value}"
-            }
-        }
-        return task
+    def _define_fact(self, name: str, value: ShellExpression) -> Tuple[str, str]:
+        fact_name = self._fact_name_wrapper(name)
 
-    def _add_permanent_env(self, name: str, value: str):
-        task = self._create_etc_env_task(name, value)
-        task = self._add_task(task, set_condition=False)
-        task["become"] = "yes"
-
-    def _add_fact(self, name: str, value: ShellExpression) -> str:
-        fact_name = name.strip().lower().replace('-', '_') + "_fact"
-        val = self._context.shell_expression_value(value)
+        # self._shell_expr_values is not used
+        # because behaviour depends on whether expression value
+        # is available without calling of "echo" task
+        val = self._context.resolve_shell_expression(value, strict=True)
         if val is None:
             task = self._create_echo_task(value.line)
             register = self._add_echo_register(task)
-            self._add_task(task, environment=self._context.get_environment(), set_condition=False)
-            val = "{{ " + register + " }}"
+            self._add_task(task, environment=self._context.get_environment())
+            val = "{{ " + register + ".stdout }}"
         else:
             self._context.set_fact(fact_name, val)
+        return fact_name, val
 
-        task = self._create_set_fact_task(fact_name=fact_name, value=val)
-        self._add_task(task, set_condition=False)
-        return fact_name
+    def _add_facts(self, names: List[str], values: List[ShellExpression]) -> List[str]:
+        facts = {}
+        for name, value in zip(names, values):
+            fact_name, val = self._define_fact(name, value)
+            facts[fact_name] = val
+        task = {"set_fact": facts}
+        self._add_task(task)
+        return list(facts.keys())
+
+    def _add_fact(self, name: str, value: ShellExpression) -> str:
+        return self._add_facts([name], [value])[0]
+
+    #############################
+    # WORKDIR DIRECTIVE METHODS #
+    #############################
+
+    def _create_mkdir_task(self, path: str) -> Dict:
+        task = {
+            "ansible.builtin.file": {
+                "state": "directory",
+                "path": path if path.startswith("~") else self._context.path_str_wrapper(path)
+            }
+        }
+        return task
+
+    ##################################
+    # ADD and COPY DIRECTIVE METHODS #
+    ##################################
+
+    @staticmethod
+    def _is_url(s: str) -> bool:
+        return validators.url(s)
+
+    @staticmethod
+    def _is_archive(s: str) -> bool:
+        ends = [".tar", ".tar.gz", ".tar.bz2", ".tar.xz"]
+        return any(s.endswith(end) for end in ends)
+
+    def _prepare_sources_and_destination(self, directive: Union[CopyDirective, AddDirective]) -> Tuple[List[str], str]:
+        paths = [source for source in directive.sources] + [directive.destination]
+        vals = self._shell_expr_values(paths, strict=True, empty_missing=True)
+
+        # sources are paths on local machine - they don't need to be resolved accordingly to context
+        vals = vals[:-1] + [self._context.path_str_wrapper(vals[-1])]
+
+        sources, destination = [v.rstrip("/") for v in vals[:-1]], vals[-1]
+        return sources, destination
+
+    @staticmethod
+    def _create_file_copy_tasks(sources: List[str], destination: str,
+                                name: str = "", group: str = "") -> List[Dict]:
+        if not destination.endswith("/"):
+            tasks = [
+                {
+                    "file": {
+                        "state": "directory",
+                        "path": "{{ dest | dirname }}"
+                    },
+                    "vars": {
+                        "dest": destination
+                    }
+                },
+                {
+                    "copy": {
+                        "src": "{{ item }}",
+                        "dest": destination,
+                        "mode": "0755",
+                        "remote_src": False
+                    },
+                    "with_fileglob": sources
+                }
+            ]
+            if name:
+                tasks[-1]["copy"]["owner"] = name
+            if group:
+                tasks[-1]["copy"]["group"] = group
+        else:
+            if destination != '/':
+                tasks = [{
+                    "file": {
+                        "state": "directory",
+                        "path": destination[:-1]
+                    }
+                }]
+            else:
+                tasks = []
+
+            tasks.extend([
+                {
+                    "stat": {
+                        "path": "{{ item }}"
+                    },
+                    "with_fileglob": sources,
+                    "register": "st_reg",
+                    "delegate_to": "localhost"
+                },
+                {
+                    "copy": {
+                        "src": "{{ item.stat.path + '/' if ( item.stat.isdir is defined and item.stat.isdir ) else "
+                               "item.stat.path }}",
+                        "dest": destination,
+                        "mode": "0755",
+                        "remote_src": False
+                    },
+                    "loop": "{{ st_reg.results }}"
+                }
+            ])
+            if name:
+                tasks[-1]["copy"]["owner"] = name
+            if group:
+                tasks[-1]["copy"]["group"] = group
+        return tasks
+
+    @staticmethod
+    def _create_url_copy_tasks(urls: List[str], destination: str,
+                               name: str = "", group: str = "") -> List[Dict]:
+        if not urls:
+            return []
+
+        tasks = []
+
+        if destination.endswith("/"):
+            if destination != '/':
+                tasks.append({
+                    "file": {
+                        "state": "directory",
+                        "path": destination[:-1]
+                    }
+                })
+            if len(urls) > 1:
+                tasks.append({
+                    "get_url": {
+                        "url": "{{ item }}",
+                        "dest": "{{ (dest, item | basename) | path_join }}",
+                        "decompress": False
+                    },
+                    "loop": urls,
+                    "vars": {
+                        "dest": destination[:-1] if destination != "/" else destination
+                    }
+                })
+            else:
+                tasks.append({
+                    "get_url": {
+                        "url": "{{ url }}",
+                        "dest": "{{ (dest, url | basename) | path_join }}",
+                        "decompress": False
+                    },
+                    "vars": {
+                        "url": urls[0],
+                        "dest": destination[:-1] if destination != "/" else destination
+                    }
+                })
+
+        else:
+            tasks.append({
+                "file": {
+                    "state": "directory",
+                    "path": "{{ dest | dirname }}"
+                },
+                "vars": {
+                    "dest": destination
+                }
+            })
+            if len(urls) > 1:
+                tasks.append({
+                    "get_url": {
+                        "url": "{{ item }}",
+                        "dest": destination,
+                        "decompress": False
+                    },
+                    "loop": urls
+                })
+            else:
+                tasks.append({
+                    "get_url": {
+                        "url": urls[0],
+                        "dest": destination,
+                        "decompress": False
+                    }
+                })
+
+        if name:
+            tasks[-1]["get_url"]["owner"] = name
+        if group:
+            tasks[-1]["get_url"]["group"] = group
+        return tasks
+
+    @staticmethod
+    def _create_archive_copy_tasks(archives: List[str], destination: str,
+                                   name: str = "", group: str = "") -> List[Dict]:
+        if not archives:
+            return []
+
+        tasks = [
+            {
+                "file": {
+                    "state": "directory",
+                    "path": destination
+                }
+            },
+            {
+                "unarchive": {
+                    "src": "{{ item }}",
+                    "dest": destination,
+                    "remote_src": False
+                },
+                "with_fileglob": archives
+            }
+        ]
+        if name:
+            tasks[-1]["unarchive"]["owner"] = name
+        if group:
+            tasks[-1]["unarchive"]["group"] = group
+        return tasks
+
+    @staticmethod
+    def _create_add_directive_tasks(urls: List[str], archives: List[str],
+                                    files: List[str], destination: str,
+                                    name: str = "", group: str = "") -> List[Dict]:
+        tasks = []
+        if files:
+            tasks.extend(RoleGenerator._create_file_copy_tasks(files, destination, name=name, group=group))
+        if urls:
+            tasks.extend(RoleGenerator._create_url_copy_tasks(urls, destination, name=name, group=group))
+        if archives:
+            tasks.extend(RoleGenerator._create_archive_copy_tasks(archives, destination, name=name, group=group))
+        return tasks
 
     #########################
     # RUN DIRECTIVE METHODS #
@@ -324,29 +601,6 @@ class RoleGenerator:
         self._runtime.general.echo_registers_num += 1
         return register
 
-    # returns True if task with set condition should be added and False otherwise
-    def _set_task_condition(self, task: Dict) -> bool:
-        if self._runtime.local.prev_part_type is _ScriptPartType.OPERATOR_OR:
-            prev_task = self._runtime.local.prev_part_value
-            if prev_task is not None:
-                register = self._add_result_register(prev_task)
-                task["when"] = register + " is not succeeded"
-                return True
-            else:
-                # if prev_task is None that means
-                # that previous part of script cannot fail
-                # so new task will never be executed
-                return False
-        elif self._runtime.local.prev_part_type is _ScriptPartType.OPERATOR_AND:
-            prev_task = self._runtime.local.prev_part_value
-            if prev_task is not None:
-                register = self._add_result_register(prev_task)
-                task["when"] = register + " is succeeded"
-                return True
-            return True
-        else:
-            return True
-
     @staticmethod
     def _add_task_user(task: Dict, user: str) -> None:
         task["become"] = True
@@ -355,16 +609,23 @@ class RoleGenerator:
 
     @staticmethod
     def _add_task_vars(task: Dict, local_vars: Dict[str, str]) -> None:
-        task["vars"] = local_vars
+        if "vars" not in task:
+            task["vars"] = deepcopy(local_vars)
+        else:
+            task["vars"] = {**deepcopy(local_vars), **task["vars"]}
 
     @staticmethod
     def _add_task_environment(task: Dict, environment: Dict[str, str]) -> None:
-        task["environment"] = environment
+        if "environment" not in task:
+            task["environment"] = environment
+        else:
+            task["environment"] = {**environment, **task["environment"]}
 
     def _create_shell_task(self, line: str) -> Dict[str, Any]:
         task = {
             "shell": {
-                "cmd": line
+                "cmd": line,
+                "executable": "/bin/bash"
             }
         }
         wd = self._context.get_workdir()
@@ -387,97 +648,202 @@ class RoleGenerator:
 
     def _clear_local_context(self) -> None:
         self._context.clear_local_context()
-        self._runtime.local = _LocalRuntime()
 
-    def _handle_run_command_raw(self, obj: ShellRawObject) -> (_ScriptPartType, Any):
+    def _handle_run_command_raw(self, obj: ShellRawObject) -> List[Dict]:
+        if self._runtime.run.stat_flag:
+            self._runtime.run.stat_flag = False
+            self.run_stats.name.append("raw")
+            self.run_stats.supported.append(False)
+            self.run_stats.coverage.append(0.0)
+            self.run_stats.length.append(len(obj.value))
+            self.run_stats.stat_id.append(self.stat_id)
+
         task = self._create_shell_task(obj.value)
-        task = self._add_task(task, set_condition=True,
-                              user=self._context.get_user(), environment=self._context.get_environment())
-        return _ScriptPartType.COMMAND, task
+        task = self._prepare_task(task, user=self._context.get_user(), environment=self._context.get_environment(),
+                                  variables=self._context.workdir_local_vars)
+        return [] if task is None else [task]
 
-    def _handle_run_command_shell(self, line: str, local_vars: Dict[str, str]) -> (_ScriptPartType, Any):
-        task = self._create_shell_task(line)
-        task = self._add_task(task, user=self._context.get_user(), variables=local_vars, set_condition=True)
-        return _ScriptPartType.COMMAND, task
+    def _handle_run_command_shell(self, line: str, local_vars: Dict[str, str], obj: ShellCommandObject) -> List[Dict]:
+        return self._handle_run_command_raw(ShellRawObject(value=obj.line))
 
-    def _handle_run_command(self, obj: ShellCommandObject) -> (_ScriptPartType, Any):
+        # currently redundant behaviour
+        # may add it back i the future
+        #
+        # task = self._create_shell_task(line)
+        # task = self._prepare_task(task, user=self._context.get_user(), variables=local_vars)
+        # return [] if task is None else [task]
+
+    def _handle_run_command(self, obj: ShellCommandObject) -> List[Dict]:
+        if self._runtime.run.stat_flag:
+            self._runtime.run.stat_flag = False
+            self.run_stats.name.append("command")
+            self.run_stats.supported.append(True)
+            self.run_stats.coverage.append(1.0)
+            self.run_stats.length.append(len(obj.line))
+            self.run_stats.stat_id.append(self.stat_id)
+
         resolved = self._context.resolve_shell_command(obj)
 
         if resolved is None:
             return self._handle_run_command_raw(ShellRawObject(value=obj.line))
         words, local_vars = resolved
 
-        return self._handle_run_command_resolved(words=words, local_vars=local_vars)
+        return self._handle_run_command_resolved(words=words, local_vars=local_vars, obj=obj)
 
     def _handle_run_command_resolved(self, words: List[ShellWordObject], local_vars: Dict[str, str],
-                                     usr: str = None, cwd: str = None) -> (_ScriptPartType, Any):
-        usr = self._context.get_user() if usr is None else usr
+                                     obj: ShellCommandObject, cwd: str = None) -> List[Dict]:
+        usr = self._context.get_user()
         cwd = self._context.get_workdir() if cwd is None else cwd
         line = " ".join(x.value for x in words)
 
-        # ATTENTION: "collect_stats" parameter is passed to matcher
-        # collected stats might then be altered `_handle_run_command_extracted`
-        task = self.task_matcher.match_command(words, cwd=cwd, usr=usr, collect_stats=self.collect_stats)
-        if task is not None:
+        tasks = self.task_matcher.match_command(words, cwd=cwd, usr=usr)
+        if tasks is not None:
             if self.collect_matcher_tests:
                 values = [self._context.word_true_value(w) for w in words]
                 if all(v is not None for v in values):
                     self.matcher_tests.append(" ".join(values))
 
-            task = self._add_task(task, user=usr, variables=local_vars, set_condition=True)
-            return _ScriptPartType.COMMAND, task
+            # ATTENTION: task matcher can return blocks, so setting registers is not allowed
+            tasks = [self._prepare_task(task, user=usr, variables=local_vars) for task in tasks]
+            return tasks
 
         extracted_call = self.task_matcher.extract_command(words)
         if extracted_call is None:
-            return self._handle_run_command_shell(line=line, local_vars=local_vars)
-        return self._handle_run_command_extracted(extracted_call, local_vars, line)
+            return self._handle_run_command_shell(line=line, local_vars=local_vars, obj=obj)
+        return self._handle_run_command_extracted(extracted_call, local_vars, line, obj=obj)
 
     def _handle_run_command_extracted(self, extracted_call: ExtractedCommandCall,
-                                      local_vars: Dict[str, str], line: str) -> (_ScriptPartType, Any):
+                                      local_vars: Dict[str, str], line: str, obj: ShellCommandObject) -> List[Dict]:
         handle_map = {
             "sudo": self._handle_run_command_sudo,
             "cd": self._handle_run_command_cd
         }
         comm_name = extracted_call.params[0].value
         if comm_name not in handle_map:
-            return self._handle_run_command_shell(line=line, local_vars=local_vars)
-        return handle_map[comm_name](extracted_call, local_vars, line)
+            return self._handle_run_command_shell(line=line, local_vars=local_vars, obj=obj)
+        return handle_map[comm_name](extracted_call, local_vars, line, obj)
 
-    def _handle_run_assignment(self, obj: ShellAssignmentObject) -> (_ScriptPartType, Any):
-        value = self._context.shell_expression_value(obj.value)
+    def _handle_run_assignment(self, obj: ShellAssignmentObject) -> List[Dict]:
+        if self._runtime.run.stat_flag:
+            self._runtime.run.stat_flag = False
+            self.run_stats.name.append("assignment")
+            self.run_stats.supported.append(True)
+            self.run_stats.coverage.append(1.0)
+            self.run_stats.length.append(len(obj.name) + 1 + len(obj.value.line))
+            self.run_stats.stat_id.append(self.stat_id)
+
+        # local vars are always added regardless of nearby shell operators
+        #
+        # self._shell_expr_values is not used
+        # because behaviour depends on whether expression value
+        # is available without calling of "echo" task
+        value = self._context.resolve_shell_expression(obj.value, strict=True)
         if value is None:
             task = self._create_echo_task(obj.value.line)
             register = self._add_echo_register(task)
-            task = self._add_task(task, user=self._context.get_user(), environment=self._context.get_environment(),
-                                  set_condition=True)
-            self._context.add_local_env(name=obj.name, value="{{ " + register + " }}")
-
-            return _ScriptPartType.COMMAND, task
+            task = self._prepare_task(task, user=self._context.get_user(), environment=self._context.get_environment(),
+                                      variables=self._context.workdir_local_vars)
+            self._context.add_local_env(name=obj.name, value="{{ " + register + ".stdout }}")
+            return [task]
         else:
-            # example: `BAT=bruce || MAN=wayne; echo $BAT$MAN` in bash returns `bruce`
-            # so in that case variable MAN should not be set
-            if self._runtime.local.prev_part_type is not _ScriptPartType.OPERATOR_OR or \
-                    self._runtime.local.prev_part_value is not None:
-                self._context.set_var(name=obj.name, value=value)
-                self._context.add_local_env(name=obj.name, value=value)
+            self._context.set_var(name=obj.name, value=value)
+            self._context.add_local_env(name=obj.name, value=value)
+            return []
 
-            return _ScriptPartType.NONE, None
+    def _handle_run_operator_or(self, obj: ShellOperatorOrObject) -> ShellOperatorObject:
+        if self._runtime.run.stat_flag:
+            self._runtime.run.stat_flag = False
+            self.run_stats.name.append("operator or")
+            self.run_stats.supported.append(True)
+            self.run_stats.coverage.append(1.0)
+            self.run_stats.length.append(4)
+            self.run_stats.stat_id.append(self.stat_id)
 
-    def _handle_run_operator_or(self, obj: ShellOperatorOrObject) -> (_ScriptPartType, Any):
-        return _ScriptPartType.OPERATOR_OR, self._runtime.local.prev_part_value
+        return obj
 
-    def _handle_run_operator_and(self, obj: ShellOperatorAndObject) -> (_ScriptPartType, Any):
-        return _ScriptPartType.OPERATOR_AND, self._runtime.local.prev_part_value
+    def _handle_run_operator_and(self, obj: ShellOperatorAndObject) -> ShellOperatorObject:
+        if self._runtime.run.stat_flag:
+            self._runtime.run.stat_flag = False
+            self.run_stats.name.append("operator and")
+            self.run_stats.supported.append(True)
+            self.run_stats.coverage.append(1.0)
+            self.run_stats.length.append(4)
+            self.run_stats.stat_id.append(self.stat_id)
 
-    def _handle_run_operator_end(self, obj: ShellOperatorEndObject) -> (_ScriptPartType, Any):
-        return _ScriptPartType.NONE, None
+        return obj
+
+    def _handle_run_operator_end(self, obj: ShellOperatorEndObject) -> ShellOperatorObject:
+        if self._runtime.run.stat_flag:
+            self._runtime.run.stat_flag = False
+            self.run_stats.name.append("command separator")
+            self.run_stats.supported.append(True)
+            self.run_stats.coverage.append(1.0)
+            self.run_stats.length.append(3)
+            self.run_stats.stat_id.append(self.stat_id)
+
+        return obj
+
+    def _handle_run_parts(self, parts: List[Union[List[Dict], ShellOperatorObject]]) -> None:
+        cur_tasks = []
+        i = 0
+
+        # delete empty task lists (e.g. `cd` command)
+        parts = [part for part in parts if part]
+
+        # skip a few first operators
+        # after deleting empty task lists
+        while parts[i:] and not isinstance(parts[i], List):
+            i += 1
+
+        while i < len(parts):
+            part = parts[i]
+            if isinstance(part, List):
+                cur_tasks.extend(part)
+            elif isinstance(part, ShellOperatorObject):
+                if isinstance(part, ShellOperatorAndObject):
+                    pass
+                elif isinstance(part, ShellOperatorOrObject):
+                    if i + 1 >= len(parts):
+                        pass
+                    else:
+                        if not isinstance(parts[i + 1], List):
+                            cur_tasks = [{
+                                "block": cur_tasks,
+                                "ignore_errors": True
+                            }]
+                        else:
+                            i += 1
+                            cur_tasks = [{
+                                "block": cur_tasks,
+                                "rescue": parts[i]
+                            }]
+                elif isinstance(part, ShellOperatorEndObject):
+                    if i + 1 >= len(parts):
+                        pass
+                    else:
+                        if not isinstance(parts[i + 1], List):
+                            cur_tasks = [{
+                                "block": cur_tasks,
+                                "ignore_errors": True
+                            }]
+                        else:
+                            i += 1
+                            if i < len(parts):
+                                cur_tasks = [{
+                                    "block": cur_tasks,
+                                    "ignore_errors": True,
+                                    "always": parts[i]
+                                }]
+            i += 1
+
+        self._runtime.general.role_tasks.extend(cur_tasks)
 
     ###################################
     # SPECIAL SHELL COMMANDS HANDLERS #
     ###################################
 
     def _handle_run_command_sudo(self, extracted_call: ExtractedCommandCall,
-                                 local_vars: Dict[str, str], line: str) -> (_ScriptPartType, Any):
+                                 local_vars: Dict[str, str], line: str, obj: ShellCommandObject) -> List[Dict]:
         params = extracted_call.params
         opt_words = []
         for p in params[1:]:
@@ -486,33 +852,45 @@ class RoleGenerator:
             opt_words.append(p.value)
 
         # length of `sudo` command doesn't include length of "sudoed" command
-        if self.collect_stats:
+        if self.task_matcher.collect_stats:
             sudo_words = [params[0].value] + opt_words
-            self.task_matcher.stats.length = sum(map(len, sudo_words)) + len(sudo_words) - 1
+            self.task_matcher.stats.length[-1] = sum(map(len, sudo_words)) + len(sudo_words) - 1
 
         # no `sudo` options are currently supported
         if opt_words:
             globalLog.info("No `sudo` options are currently supported - command is translated to shell")
-            return self._handle_run_command_shell(line=line, local_vars=local_vars)
+            return self._handle_run_command_shell(line=line, local_vars=local_vars, obj=obj)
 
         # `sudo` command is covered, "sudoed" command might not be covered
-        if self.collect_stats:
+        if self.task_matcher.collect_stats:
             self.task_matcher.stats.coverage[-1] = 1.0
-        return self._handle_run_command_resolved(words=params[1:],
-                                                 local_vars=local_vars, usr="root")
+
+        self._context.set_local_user("root")
+        # slightly dirty but ok
+        obj.parts = obj.parts[1:]
+        res = self._handle_run_command_resolved(words=params[1:], local_vars=local_vars, obj=obj)
+        self._context.unset_local_user()
+
+        return res
 
     def _handle_run_command_cd(self, extracted_call: ExtractedCommandCall,
-                               local_vars: Dict[str, str], line: str) -> (_ScriptPartType, Any):
+                               local_vars: Dict[str, str], line: str, obj: ShellCommandObject) -> List[Dict]:
         if extracted_call.opts:
             globalLog.info("No `cd` options are currently supported - command is translated to shell")
-            return self._handle_run_command_shell(line=line, local_vars=local_vars)
+            return self._handle_run_command_shell(line=line, local_vars=local_vars, obj=obj)
 
         if len(extracted_call.params) > 2:
             globalLog.info("More than one argument passed to `cd` - command is translated to shell")
-            return self._handle_run_command_shell(line=line, local_vars=local_vars)
+            return self._handle_run_command_shell(line=line, local_vars=local_vars, obj=obj)
 
         # mark `cd` command as covered
-        if self.collect_stats:
+        if self.task_matcher.collect_stats:
             self.task_matcher.stats.coverage[-1] = 1.
-        self._context.set_local_workdir(extracted_call.params[1].value)
-        return _ScriptPartType.NONE, None
+        if len(extracted_call.params) < 2:
+            globalLog.info("No arguments for `cd` - command is skipped")
+            return []
+        if extracted_call.params[1].value == '-':
+            self._context.set_local_workdir(self._context.get_old_workdir(), self._context.old_workdir_local_vars)
+            return []
+        self._context.set_local_workdir(extracted_call.params[1].value, local_vars)
+        return []

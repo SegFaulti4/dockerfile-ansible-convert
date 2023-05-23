@@ -1,0 +1,8 @@
+{
+    "sudo": {
+        "entry": "sudo <<parameters : m>>",
+        "opts": {},
+        "examples": {},
+        "opts_postprocess": {}
+    }
+}
