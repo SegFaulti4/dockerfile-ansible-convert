@@ -1,15 +1,13 @@
 import logging
 import os
 import time
-import parts
-import multiprocessing
 import subprocess
 from subprocess import PIPE
 from tqdm import tqdm
-from typing import List, Tuple, Optional
+from typing import Tuple, Optional
 
 import cli.main
-from tests.utils.data_utils import *
+from tests.system.utils.data_utils import *
 
 from src.log import globalLog
 
@@ -154,8 +152,8 @@ def collect_test_images_worker(args: Tuple[List[str], int, bool]):
 
     with tqdm(total=len(names), position=idx, desc=f"Loop {idx}") as pbar:
         for name in names:
-            cf_image = prepare_containerfile_image(name, idx, echo)
-            ans_image = prepare_ansible_image(name, idx, echo)
+            prepare_containerfile_image(name, idx, echo)
+            prepare_ansible_image(name, idx, echo)
             time.sleep(1)
             pbar.update(1)
 
