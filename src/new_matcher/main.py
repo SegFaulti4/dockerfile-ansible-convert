@@ -1,6 +1,6 @@
 from src.ansible_matcher.main import *
 from src.ansible_matcher.opts_extraction import *
-from typing import Callable
+from typing import Callable, ClassVar, Type
 from abc import ABC
 from abc import abstractmethod
 import inspect
@@ -8,7 +8,8 @@ import inspect
 
 CommandCallOpts = Dict[str, CommandCallParts]
 CommandTemplateOpts = Dict[str, CommandTemplateParts]
-_POSTPROCESS_TEMPLATE_KEY = "_postprocess_template"
+_OPTS_POSTPROCESS_ATTR_KEY = "_opts_tmpl"
+_TEMPLATE_HANDLER_ATTR_KEY = '_postprocess_configs'
 
 
 def _tmpl(s: str) -> Optional[CommandTemplateParts]:
@@ -55,36 +56,48 @@ class CommandConfig(ABC):
                 cls._opts_alias_mapping[alias] = opt
 
         def pp_func_predicate(pp_func):
-            # might need to check if method accepts argument 'tweaks'
-            return inspect.ismethod(pp_func) and hasattr(pp_func, _POSTPROCESS_TEMPLATE_KEY)
+            return inspect.ismethod(pp_func) and hasattr(pp_func, _OPTS_POSTPROCESS_ATTR_KEY)
 
         # inspect all opt postprocessing functions
         pp_funcs = [m[1] for m in inspect.getmembers(cls, predicate=pp_func_predicate)]
 
         cls._opts_postprocess = list()
         for func in pp_funcs:
-            extracted_tmpl = cls.extract_command_template(getattr(func, _POSTPROCESS_TEMPLATE_KEY))
+            extracted_tmpl = cls.extract_command_template(getattr(func, _OPTS_POSTPROCESS_ATTR_KEY))
             assert extracted_tmpl is not None
             cls._opts_postprocess.append((extracted_tmpl.opts, func))
 
     @classmethod
+    def check_entry(cls, comm: Optional[CommandCallParts, CommandTemplateParts]) -> bool:
+        matcher = CommandTemplateMatcher(template=cls.entry)
+        match = matcher.full_match(comm)
+
+        if match is None:
+            return False
+        return True
+
+    @classmethod
     def extract_command_call(cls, comm: CommandCallParts) \
             -> Optional[ExtractedCommandCall]:
+        if not cls.check_entry(comm):
+            return None
 
         opts_extractor = CommandOptsExtractor(opts_map=cls._opts_alias_mapping)
         tmp = copy.deepcopy(comm)
         return opts_extractor.extract(tmp)
 
     @classmethod
-    def extract_command_template(cls, templ: CommandTemplateParts) \
+    def extract_command_template(cls, tmpl: CommandTemplateParts) \
             -> Optional[ExtractedCommandTemplate]:
+        if not cls.check_entry(tmpl):
+            return None
 
         opts_extractor = CommandOptsExtractor(opts_map=cls._opts_alias_mapping)
-        tmp = copy.deepcopy(templ)
+        tmp = copy.deepcopy(tmpl)
         return opts_extractor.extract(tmp)
 
     @classmethod
-    def postprocess_command_opts(cls, opts: CommandCallOpts, tweaks: Optional[TemplateTweaks]) \
+    def postprocess_command_opts(cls, opts: CommandCallOpts, tweaks: TemplateTweaks) \
             -> Tuple[Dict[str, Any], CommandCallOpts]:
         module_params = dict()
         unmatched_opts = {k: v for k, v in opts.items()}
@@ -127,42 +140,142 @@ class CommandConfig(ABC):
         return module_params, unmatched_opts
 
 
-def opts_postprocess(tmpl_s: str) -> Callable:
+class CommandConfigRegistry:
+    RegistryEntry = Tuple[str, Type[CommandConfig]]
 
-    def decorator(func):
+    configurations: Dict[str, Type[CommandConfig]]
+    config_cache: Dict[str, List[RegistryEntry]]
+
+    def __init__(self):
+        self.configurations = dict()
+        self.config_cache = dict()
+
+    def add_entry(self, command_name: str, config_cls: Type[CommandConfig]) -> None:
+        assert command_name not in self.configurations
+        self.configurations[command_name] = config_cls
+
+        first_part: TemplatePart = config_cls.entry[0]
+        # in order for new config to be cached
+        # the first part from command's 'entry' should be a constant string
+        assert not first_part.parts
+        if first_part.value not in self.config_cache:
+            self.config_cache[first_part.value] = list()
+        self.config_cache[first_part.value].append((command_name, config_cls))
+
+    def fetch_by_command(self, comm: CommandCallParts) -> List[RegistryEntry]:
+        # ignoring commands that have parameter in first word
+        if comm[0].parts:
+            return []
+        return self.config_cache.get(comm[0].value, [])
+
+    def fetch_by_name(self, command_name: str) -> Optional[RegistryEntry]:
+        return self.configurations.get(command_name, None)
+
+
+global_command_config_entry = CommandConfigRegistry()
+
+
+def postprocess_opts(tmpl_s: str) -> Callable:
+    def decorator(func: Callable) -> Callable:
         tmpl = _tmpl(tmpl_s)
         assert tmpl is not None
 
         # attribute is later used to identify opt postprocessing methods
         # and create corresponding command opt template
-        setattr(func, _POSTPROCESS_TEMPLATE_KEY, tmpl)
+        setattr(func, _OPTS_POSTPROCESS_ATTR_KEY, tmpl)
+
+        # TODO: check if func accepts argument 'tweaks'
+        # TODO: check if other arguments of func correspond
+        #  to fields from template and have desired type (list or str)
         return func
 
     return decorator
 
 
-def register_config(command_name: str):
+class TemplateHandlerRegistry:
+    templates: List[Tuple[CommandTemplateParts, Callable]]
+    template_cache: Dict[str, List[Tuple[CommandTemplateParts, Callable]]]
 
+    def __init__(self):
+        self.templates = list()
+        self.template_cache = dict()
+
+    def add_entry(self, command_template: CommandTemplateParts, template_handler: Callable) -> None:
+        self.templates.append((command_template, template_handler))
+
+        first_part: TemplatePart = command_template[0]
+        # in order for new template to be cached
+        # the first template part should be a constant string
+        assert not first_part.parts
+        if first_part.value not in self.template_cache:
+            self.template_cache[first_part.value] = list()
+        self.template_cache[first_part.value].append((command_template, template_handler))
+
+    def fetch_by_command(self, comm: CommandCallParts) -> List[Tuple[CommandTemplateParts, Callable, List[str]]]:
+        if comm[0].parts:
+            return []
+        cached = self.template_cache.get(comm[0].value, [])
+        res = []
+        for tmpl, handler_func in cached:
+            postprocess_configs = getattr(handler_func, _TEMPLATE_HANDLER_ATTR_KEY)
+            res.append((tmpl, handler_func, postprocess_configs))
+        return res
+
+
+global_template_handler_registry = TemplateHandlerRegistry()
+
+
+def command_config(command_name: str):
     def decorator(cls):
-        # TODO: register new config somewhere
+        global_command_config_entry.add_entry(command_name=command_name, config_cls=cls)
         return cls
 
     return decorator
 
 
-@register_config("apt install")
+@command_config("apt install")
 class AptInstallConfig(CommandConfig):
-    entry = _tmpl("apt install <<params : m>>")
-    opts = [Opt("option", True, True, ["-o", "--option"])]
+    entry: ClassVar[CommandTemplateParts] = _tmpl("apt install <<params : m>>")
+    opts: ClassVar[List[Opt]] = [Opt("option", True, True, ["-o", "--option"])]
 
     @classmethod
-    @opts_postprocess("-o Dpkg::Options::=<<value>>")
-    def pp_name(cls, value: str, tweaks: Optional[TemplateTweaks]) -> Dict[str, Any]:
+    @postprocess_opts("-o Dpkg::Options::=<<value>>")
+    def pp_name(cls, value: str, tweaks: TemplateTweaks) -> Dict[str, Any]:
         return {
             "apt": {
                 "dpkg_options": value
             }
         }
+
+
+def template_handler(tmpl_s: str) -> Callable:
+    def decorator(func: Callable) -> Callable:
+        tmpl = _tmpl(tmpl_s)
+        assert tmpl is not None
+        global_template_handler_registry.add_entry(command_template=tmpl, template_handler=func)
+        return func
+
+    return decorator
+
+
+def postprocess_commands(*args: str) -> Callable:
+    def decorator(func: Callable) -> Callable:
+        setattr(func, _TEMPLATE_HANDLER_ATTR_KEY, list(args))
+        return func
+
+    return decorator
+
+
+@template_handler("apt install <<packages : m>>")
+@postprocess_commands("apt install")
+def apt_install(packages: List[str], tweaks: TemplateTweaks) -> List[Dict[str, Any]]:
+    return [{
+        "apt": {
+            "state": "present",
+            "name": packages,
+            "force_apt_get": True
+        }
+    }]
 
 
 def main():
