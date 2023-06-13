@@ -14,7 +14,7 @@ _OPTS_POSTPROCESS_ATTR_KEY = "_opts_tmpl"
 _TEMPLATE_HANDLER_ATTR_KEY = '_postprocess_configs'
 
 
-def tmpl(s: str) -> Optional[CommandTemplateParts]:
+def tmpl_c(s: str) -> Optional[CommandTemplateParts]:
     return TemplateConstructor().from_str(s)
 
 
@@ -213,7 +213,7 @@ global_command_config_entry = CommandConfigRegistry()
 
 def postprocess_opts(tmpl_s: str) -> Callable:
     def decorator(func: Callable) -> Callable:
-        tmpl = tmpl(tmpl_s)
+        tmpl = tmpl_c(tmpl_s)
         assert tmpl is not None
 
         # attribute is later used to identify opt postprocessing methods
@@ -271,7 +271,7 @@ def command_config(command_name: str):
 
 @command_config("apt install")
 class AptInstallConfig(CommandConfig):
-    entry: ClassVar[CommandTemplateParts] = tmpl("apt install <<params : m>>")
+    entry: ClassVar[CommandTemplateParts] = tmpl_c("apt install <<params : m>>")
     opts: ClassVar[List[Opt]] = [Opt("option", True, True, ["-o", "--option"])]
 
     @classmethod
@@ -286,7 +286,7 @@ class AptInstallConfig(CommandConfig):
 
 def template_handler(tmpl_s: str) -> Callable:
     def decorator(func: Callable) -> Callable:
-        tmpl = tmpl(tmpl_s)
+        tmpl = tmpl_c(tmpl_s)
         assert tmpl is not None
         global_template_handler_registry.add_entry(command_template=tmpl, tmpl_handler=func)
         return func
