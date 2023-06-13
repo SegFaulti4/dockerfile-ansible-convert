@@ -8,6 +8,8 @@ import inspect
 
 CommandCallOpts = Dict[str, CommandCallParts]
 CommandTemplateOpts = Dict[str, CommandTemplateParts]
+AnsibleTasks = List[Dict[str, Any]]
+
 _OPTS_POSTPROCESS_ATTR_KEY = "_opts_tmpl"
 _TEMPLATE_HANDLER_ATTR_KEY = '_postprocess_configs'
 
@@ -16,6 +18,7 @@ def _tmpl(s: str) -> Optional[CommandTemplateParts]:
     return TemplateConstructor().from_str(s)
 
 
+# TODO: move this to opts extraction
 class Opt:
     name: str
     arg_required: bool
@@ -27,6 +30,61 @@ class Opt:
         self.arg_required = arg_req
         self.many_args = many_args
         self.aliases = aliases
+
+
+# TODO: move this to opts extraction
+def match_extracted_call(extracted_call: ExtractedCommandCall, extracted_tmpl: ExtractedCommandTemplate,
+                         template_tweaks: TemplateTweaks) -> Optional[Tuple[TemplateMatchResult, CommandCallOpts]]:
+    params_matcher = CommandTemplateMatcher(template=extracted_tmpl.params, template_tweaks=template_tweaks)
+    params_fields = params_matcher.full_match(extracted_call.params)
+    if params_fields is None:
+        return None
+
+    opt_match = match_extracted_call_opts(extracted_call.opts, extracted_tmpl.opts, template_tweaks=template_tweaks)
+    if opt_match is None:
+        return None
+    opt_fields, unmatched_opts = opt_match
+
+    match_res = CommandTemplateMatcher.merge_match_results(params_fields, opt_fields)
+    if match_res is None:
+        return None
+
+    return match_res, unmatched_opts
+
+
+# TODO: move this to opts extraction
+def match_extracted_call_opts(call_opts: CommandCallOpts, tmpl_opts: CommandTemplateOpts,
+                              template_tweaks: TemplateTweaks) -> Optional[Tuple[TemplateMatchResult, CommandCallOpts]]:
+    opt_fields = dict()
+    unmatched_opts = {k: listify(v) for k, v in call_opts.items()}
+
+    for k, v in tmpl_opts.items():
+        if k not in call_opts:
+            return None
+        v = listify(v)
+
+        if not v and not unmatched_opts[k]:
+            del unmatched_opts[k]
+            continue
+        if not v or not unmatched_opts[k]:
+            return None
+
+        opt_matcher = CommandTemplateMatcher(template=v, template_tweaks=template_tweaks)
+        opt_match = opt_matcher.match(call_opts[k])
+        if opt_match is None:
+            return None
+        tmp_fields, unmatched = opt_match
+
+        opt_fields = CommandTemplateMatcher.merge_match_results(opt_fields, tmp_fields)
+        if opt_fields is None:
+            return None
+
+        if not unmatched:
+            del unmatched_opts[k]
+        else:
+            unmatched_opts[k] = unmatched
+
+    return opt_fields, unmatched_opts
 
 
 class CommandConfig(ABC):
@@ -63,12 +121,12 @@ class CommandConfig(ABC):
 
         cls._opts_postprocess = list()
         for func in pp_funcs:
-            extracted_tmpl = cls.extract_command_template(getattr(func, _OPTS_POSTPROCESS_ATTR_KEY))
+            extracted_tmpl = cls._extract(getattr(func, _OPTS_POSTPROCESS_ATTR_KEY))
             assert extracted_tmpl is not None
             cls._opts_postprocess.append((extracted_tmpl.opts, func))
 
     @classmethod
-    def check_entry(cls, comm: Optional[CommandCallParts, CommandTemplateParts]) -> bool:
+    def check_entry(cls, comm: Union[CommandCallParts, CommandTemplateParts]) -> bool:
         matcher = CommandTemplateMatcher(template=cls.entry)
         match = matcher.full_match(comm)
 
@@ -82,9 +140,7 @@ class CommandConfig(ABC):
         if not cls.check_entry(comm):
             return None
 
-        opts_extractor = CommandOptsExtractor(opts_map=cls._opts_alias_mapping)
-        tmp = copy.deepcopy(comm)
-        return opts_extractor.extract(tmp)
+        return cls._extract(comm)
 
     @classmethod
     def extract_command_template(cls, tmpl: CommandTemplateParts) \
@@ -92,50 +148,30 @@ class CommandConfig(ABC):
         if not cls.check_entry(tmpl):
             return None
 
+        return cls._extract(tmpl)
+
+    @classmethod
+    def _extract(cls, comm: Union[CommandCallParts, CommandTemplateParts]) \
+            -> Optional[Union[ExtractedCommandCall, ExtractedCommandTemplate]]:
         opts_extractor = CommandOptsExtractor(opts_map=cls._opts_alias_mapping)
-        tmp = copy.deepcopy(tmpl)
+        tmp = copy.deepcopy(comm)
         return opts_extractor.extract(tmp)
 
     @classmethod
-    def postprocess_command_opts(cls, opts: CommandCallOpts, tweaks: TemplateTweaks) \
+    def postprocess_command_opts(cls, call_opts: CommandCallOpts, tweaks: TemplateTweaks) \
             -> Tuple[Dict[str, Any], CommandCallOpts]:
         module_params = dict()
-        unmatched_opts = {k: v for k, v in opts.items()}
+        unmatched_opts = {k: listify(v) for k, v in call_opts.items()}
 
         for tmpl_opts, pp_func in cls._opts_postprocess:
-            pp_kwargs = dict()
-            for k, v in tmpl_opts.items():
-                if k not in opts:
-                    pp_kwargs = None
-                    break
-                v = listify(v)
-
-                if not v and not unmatched_opts[k]:
-                    del unmatched_opts[k]
-                    continue
-                if not v or not unmatched_opts[k]:
-                    pp_kwargs = None
-                    break
-
-                opt_matcher = CommandTemplateMatcher(template=v, template_tweaks=tweaks)
-                match = opt_matcher.match(opts[k])
-                if match is None:
-                    pp_kwargs = None
-                    break
-                field_values, unmatched = match
-
-                pp_kwargs = CommandTemplateMatcher.merge_match_results(pp_kwargs, field_values)
-                if pp_kwargs is None:
-                    break
-
-                if not unmatched:
-                    del unmatched_opts[k]
-                else:
-                    unmatched_opts[k] = unmatched
-            if pp_kwargs is not None:
-                pp_kwargs['tweaks'] = tweaks
-                params = pp_func(**pp_kwargs)
-                module_params = merge_dicts(module_params, params, override=False)
+            if not unmatched_opts:
+                break
+            matched = match_extracted_call_opts(unmatched_opts, tmpl_opts, template_tweaks=tweaks)
+            if matched is None:
+                continue
+            pp_kwargs, unmatched_opts = matched
+            params = pp_func(tweaks=tweaks, **pp_kwargs)
+            module_params = merge_dicts(module_params, params, override=False)
 
         return module_params, unmatched_opts
 
@@ -200,8 +236,8 @@ class TemplateHandlerRegistry:
         self.templates = list()
         self.template_cache = dict()
 
-    def add_entry(self, command_template: CommandTemplateParts, template_handler: Callable) -> None:
-        self.templates.append((command_template, template_handler))
+    def add_entry(self, command_template: CommandTemplateParts, tmpl_handler: Callable) -> None:
+        self.templates.append((command_template, tmpl_handler))
 
         first_part: TemplatePart = command_template[0]
         # in order for new template to be cached
@@ -209,7 +245,7 @@ class TemplateHandlerRegistry:
         assert not first_part.parts
         if first_part.value not in self.template_cache:
             self.template_cache[first_part.value] = list()
-        self.template_cache[first_part.value].append((command_template, template_handler))
+        self.template_cache[first_part.value].append((command_template, tmpl_handler))
 
     def fetch_by_command(self, comm: CommandCallParts) -> List[Tuple[CommandTemplateParts, Callable, List[str]]]:
         if comm[0].parts:
@@ -252,7 +288,7 @@ def template_handler(tmpl_s: str) -> Callable:
     def decorator(func: Callable) -> Callable:
         tmpl = _tmpl(tmpl_s)
         assert tmpl is not None
-        global_template_handler_registry.add_entry(command_template=tmpl, template_handler=func)
+        global_template_handler_registry.add_entry(command_template=tmpl, tmpl_handler=func)
         return func
 
     return decorator
@@ -268,7 +304,7 @@ def postprocess_commands(*args: str) -> Callable:
 
 @template_handler("apt install <<packages : m>>")
 @postprocess_commands("apt install")
-def apt_install(packages: List[str], tweaks: TemplateTweaks) -> List[Dict[str, Any]]:
+def apt_install(packages: List[str], tweaks: TemplateTweaks) -> AnsibleTasks:
     return [{
         "apt": {
             "state": "present",
@@ -276,16 +312,3 @@ def apt_install(packages: List[str], tweaks: TemplateTweaks) -> List[Dict[str, A
             "force_apt_get": True
         }
     }]
-
-
-def main():
-    filepath = "/home/popovms/course/dev/sandbox/ansible_matcher/input"
-    commands = []
-    with open(filepath, "r") as inF:
-        commands.extend([line.strip() for line in inF.readlines()])
-    if not commands:
-        return
-
-
-if __name__ == "__main__":
-    main()

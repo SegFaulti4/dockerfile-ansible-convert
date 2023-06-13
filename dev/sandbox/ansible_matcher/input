@@ -1,1 +1,1 @@
-mkdir -p /etc/chef ~/.chef
+apt install python3 -o Dpkg::Options::=something

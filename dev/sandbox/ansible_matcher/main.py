@@ -3,7 +3,7 @@ import yaml
 
 from src.ansible_matcher.main import *
 from dev.sandbox.shell.main import SandboxShellParser
-from src.ansible_matcher.main import TaskMatcher as SandboxTaskMatcher
+from src.new_matcher.matcher import NewTaskMatcher as SandboxTaskMatcher
 
 from src.log import globalLog
 
