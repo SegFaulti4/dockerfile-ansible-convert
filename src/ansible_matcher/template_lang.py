@@ -52,6 +52,7 @@ class TemplatePart:
 
 CommandTemplateParts = List[TemplatePart]
 CommandCallParts = List[ShellWordObject]
+TemplateMatchResult = Dict[str, Union[str, List[str]]]
 
 
 class TemplateConstructor(CommandTemplateParserVisitor):
@@ -169,6 +170,10 @@ class TemplateConstructor(CommandTemplateParserVisitor):
         ), field_repr
 
 
+def tmpl_c(s: str) -> Optional[CommandTemplateParts]:
+    return TemplateConstructor().from_str(s)
+
+
 @dataclasses.dataclass
 class TemplateTweaks:
     cwd: str
@@ -176,9 +181,6 @@ class TemplateTweaks:
 
     def tweak_spec_path(self, path: str):
         return path_utils.path_str_wrapper(path, cwd=self.cwd, usr=self.usr)
-
-
-TemplateMatchResult = Dict[str, Union[str, List[str]]]
 
 
 class CommandTemplateMatcher:
@@ -478,24 +480,3 @@ class TemplateFiller:
                         values_dict[name] = fields_dict[name]
                 res.append(" ".join(TemplateFiller._fill_template_part(part, values_dict) for part in self.template))
         return res
-
-
-if __name__ == "__main__":
-    from dev.sandbox.shell.main import SandboxShellParser
-
-    shell_parser = SandboxShellParser()
-    template_constr = TemplateConstructor()
-
-    c_s = "rm -rf ./a.c ~/b.c"
-    t_s = "rm -rf {{ files : m }}"
-    command = shell_parser.parse(c_s)[0]
-    template = TemplateConstructor().from_str(t_s)
-
-    matcher = CommandTemplateMatcher(template)
-    res = matcher.match(command.parts)
-
-    print(t_s)
-    print()
-    print(template)
-    print()
-    print(res)

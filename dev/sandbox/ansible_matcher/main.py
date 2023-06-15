@@ -3,9 +3,10 @@ import yaml
 
 from src.ansible_matcher.main import *
 from dev.sandbox.shell.main import SandboxShellParser
-from src.new_matcher.matcher import NewTaskMatcher as SandboxTaskMatcher
+from src.ansible_matcher.main import TaskMatcher as SandboxTaskMatcher
 
 from src.log import globalLog
+from src.ansible_matcher.main import global_command_config_entry, global_template_handler_registry
 
 
 def print_header(s):
