@@ -51,4 +51,3 @@ def handler_rmffilesm(files: List[str], tweaks: TemplateTweaks) -> AnsibleTasks:
             "loop": "{{ ls_reg.stdout_lines }}"
         }
     ]
-

@@ -6,4 +6,3 @@ class Pip3Config(CommandConfigABC):
     entry: ClassVar[CommandTemplateParts] = tmpl_c("pip3 <<parameters : m>>")
     opts: ClassVar[List[Opt]] = \
         []
-

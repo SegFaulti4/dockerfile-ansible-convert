@@ -34,4 +34,3 @@ def handler_useraddnousergroupname(name: str, tweaks: TemplateTweaks) -> Ansible
             }
         }
     ]
-

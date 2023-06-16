@@ -70,4 +70,3 @@ def handler_lnssrc(src: str, tweaks: TemplateTweaks) -> AnsibleTasks:
             }
         }
     ]
-

@@ -124,4 +124,3 @@ def handler_mvglobsmdestp(globs: List[str], dest: str, tweaks: TemplateTweaks) -
             }
         }
     ]
-

@@ -33,4 +33,3 @@ def handler_gitclonerepodirp(repo: str, directory: str, tweaks: TemplateTweaks) 
             }
         }
     ]
-

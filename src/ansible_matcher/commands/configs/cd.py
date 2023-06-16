@@ -18,4 +18,3 @@ class CdConfig(CommandConfigABC):
             Opt("extended", False, False,
                 ['-@'])
         ]
-

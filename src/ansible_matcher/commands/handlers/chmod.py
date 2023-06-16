@@ -62,4 +62,3 @@ def handler_chmodrmodefilesm(mode: str, files: List[str], tweaks: TemplateTweaks
             "loop": "{{ st_reg.results }}"
         }
     ]
-

@@ -38,4 +38,3 @@ def handler_wgettriestriesurl(tries: str, url: str, tweaks: TemplateTweaks) -> A
             "retries": tries
         }
     ]
-

@@ -131,4 +131,3 @@ def handler_aptgetupgrade(tweaks: TemplateTweaks) -> AnsibleTasks:
             }
         }
     ]
-

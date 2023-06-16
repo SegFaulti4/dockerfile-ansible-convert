@@ -27,4 +27,3 @@ def handler_pipinstallrrequirementp(requirement: str, tweaks: TemplateTweaks) ->
             }
         }
     ]
-

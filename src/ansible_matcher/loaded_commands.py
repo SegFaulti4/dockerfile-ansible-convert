@@ -12,6 +12,8 @@ from src.ansible_matcher.commands.configs.mkdir import *
 from src.ansible_matcher.commands.configs.mv import *
 from src.ansible_matcher.commands.configs.pip3 import *
 from src.ansible_matcher.commands.configs.pip import *
+from src.ansible_matcher.commands.configs.pip3_install import *
+from src.ansible_matcher.commands.configs.pip_install import *
 from src.ansible_matcher.commands.configs.rm import *
 from src.ansible_matcher.commands.configs.set import *
 from src.ansible_matcher.commands.configs.sudo import *
@@ -33,6 +35,8 @@ from src.ansible_matcher.commands.handlers.mkdir import *
 from src.ansible_matcher.commands.handlers.mv import *
 from src.ansible_matcher.commands.handlers.pip3 import *
 from src.ansible_matcher.commands.handlers.pip import *
+from src.ansible_matcher.commands.handlers.pip3_install import *
+from src.ansible_matcher.commands.handlers.pip_install import *
 from src.ansible_matcher.commands.handlers.rm import *
 from src.ansible_matcher.commands.handlers.set import *
 from src.ansible_matcher.commands.handlers.sudo import *

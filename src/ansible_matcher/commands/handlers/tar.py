@@ -1007,4 +1007,3 @@ def handler_tarzvxffilepcdirectoryp(file: str, directory: str, tweaks: TemplateT
             }
         }
     ]
-

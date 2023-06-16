@@ -53,4 +53,3 @@ def handler_mkdirdirectoriesmp(directories: List[str], tweaks: TemplateTweaks) -
             "loop": directories
         }
     ]
-

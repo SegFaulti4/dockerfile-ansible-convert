@@ -112,4 +112,3 @@ def handler_cpglobsmdestp(globs: List[str], dest: str, tweaks: TemplateTweaks) -
             }
         }
     ]
-

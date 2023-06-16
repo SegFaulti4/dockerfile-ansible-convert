@@ -48,4 +48,3 @@ def handler_apkupgrade(tweaks: TemplateTweaks) -> AnsibleTasks:
             }
         }
     ]
-
