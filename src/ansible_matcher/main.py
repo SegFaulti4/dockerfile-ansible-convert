@@ -100,6 +100,8 @@ class TaskMatcher:
             field_values, unmatched_opts = matched
 
             tasks = handler(tweaks=self._tweaks, **field_values)
+            if tasks is None:
+                continue
 
             if command_name in postprocess_configs:
                 extra_params, unmatched_pp_opts = \

@@ -8,6 +8,7 @@ AnsibleTasks = List[Dict[str, Any]]
 _TEMPLATE_HANDLER_ATTR_KEY = '_postprocess_configs'
 
 
+# TODO: add command template extraction for registered handlers
 class TemplateHandlerRegistry:
     templates: List[Tuple[CommandTemplateParts, Callable]]
     template_cache: Dict[str, List[Tuple[CommandTemplateParts, Callable]]]
@@ -51,6 +52,8 @@ def template_handler(tmpl_s: str) -> Callable:
     return decorator
 
 
+# TODO: change args type to type[CommandConfig]
+# all handler modules then will need to import required command configs themselves
 def postprocess_commands(*args: str) -> Callable:
     def decorator(func: Callable) -> Callable:
         setattr(func, _TEMPLATE_HANDLER_ATTR_KEY, list(args))

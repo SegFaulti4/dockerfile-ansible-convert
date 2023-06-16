@@ -7,7 +7,7 @@ def handler_pipinstallpackagesm(packages: List[str], tweaks: TemplateTweaks) -> 
     return [
         {
             "ansible.builtin.pip": {
-                "name": packages,
+                "name": packages[0] if len(packages) == 1 else packages,
                 "state": "present",
                 "chdir": tweaks.cwd,
                 "executable": "pip3"

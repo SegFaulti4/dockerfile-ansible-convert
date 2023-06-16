@@ -1,4 +1,5 @@
 from src.ansible_matcher.commands.command_config import *
+from src.ansible_matcher.commands.utils import pip_extra_args
 
 
 @command_config("pip3 install")
@@ -7,7 +8,7 @@ class Pip3InstallConfig(CommandConfigABC):
     opts: ClassVar[List[Opt]] = \
         [
             Opt("default timeout", True, False,
-                ['--default-timeout', 'timeout']),
+                ['--default-timeout', '--timeout']),
 
             Opt("editable", False, False,
                 ['-e', '--editable']),
@@ -61,14 +62,29 @@ class Pip3InstallConfig(CommandConfigABC):
                 ['--user'])
         ]
 
+    _extra_args = [
+        "--default-timeout",
+        "--exists-action",
+        "--ignore-installed",
+        "--index-url",
+        "--verbose",
+        "--no-binary",
+        "--no-cache-dir",
+        "--quiet",
+        "--pre",
+        "--no-index",
+        "--trusted-host",
+        "--user"
+    ]
+
     @classmethod
-    @postprocess_opts("--default-timeout <<default_timeout_arg>>")
-    def postprocess_defaulttimeoutdefaulttimeoutarg(cls, default_timeout_arg: str, tweaks: TemplateTweaks) -> Dict[str, Any]:
-        return {
-            "ansible.builtin.pip": {
-                "extra_args": f'--default-timeout {default_timeout_arg} '
-            }
-        }
+    def postprocess_command_opts(cls, call_opts: CommandCallOpts, tweaks: TemplateTweaks) \
+            -> Tuple[Dict[str, Any], CommandCallOpts]:
+
+        module_params, unmatched_opts = super().postprocess_command_opts(call_opts, tweaks)
+        return pip_extra_args(unmatched_opts=unmatched_opts, opts_name_mapping=cls._opts_name_mapping,
+                              opts_alias_mapping=cls._opts_alias_mapping, extra_args=cls._extra_args,
+                              module_params=module_params)
 
     @classmethod
     @postprocess_opts("--editable")
@@ -76,15 +92,6 @@ class Pip3InstallConfig(CommandConfigABC):
         return {
             "ansible.builtin.pip": {
                 "editable": True
-            }
-        }
-
-    @classmethod
-    @postprocess_opts("--exists-action <<exists_action_arg>>")
-    def postprocess_existsactionexistsactionarg(cls, exists_action_arg: str, tweaks: TemplateTweaks) -> Dict[str, Any]:
-        return {
-            "ansible.builtin.pip": {
-                "extra_args": f'--exists-action {exists_action_arg} '
             }
         }
 
@@ -98,79 +105,7 @@ class Pip3InstallConfig(CommandConfigABC):
         }
 
     @classmethod
-    @postprocess_opts("--ignore-installed")
-    def postprocess_ignoreinstalled(cls, tweaks: TemplateTweaks) -> Dict[str, Any]:
-        return {
-            "ansible.builtin.pip": {
-                "extra_args": "--ignore-installed "
-            }
-        }
-
-    @classmethod
-    @postprocess_opts("--index-url <<index_url_arg>>")
-    def postprocess_indexurlindexurlarg(cls, index_url_arg: str, tweaks: TemplateTweaks) -> Dict[str, Any]:
-        return {
-            "ansible.builtin.pip": {
-                "extra_args": f'--index-url {index_url_arg} '
-            }
-        }
-
-    @classmethod
-    @postprocess_opts("--verbose")
-    def postprocess_verbose(cls, tweaks: TemplateTweaks) -> Dict[str, Any]:
-        return {
-            "ansible.builtin.pip": {
-                "extra_args": "--verbose "
-            }
-        }
-
-    @classmethod
-    @postprocess_opts("--no-binary <<no_binary_arg : m>>")
-    def postprocess_nobinarynobinaryargm(cls, no_binary_arg: List[str], tweaks: TemplateTweaks) -> Dict[str, Any]:
-        return {
-            "ansible.builtin.pip": {
-                "extra_args": f'--no-binary={no_binary_arg} '
-            }
-        }
-
-    @classmethod
-    @postprocess_opts("--no-cache-dir")
-    def postprocess_nocachedir(cls, tweaks: TemplateTweaks) -> Dict[str, Any]:
-        return {
-            "ansible.builtin.pip": {
-                "extra_args": "--no-cache-dir "
-            }
-        }
-
-    @classmethod
-    @postprocess_opts("--no-index")
-    def postprocess_noindex(cls, tweaks: TemplateTweaks) -> Dict[str, Any]:
-        return {
-            "ansible.builtin.pip": {
-                "extra_args": "--no-index "
-            }
-        }
-
-    @classmethod
-    @postprocess_opts("--pre")
-    def postprocess_pre(cls, tweaks: TemplateTweaks) -> Dict[str, Any]:
-        return {
-            "ansible.builtin.pip": {
-                "extra_args": "--pre "
-            }
-        }
-
-    @classmethod
-    @postprocess_opts("--quiet")
-    def postprocess_quiet(cls, tweaks: TemplateTweaks) -> Dict[str, Any]:
-        return {
-            "ansible.builtin.pip": {
-                "extra_args": "--quiet "
-            }
-        }
-
-    @classmethod
-    @postprocess_opts("require-hashes")
+    @postprocess_opts("--require-hashes")
     def postprocess_requirehashes(cls, tweaks: TemplateTweaks) -> Dict[str, Any]:
         return {
             "aliases": [
@@ -181,7 +116,7 @@ class Pip3InstallConfig(CommandConfigABC):
         }
 
     @classmethod
-    @postprocess_opts("system")
+    @postprocess_opts("--system")
     def postprocess_system(cls, tweaks: TemplateTweaks) -> Dict[str, Any]:
         return {
             "aliases": [
@@ -192,28 +127,10 @@ class Pip3InstallConfig(CommandConfigABC):
         }
 
     @classmethod
-    @postprocess_opts("--trusted-host <<trusted_host_arg>>")
-    def postprocess_trustedhosttrustedhostarg(cls, trusted_host_arg: str, tweaks: TemplateTweaks) -> Dict[str, Any]:
-        return {
-            "ansible.builtin.pip": {
-                "extra_args": f'--trusted-host {trusted_host_arg} '
-            }
-        }
-
-    @classmethod
     @postprocess_opts("--upgrade")
     def postprocess_upgrade(cls, tweaks: TemplateTweaks) -> Dict[str, Any]:
         return {
             "ansible.builtin.pip": {
                 "state": "latest"
-            }
-        }
-
-    @classmethod
-    @postprocess_opts("--user")
-    def postprocess_user(cls, tweaks: TemplateTweaks) -> Dict[str, Any]:
-        return {
-            "ansible.builtin.pip": {
-                "extra_args": "--user "
             }
         }

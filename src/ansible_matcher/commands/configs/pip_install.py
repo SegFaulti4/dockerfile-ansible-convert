@@ -1,4 +1,5 @@
 from src.ansible_matcher.commands.command_config import *
+from src.ansible_matcher.commands.utils import pip_extra_args
 
 
 @command_config("pip install")
@@ -121,6 +122,51 @@ class PipInstallConfig(CommandConfigABC):
                 ['--version'])
         ]
 
+    _extra_args = [
+        "--build",
+        "--constraint",
+        "--cache-dir",
+        "--default-timeout",
+        "--exists-action",
+        "--extra-index-url",
+        "--find-links",
+        "--index-url",
+        "--no-binary",
+        "--only-binary",
+        "--root",
+        "--prefix",
+        "--src",
+        "--timeout",
+        "--trusted-host",
+        "--upgrade-strategy",
+        "--allow-external",
+        "--allow-unverified",
+        "--disable-pip-version-check",
+        "--ignore-installed",
+        "--verbose",
+        "--no-cache-dir",
+        "--no-clean",
+        "--no-deps",
+        "--no-input",
+        "--no-use-pep517",
+        "--no-use-wheel",
+        "--pre",
+        "--quiet",
+        "--require-hashes",
+        "--system",
+        "--user",
+        "--version"
+    ]
+
+    @classmethod
+    def postprocess_command_opts(cls, call_opts: CommandCallOpts, tweaks: TemplateTweaks) \
+            -> Tuple[Dict[str, Any], CommandCallOpts]:
+
+        module_params, unmatched_opts = super().postprocess_command_opts(call_opts, tweaks)
+        return pip_extra_args(unmatched_opts=unmatched_opts, opts_name_mapping=cls._opts_name_mapping,
+                              opts_alias_mapping=cls._opts_alias_mapping, extra_args=cls._extra_args,
+                              module_params=module_params)
+
     @classmethod
     @postprocess_opts("--editable")
     def postprocess_editable(cls, tweaks: TemplateTweaks) -> Dict[str, Any]:
@@ -145,302 +191,5 @@ class PipInstallConfig(CommandConfigABC):
         return {
             "ansible.builtin.pip": {
                 "state": "latest"
-            }
-        }
-
-    @classmethod
-    @postprocess_opts("--build <<build_arg>>")
-    def postprocess_buildbuildarg(cls, build_arg: str, tweaks: TemplateTweaks) -> Dict[str, Any]:
-        return {
-            "ansible.builtin.pip": {
-                "extra_args": f'--build {build_arg} '
-            }
-        }
-
-    @classmethod
-    @postprocess_opts("--constraint <<constraint_arg>>")
-    def postprocess_constraintconstraintarg(cls, constraint_arg: str, tweaks: TemplateTweaks) -> Dict[str, Any]:
-        return {
-            "ansible.builtin.pip": {
-                "extra_args": f'--constraint {constraint_arg} '
-            }
-        }
-
-    @classmethod
-    @postprocess_opts("--cache-dir <<cache_dir_arg>>")
-    def postprocess_cachedircachedirarg(cls, cache_dir_arg: str, tweaks: TemplateTweaks) -> Dict[str, Any]:
-        return {
-            "ansible.builtin.pip": {
-                "extra_args": f'--cache-dir {cache_dir_arg} '
-            }
-        }
-
-    @classmethod
-    @postprocess_opts("--default-timeout <<default_timeout_arg>>")
-    def postprocess_defaulttimeoutdefaulttimeoutarg(cls, default_timeout_arg: str, tweaks: TemplateTweaks) -> Dict[str, Any]:
-        return {
-            "ansible.builtin.pip": {
-                "extra_args": f'--default-timeout {default_timeout_arg} '
-            }
-        }
-
-    @classmethod
-    @postprocess_opts("--exists-action <<exists_action_arg>>")
-    def postprocess_existsactionexistsactionarg(cls, exists_action_arg: str, tweaks: TemplateTweaks) -> Dict[str, Any]:
-        return {
-            "ansible.builtin.pip": {
-                "extra_args": f'--exists-action {exists_action_arg} '
-            }
-        }
-
-    @classmethod
-    @postprocess_opts("--extra-index-url <<extra_index_url_arg>>")
-    def postprocess_extraindexurlextraindexurlarg(cls, extra_index_url_arg: str, tweaks: TemplateTweaks) -> Dict[str, Any]:
-        return {
-            "ansible.builtin.pip": {
-                "extra_args": f'--extra-index-url {extra_index_url_arg} '
-            }
-        }
-
-    @classmethod
-    @postprocess_opts("--find-links <<find_links_arg>>")
-    def postprocess_findlinksfindlinksarg(cls, find_links_arg: str, tweaks: TemplateTweaks) -> Dict[str, Any]:
-        return {
-            "ansible.builtin.pip": {
-                "extra_args": f'--find-links {find_links_arg} '
-            }
-        }
-
-    @classmethod
-    @postprocess_opts("--index-url <<index_url_arg>>")
-    def postprocess_indexurlindexurlarg(cls, index_url_arg: str, tweaks: TemplateTweaks) -> Dict[str, Any]:
-        return {
-            "ansible.builtin.pip": {
-                "extra_args": f'--index-url {index_url_arg} '
-            }
-        }
-
-    @classmethod
-    @postprocess_opts("--no-binary <<no_binary_arg : m>>")
-    def postprocess_nobinarynobinaryargm(cls, no_binary_arg: List[str], tweaks: TemplateTweaks) -> Dict[str, Any]:
-        return {
-            "ansible.builtin.pip": {
-                "extra_args": f'--no-binary={no_binary_arg} '
-            }
-        }
-
-    @classmethod
-    @postprocess_opts("--only-binary <<only_binary_arg>>")
-    def postprocess_onlybinaryonlybinaryarg(cls, only_binary_arg: str, tweaks: TemplateTweaks) -> Dict[str, Any]:
-        return {
-            "ansible.builtin.pip": {
-                "extra_args": f'--only-binary {only_binary_arg} '
-            }
-        }
-
-    @classmethod
-    @postprocess_opts("--root <<root_arg>>")
-    def postprocess_rootrootarg(cls, root_arg: str, tweaks: TemplateTweaks) -> Dict[str, Any]:
-        return {
-            "ansible.builtin.pip": {
-                "extra_args": f'--root {root_arg} '
-            }
-        }
-
-    @classmethod
-    @postprocess_opts("--prefix <<prefix_arg>>")
-    def postprocess_prefixprefixarg(cls, prefix_arg: str, tweaks: TemplateTweaks) -> Dict[str, Any]:
-        return {
-            "ansible.builtin.pip": {
-                "extra_args": f'--prefix {prefix_arg} '
-            }
-        }
-
-    @classmethod
-    @postprocess_opts("--src <<src_arg>>")
-    def postprocess_srcsrcarg(cls, src_arg: str, tweaks: TemplateTweaks) -> Dict[str, Any]:
-        return {
-            "ansible.builtin.pip": {
-                "extra_args": f'--src {src_arg} '
-            }
-        }
-
-    @classmethod
-    @postprocess_opts("--timeout <<timeout_arg>>")
-    def postprocess_timeouttimeoutarg(cls, timeout_arg: str, tweaks: TemplateTweaks) -> Dict[str, Any]:
-        return {
-            "ansible.builtin.pip": {
-                "extra_args": f'--timeout {timeout_arg} '
-            }
-        }
-
-    @classmethod
-    @postprocess_opts("--trusted-host <<trusted_host_arg>>")
-    def postprocess_trustedhosttrustedhostarg(cls, trusted_host_arg: str, tweaks: TemplateTweaks) -> Dict[str, Any]:
-        return {
-            "ansible.builtin.pip": {
-                "extra_args": f'--trusted-host {trusted_host_arg} '
-            }
-        }
-
-    @classmethod
-    @postprocess_opts("--upgrade-strategy <<upgrade_strategy_arg>>")
-    def postprocess_upgradestrategyupgradestrategyarg(cls, upgrade_strategy_arg: str, tweaks: TemplateTweaks) -> Dict[str, Any]:
-        return {
-            "ansible.builtin.pip": {
-                "extra_args": f'--upgrade-strategy {upgrade_strategy_arg} '
-            }
-        }
-
-    @classmethod
-    @postprocess_opts("--allow-external")
-    def postprocess_allowexternal(cls, tweaks: TemplateTweaks) -> Dict[str, Any]:
-        return {
-            "ansible.builtin.pip": {
-                "extra_args": "--allow-external "
-            }
-        }
-
-    @classmethod
-    @postprocess_opts("--allow-unverified")
-    def postprocess_allowunverified(cls, tweaks: TemplateTweaks) -> Dict[str, Any]:
-        return {
-            "ansible.builtin.pip": {
-                "extra_args": "--allow-unverified "
-            }
-        }
-
-    @classmethod
-    @postprocess_opts("--disable-pip-version-check")
-    def postprocess_disablepipversioncheck(cls, tweaks: TemplateTweaks) -> Dict[str, Any]:
-        return {
-            "ansible.builtin.pip": {
-                "extra_args": "--disable-pip-version-check "
-            }
-        }
-
-    @classmethod
-    @postprocess_opts("--ignore-installed")
-    def postprocess_ignoreinstalled(cls, tweaks: TemplateTweaks) -> Dict[str, Any]:
-        return {
-            "ansible.builtin.pip": {
-                "extra_args": "--ignore-installed "
-            }
-        }
-
-    @classmethod
-    @postprocess_opts("--verbose")
-    def postprocess_verbose(cls, tweaks: TemplateTweaks) -> Dict[str, Any]:
-        return {
-            "ansible.builtin.pip": {
-                "extra_args": "--verbose "
-            }
-        }
-
-    @classmethod
-    @postprocess_opts("--no-cache-dir")
-    def postprocess_nocachedir(cls, tweaks: TemplateTweaks) -> Dict[str, Any]:
-        return {
-            "ansible.builtin.pip": {
-                "extra_args": "--no-cache-dir "
-            }
-        }
-
-    @classmethod
-    @postprocess_opts("--no-clean")
-    def postprocess_noclean(cls, tweaks: TemplateTweaks) -> Dict[str, Any]:
-        return {
-            "ansible.builtin.pip": {
-                "extra_args": "--no-clean "
-            }
-        }
-
-    @classmethod
-    @postprocess_opts("--no-deps")
-    def postprocess_nodeps(cls, tweaks: TemplateTweaks) -> Dict[str, Any]:
-        return {
-            "ansible.builtin.pip": {
-                "extra_args": "--no-deps "
-            }
-        }
-
-    @classmethod
-    @postprocess_opts("--no-input")
-    def postprocess_noinput(cls, tweaks: TemplateTweaks) -> Dict[str, Any]:
-        return {
-            "ansible.builtin.pip": {
-                "extra_args": "--no-input "
-            }
-        }
-
-    @classmethod
-    @postprocess_opts("--no-use-pep517")
-    def postprocess_nousepep(cls, tweaks: TemplateTweaks) -> Dict[str, Any]:
-        return {
-            "ansible.builtin.pip": {
-                "extra_args": "--no-use-pep517 "
-            }
-        }
-
-    @classmethod
-    @postprocess_opts("--no-use-wheel")
-    def postprocess_nousewheel(cls, tweaks: TemplateTweaks) -> Dict[str, Any]:
-        return {
-            "ansible.builtin.pip": {
-                "extra_args": "--no-use-wheel "
-            }
-        }
-
-    @classmethod
-    @postprocess_opts("--pre")
-    def postprocess_pre(cls, tweaks: TemplateTweaks) -> Dict[str, Any]:
-        return {
-            "ansible.builtin.pip": {
-                "extra_args": "--pre "
-            }
-        }
-
-    @classmethod
-    @postprocess_opts("--quiet")
-    def postprocess_quiet(cls, tweaks: TemplateTweaks) -> Dict[str, Any]:
-        return {
-            "ansible.builtin.pip": {
-                "extra_args": "--quiet "
-            }
-        }
-
-    @classmethod
-    @postprocess_opts("--require-hashes")
-    def postprocess_requirehashes(cls, tweaks: TemplateTweaks) -> Dict[str, Any]:
-        return {
-            "ansible.builtin.pip": {
-                "extra_args": "--require-hashes "
-            }
-        }
-
-    @classmethod
-    @postprocess_opts("--system")
-    def postprocess_system(cls, tweaks: TemplateTweaks) -> Dict[str, Any]:
-        return {
-            "ansible.builtin.pip": {
-                "extra_args": "--system "
-            }
-        }
-
-    @classmethod
-    @postprocess_opts("--user")
-    def postprocess_user(cls, tweaks: TemplateTweaks) -> Dict[str, Any]:
-        return {
-            "ansible.builtin.pip": {
-                "extra_args": "--user "
-            }
-        }
-
-    @classmethod
-    @postprocess_opts("--version")
-    def postprocess_version(cls, tweaks: TemplateTweaks) -> Dict[str, Any]:
-        return {
-            "ansible.builtin.pip": {
-                "extra_args": "--version "
             }
         }

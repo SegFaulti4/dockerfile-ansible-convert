@@ -32,6 +32,7 @@ class CommandConfigABC(ABC):
     # these fields are automatically initialised during inheritance (__init_subclass__)
     _opts_postprocess: List[Tuple[CommandTemplateOpts, Callable]]
     _opts_alias_mapping: Dict[str, Opt]
+    _opts_name_mapping: Dict[str, Opt]
 
     # TODO: add property type checking
     def __init_subclass__(cls):
@@ -43,6 +44,10 @@ class CommandConfigABC(ABC):
         for opt in cls.opts:
             for alias in opt.aliases:
                 cls._opts_alias_mapping[alias] = opt
+
+        # false inspection warning for property
+        # noinspection PyTypeChecker
+        cls._opts_name_mapping = {opt.name: opt for opt in cls.opts}
 
         def pp_func_predicate(pp_func):
             return inspect.ismethod(pp_func) and hasattr(pp_func, _OPTS_POSTPROCESS_ATTR_KEY)
