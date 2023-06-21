@@ -16,7 +16,7 @@ template_word
     ;
 
 template_field
-    :   OPEN FIELD_NAME ( SPEC_OPEN (SPEC_MANY)? (SPEC_OPTIONAL)? (SPEC_PATH)? )? CLOSE
+    :   OPEN FIELD_NAME ( SPEC_OPEN (SPEC_MANY)? (SPEC_NO_WILDCARDS)? (SPEC_OPTIONAL)? (SPEC_PATH)? )? CLOSE
     ;
 
 template_postfix

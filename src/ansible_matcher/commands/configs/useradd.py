@@ -94,7 +94,7 @@ class UseraddConfig(CommandConfigABC):
         }
 
     @classmethod
-    @postprocess_opts("--home-dir <<dir : p>>")
+    @postprocess_opts("--home-dir <<directory : p>>")
     def postprocess_homedirdirp(cls, directory: str, tweaks: TemplateTweaks) -> Dict[str, Any]:
         return {
             "ansible.builtin.user": {
@@ -122,7 +122,7 @@ class UseraddConfig(CommandConfigABC):
         }
 
     @classmethod
-    @postprocess_opts("--skel <<dir : p>>")
+    @postprocess_opts("--skel <<directory : p>>")
     def postprocess_skeldirp(cls, directory: str, tweaks: TemplateTweaks) -> Dict[str, Any]:
         return {
             "ansible.builtin.user": {

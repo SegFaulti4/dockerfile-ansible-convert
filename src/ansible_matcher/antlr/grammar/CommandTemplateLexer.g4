@@ -14,9 +14,10 @@ INSIDE_ANY      :   . ;
 
 mode SPECS;
 
-SPEC_MANY       : 'm' ;
-SPEC_OPTIONAL   : 'o' ;
-SPEC_PATH       : 'p' ;
-SPECS_CLOSE     : CLOSE                         -> type(CLOSE), popMode ;
-SPECS_S         : SPACE                         -> skip ;
-SPECS_ANY       : . ;
+SPEC_MANY           : 'm' ;
+SPEC_NO_WILDCARDS   : 'n' ;
+SPEC_OPTIONAL       : 'o' ;
+SPEC_PATH           : 'p' ;
+SPECS_CLOSE         : CLOSE                     -> type(CLOSE), popMode ;
+SPECS_S             : SPACE                     -> skip ;
+SPECS_ANY           : . ;

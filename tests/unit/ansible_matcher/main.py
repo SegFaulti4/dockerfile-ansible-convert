@@ -360,11 +360,18 @@ class TestCommandTemplateMatcher(unittest.TestCase):
         res2 = {"field1": "var1", "field3": "var3"}
         assert CommandTemplateMatcher.merge_match_results(res1, res2) is None
 
+    # here you can put any tests that don't (yet) know where to put
     def test_dev(self):
-        # here you can put any tests that don't (yet) know where to put
+        globalLog.setLevel(logging.DEBUG)
+
         matching = {
         }
         self._test_matching(matching, partial=False)
+
+        non_matching = [
+            (f"{LB}field:n{RB}", "~/*")
+        ]
+        self._test_non_matching(non_matching)
 
 
 class TestTemplateFiller(unittest.TestCase):

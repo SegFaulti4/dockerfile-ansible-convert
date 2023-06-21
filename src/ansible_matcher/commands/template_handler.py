@@ -5,7 +5,8 @@ from src.ansible_matcher.template_lang import TemplatePart, CommandTemplateParts
 
 AnsibleTasks = List[Dict[str, Any]]
 
-_TEMPLATE_HANDLER_ATTR_KEY = '_postprocess_configs'
+_TEMPLATE_HANDLER_POSTPROCESS_COMMANDS_ATTR = '_postprocess_configs'
+_TEMPLATE_HANDLER_PASS_OPTS_ATTR = '_pass_command_opts'
 
 
 # TODO: add command template extraction for registered handlers
@@ -28,14 +29,15 @@ class TemplateHandlerRegistry:
             self.template_cache[first_part.value] = list()
         self.template_cache[first_part.value].append((command_template, tmpl_handler))
 
-    def fetch_by_command(self, comm: CommandCallParts) -> List[Tuple[CommandTemplateParts, Callable, List[str]]]:
+    def fetch_by_command(self, comm: CommandCallParts) -> List[Tuple[CommandTemplateParts, Callable, List[str], bool]]:
         if comm[0].parts:
             return []
         cached = self.template_cache.get(comm[0].value, [])
         res = []
         for tmpl, handler_func in cached:
-            postprocess_configs = getattr(handler_func, _TEMPLATE_HANDLER_ATTR_KEY)
-            res.append((tmpl, handler_func, postprocess_configs))
+            postprocess_configs = getattr(handler_func, _TEMPLATE_HANDLER_POSTPROCESS_COMMANDS_ATTR, [])
+            pass_opts = getattr(handler_func, _TEMPLATE_HANDLER_PASS_OPTS_ATTR, False)
+            res.append((tmpl, handler_func, postprocess_configs, pass_opts))
         return res
 
 
@@ -47,6 +49,11 @@ def template_handler(tmpl_s: str) -> Callable:
         tmpl = tmpl_c(tmpl_s)
         assert tmpl is not None
         global_template_handler_registry.add_entry(command_template=tmpl, tmpl_handler=func)
+
+        # TODO: check function return value type
+        # TODO: check if func accepts argument 'tweaks'
+        # TODO: check if other arguments of func correspond
+        #  to fields from template and have desired type (list or str)
         return func
 
     return decorator
@@ -56,7 +63,13 @@ def template_handler(tmpl_s: str) -> Callable:
 # all handler modules then will need to import required command configs themselves
 def postprocess_commands(*args: str) -> Callable:
     def decorator(func: Callable) -> Callable:
-        setattr(func, _TEMPLATE_HANDLER_ATTR_KEY, list(args))
+        setattr(func, _TEMPLATE_HANDLER_POSTPROCESS_COMMANDS_ATTR, list(args))
         return func
 
     return decorator
+
+
+# TODO: check that function accepts argument `opts: CommandCallOpts`
+def pass_command_opts(func: Callable) -> Callable:
+    setattr(func, _TEMPLATE_HANDLER_PASS_OPTS_ATTR, True)
+    return func

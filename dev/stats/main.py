@@ -1,4 +1,5 @@
 import csv
+import logging
 from collections import defaultdict
 from tabulate import tabulate
 
@@ -218,11 +219,6 @@ def mine_shell_commands(files_dir: str, output_file: str) -> None:
 
 def main():
     globalLog.setLevel(logging.ERROR)
-
-    mine_shell_commands(UBUNTU_FILES_DIR, UBUNTU_SHELL_COMMANDS_MINED_FILE)
-
-    commands_file = UBUNTU_MATCHER_TESTS_FILTERED_FILE
-    collect_and_print_task_matcher_stats(commands_file)
 
     files_dir = UBUNTU_FILES_DIR
     stats_dir = UBUNTU_STATS_DIR

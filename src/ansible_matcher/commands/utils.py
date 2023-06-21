@@ -1,4 +1,4 @@
-from typing import Dict, Set, List, Any, Tuple
+from typing import Dict, List, Any, Tuple
 
 from src.shell.main import ShellWordObject
 from src.ansible_matcher.command_extraction import Opt, CommandCallOpts

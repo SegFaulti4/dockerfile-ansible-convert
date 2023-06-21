@@ -26,6 +26,6 @@ class PipUninstallConfig(CommandConfigABC):
     def postprocess_nocachedir(cls, tweaks: TemplateTweaks) -> Dict[str, Any]:
         return {
             "ansible.builtin.pip": {
-                "extra_args": "--no-cache-dir "
+                "extra_args": "--no-cache-dir"
             }
         }

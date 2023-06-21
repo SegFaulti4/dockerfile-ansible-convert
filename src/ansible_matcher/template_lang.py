@@ -18,6 +18,7 @@ class TemplateField:
     name: str
     pos: Tuple[int, int]
     spec_many: bool
+    spec_no_wildcards: bool
     spec_optional: bool
     spec_path: bool
 
@@ -141,6 +142,7 @@ class TemplateConstructor(CommandTemplateParserVisitor):
         token_field_name = ctx.FIELD_NAME()
         token_spec_open = ctx.SPEC_OPEN()
         token_spec_many = ctx.SPEC_MANY()
+        token_spec_no_wildcards = ctx.SPEC_NO_WILDCARDS()
         token_spec_optional = ctx.SPEC_OPTIONAL()
         token_spec_path = ctx.SPEC_PATH()
         token_close = ctx.CLOSE()
@@ -156,14 +158,20 @@ class TemplateConstructor(CommandTemplateParserVisitor):
         def _token_txt(t):
             return "" if t is None else t.getText()
 
-        field_repr = _token_txt(token_open) + _token_txt(token_field_name) + \
-                     _token_txt(token_spec_open) + _token_txt(token_spec_many) + \
-                     _token_txt(token_spec_optional) + _token_txt(token_spec_path) + \
-                     _token_txt(token_close)
+        field_repr = \
+            _token_txt(token_open) + \
+            _token_txt(token_field_name) + \
+            _token_txt(token_spec_open) + \
+            _token_txt(token_spec_many) + \
+            _token_txt(token_spec_no_wildcards) + \
+            _token_txt(token_spec_optional) + \
+            _token_txt(token_spec_path) + \
+            _token_txt(token_close)
 
         return TemplateField(
             name=_token_txt(token_field_name),
             spec_many=token_spec_many is not None,
+            spec_no_wildcards=token_spec_no_wildcards is not None,
             spec_optional=token_spec_optional is not None,
             spec_path=token_spec_path is not None,
             pos=(0, len(field_repr))
@@ -181,6 +189,12 @@ class TemplateTweaks:
 
     def tweak_spec_path(self, path: str):
         return path_utils.path_str_wrapper(path, cwd=self.cwd, usr=self.usr)
+
+    # TODO: (not so soon) delegate wildcard recognition to shell parser
+    @staticmethod
+    def has_wildcards(value: str) -> bool:
+        # TODO: add support for brackets
+        return "*" in value or "?" in value
 
 
 class CommandTemplateMatcher:
@@ -300,7 +314,7 @@ class CommandTemplateMatcher:
             w for prep in preprocessed for w in prep[1]
         ]
 
-    def _resolve_field_value(self, value: str, command_params: List[str], spec_path: bool = True) \
+    def _resolve_field_value(self, value: str, command_params: List[str], spec_path: bool, spec_no_wildcards: bool) \
             -> Tuple[Optional[str], Optional[int]]:
         param_count = value.count(CommandTemplateMatcher._RE_SHELL_PARAM_REPR)
         constants = value.split(CommandTemplateMatcher._RE_SHELL_PARAM_REPR)
@@ -327,6 +341,9 @@ class CommandTemplateMatcher:
                 globalLog.debug("Match warning - can't process path field, 'tweaks' is None")
             else:
                 field_value = self.template_tweaks.tweak_spec_path(field_value)
+        if spec_no_wildcards and TemplateTweaks.has_wildcards(field_value):
+            globalLog.debug("Match failed - found wildcards")
+            return None, None
 
         return field_value, param_count
 
@@ -346,7 +363,7 @@ class CommandTemplateMatcher:
 
             if not field.spec_many:
                 field_value, param_count = self._resolve_field_value(captures[-1], comm_param_values[params_start:],
-                                                                     field.spec_path)
+                                                                     field.spec_path, field.spec_no_wildcards)
                 if field_value is None:
                     return None
                 res[field_name] = field_value
@@ -355,7 +372,7 @@ class CommandTemplateMatcher:
                 field_values = []
                 for capture in captures:
                     field_value, param_count = self._resolve_field_value(capture, comm_param_values[params_start:],
-                                                                         field.spec_path)
+                                                                         field.spec_path, field.spec_no_wildcards)
                     if field_value is None:
                         return None
                     field_values.append(field_value)

@@ -72,6 +72,8 @@ class Pip3InstallConfig(CommandConfigABC):
         "--no-cache-dir",
         "--quiet",
         "--pre",
+        "--require-hashes",
+        "--system",
         "--no-index",
         "--trusted-host",
         "--user"
@@ -102,28 +104,6 @@ class Pip3InstallConfig(CommandConfigABC):
             "ansible.builtin.pip": {
                 "state": "forcereinstall"
             }
-        }
-
-    @classmethod
-    @postprocess_opts("--require-hashes")
-    def postprocess_requirehashes(cls, tweaks: TemplateTweaks) -> Dict[str, Any]:
-        return {
-            "aliases": [
-                "--require-hashes"
-            ],
-            "arg_required": False,
-            "many_args": False
-        }
-
-    @classmethod
-    @postprocess_opts("--system")
-    def postprocess_system(cls, tweaks: TemplateTweaks) -> Dict[str, Any]:
-        return {
-            "aliases": [
-                "--system"
-            ],
-            "arg_required": False,
-            "many_args": False
         }
 
     @classmethod

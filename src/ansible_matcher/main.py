@@ -89,7 +89,7 @@ class TaskMatcher:
 
         registry_entries = global_template_handler_registry.fetch_by_command(comm)
 
-        for tmpl, handler, postprocess_configs in registry_entries:
+        for tmpl, handler, postprocess_configs, pass_opts in registry_entries:
             x_tmpl = config_cls.extract_command_template(tmpl)
             if x_tmpl is None:
                 continue
@@ -99,9 +99,15 @@ class TaskMatcher:
                 continue
             field_values, unmatched_opts = matched
 
-            tasks = handler(tweaks=self._tweaks, **field_values)
-            if tasks is None:
-                continue
+            if pass_opts:
+                handled = handler(tweaks=self._tweaks, opts=unmatched_opts, **field_values)
+                if handled is None:
+                    continue
+                tasks, unmatched_opts = handled
+            else:
+                tasks = handler(tweaks=self._tweaks, **field_values)
+                if tasks is None:
+                    continue
 
             if command_name in postprocess_configs:
                 extra_params, unmatched_pp_opts = \

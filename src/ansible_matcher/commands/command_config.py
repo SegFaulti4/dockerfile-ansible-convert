@@ -157,6 +157,7 @@ def postprocess_opts(tmpl_s: str) -> Callable:
         # and create corresponding command opt template
         setattr(func, _OPTS_POSTPROCESS_ATTR_KEY, tmpl)
 
+        # TODO: check function return value
         # TODO: check if func accepts argument 'tweaks'
         # TODO: check if other arguments of func correspond
         #  to fields from template and have desired type (list or str)
