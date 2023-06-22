@@ -1,1 +1,1 @@
-command >abc=def
+cmd param param | cmd param

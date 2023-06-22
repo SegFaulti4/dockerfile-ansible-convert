@@ -1,7 +1,7 @@
 import inspect
 import copy
 from abc import ABC, abstractmethod
-from typing import Optional, Union, Any, Callable, Type, Tuple, List, Dict
+from typing import Optional, Union, Any, Callable, Type, Tuple, List, Dict, ClassVar
 
 from src.ansible_matcher.template_lang.main import \
     TemplateMatcher, CommandWords, TemplateWords, TemplatePart, TemplateTweaks, tmpl_s
