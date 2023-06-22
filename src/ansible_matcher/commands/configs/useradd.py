@@ -3,7 +3,7 @@ from src.ansible_matcher.commands.command_config import *
 
 @command_config("useradd")
 class UseraddConfig(CommandConfigABC):
-    entry: ClassVar[CommandTemplateParts] = tmpl_c("useradd <<parameters : m>>")
+    entry: ClassVar[TemplateWords] = tmpl_s("useradd <<parameters : m>>")
     opts: ClassVar[List[Opt]] = \
         [
             Opt("base dir", True, False,

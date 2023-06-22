@@ -3,7 +3,7 @@ from src.ansible_matcher.commands.command_config import *
 
 @command_config("mkdir")
 class MkdirConfig(CommandConfigABC):
-    entry: ClassVar[CommandTemplateParts] = tmpl_c("mkdir <<parameters : m>>")
+    entry: ClassVar[TemplateWords] = tmpl_s("mkdir <<parameters : m>>")
     opts: ClassVar[List[Opt]] = \
         [
             Opt("mode", False, False,

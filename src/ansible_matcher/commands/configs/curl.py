@@ -3,7 +3,7 @@ from src.ansible_matcher.commands.command_config import *
 
 @command_config("curl")
 class CurlConfig(CommandConfigABC):
-    entry: ClassVar[CommandTemplateParts] = tmpl_c("curl <<parameters : m>>")
+    entry: ClassVar[TemplateWords] = tmpl_s("curl <<parameters : m>>")
     opts: ClassVar[List[Opt]] = \
         [
             Opt("fail", False, False,

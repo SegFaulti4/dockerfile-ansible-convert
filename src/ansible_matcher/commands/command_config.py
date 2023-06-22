@@ -1,13 +1,14 @@
 import inspect
 import copy
 from abc import ABC, abstractmethod
-from typing import Optional, Any, Union, Tuple, List, Dict, Callable, ClassVar
+from typing import Optional, Union, Any, Callable, Type, Tuple, List, Dict
 
-from src.ansible_matcher.template_lang import CommandTemplateMatcher, \
-    CommandCallParts, CommandTemplateParts, TemplatePart, TemplateTweaks, tmpl_c
-from src.ansible_matcher.command_extraction import Opt, CommandCallOpts, CommandTemplateOpts, \
-    ExtractedCommandCall, ExtractedCommandTemplate, CommandOptsExtractor, match_extracted_call_opts
-from src.ansible_matcher.utils import *
+from src.ansible_matcher.template_lang.main import \
+    TemplateMatcher, CommandWords, TemplateWords, TemplatePart, TemplateTweaks, tmpl_s
+from src.ansible_matcher.extracted_matching.opts_extraction import \
+    Opt, CommandOpts, TemplateOpts, OptsExtractor
+from src.ansible_matcher.extracted_matching.main import match_extracted_call_opts
+from src.ansible_matcher.utils import listify, merge_dicts
 
 
 _OPTS_POSTPROCESS_ATTR_KEY = "_opts_tmpl"
@@ -20,7 +21,7 @@ class CommandConfigABC(ABC):
     @classmethod
     @property
     @abstractmethod
-    def entry(cls) -> CommandTemplateParts:
+    def entry(cls) -> TemplateWords:
         ...
 
     @classmethod
@@ -30,7 +31,7 @@ class CommandConfigABC(ABC):
         ...
 
     # these fields are automatically initialised during inheritance (__init_subclass__)
-    _opts_postprocess: List[Tuple[CommandTemplateOpts, Callable]]
+    _opts_postprocess: List[Tuple[TemplateOpts, Callable]]
     _opts_alias_mapping: Dict[str, Opt]
     _opts_name_mapping: Dict[str, Opt]
 
@@ -57,48 +58,54 @@ class CommandConfigABC(ABC):
 
         cls._opts_postprocess = list()
         for func in pp_funcs:
-            extracted_tmpl = cls._extract(getattr(func, _OPTS_POSTPROCESS_ATTR_KEY))
-            assert extracted_tmpl is not None
-            cls._opts_postprocess.append((extracted_tmpl.opts, func))
+            _, tmpl_opts = cls._extract(getattr(func, _OPTS_POSTPROCESS_ATTR_KEY))
+            assert tmpl_opts is not None
+            cls._opts_postprocess.append((tmpl_opts, func))
 
     @classmethod
-    def check_entry(cls, comm: Union[CommandCallParts, CommandTemplateParts]) -> bool:
+    def check_entry(cls, cmd: Union[CommandWords, TemplateWords]) \
+            -> bool:
         # noinspection PyTypeChecker
-        matcher = CommandTemplateMatcher(template=cls.entry)
-        match = matcher.full_match(comm)
+        matcher = TemplateMatcher(tmpl=cls.entry)
+        match = matcher.full_match(cmd)
 
         if match is None:
             return False
         return True
 
     @classmethod
-    def extract_command_call(cls, comm: CommandCallParts) \
-            -> Optional[ExtractedCommandCall]:
-        if not cls.check_entry(comm):
-            return None
+    def extract_command_call(cls, cmd: CommandWords) \
+            -> Tuple[Optional[CommandWords],
+                     Optional[CommandOpts]]:
+        if not cls.check_entry(cmd):
+            return None, None
 
-        return cls._extract(comm)
+        return cls._extract(cmd)
 
     @classmethod
-    def extract_command_template(cls, tmpl: CommandTemplateParts) \
-            -> Optional[ExtractedCommandTemplate]:
+    def extract_command_template(cls, tmpl: TemplateWords) \
+            -> Tuple[Optional[TemplateWords],
+                     Optional[TemplateOpts]]:
         if not cls.check_entry(tmpl):
-            return None
+            return None, None
 
         return cls._extract(tmpl)
 
     @classmethod
-    def _extract(cls, comm: Union[CommandCallParts, CommandTemplateParts]) \
-            -> Optional[Union[ExtractedCommandCall, ExtractedCommandTemplate]]:
-        opts_extractor = CommandOptsExtractor(opts_map=cls._opts_alias_mapping)
-        tmp = copy.deepcopy(comm)
+    def _extract(cls, cmd: Union[CommandWords, TemplateWords]) \
+            -> Union[
+                Tuple[Optional[CommandWords], Optional[CommandOpts]],
+                Tuple[Optional[TemplateWords], Optional[TemplateOpts]]
+            ]:
+        opts_extractor = OptsExtractor(opts_map=cls._opts_alias_mapping)
+        tmp = copy.deepcopy(cmd)
         return opts_extractor.extract(tmp)
 
     @classmethod
-    def postprocess_command_opts(cls, call_opts: CommandCallOpts, tweaks: TemplateTweaks) \
-            -> Tuple[Dict[str, Any], CommandCallOpts]:
+    def postprocess_command_opts(cls, cmd_opts: CommandOpts, tweaks: TemplateTweaks) \
+            -> Tuple[Dict[str, Any], CommandOpts]:
         module_params = dict()
-        unmatched_opts = {k: listify(v) for k, v in call_opts.items()}
+        unmatched_opts = {k: listify(v) for k, v in cmd_opts.items()}
 
         for tmpl_opts, pp_func in cls._opts_postprocess:
             if not unmatched_opts:
@@ -123,9 +130,10 @@ class CommandConfigRegistry:
         self.configurations = dict()
         self.config_cache = dict()
 
-    def add_entry(self, command_name: str, config_cls: Type[CommandConfigABC]) -> None:
-        assert command_name not in self.configurations
-        self.configurations[command_name] = config_cls
+    def add_entry(self, cmd_name: str, config_cls: Type[CommandConfigABC]) \
+            -> None:
+        assert cmd_name not in self.configurations
+        self.configurations[cmd_name] = config_cls
 
         first_part: TemplatePart = config_cls.entry[0]
         # in order for new config to be cached
@@ -133,24 +141,26 @@ class CommandConfigRegistry:
         assert not first_part.parts
         if first_part.value not in self.config_cache:
             self.config_cache[first_part.value] = list()
-        self.config_cache[first_part.value].append((command_name, config_cls))
+        self.config_cache[first_part.value].append((cmd_name, config_cls))
 
-    def fetch_by_command(self, comm: CommandCallParts) -> List[RegistryEntry]:
+    def fetch_by_command(self, cmd: CommandWords) \
+            -> List[RegistryEntry]:
         # ignoring commands that have parameter in first word
-        if comm[0].parts:
+        if cmd[0].parts:
             return []
-        return self.config_cache.get(comm[0].value, [])
+        return self.config_cache.get(cmd[0].value, [])
 
-    def fetch_by_name(self, command_name: str) -> Optional[RegistryEntry]:
+    def fetch_by_name(self, command_name: str) \
+            -> Optional[RegistryEntry]:
         return self.configurations.get(command_name, None)
 
 
 global_command_config_entry = CommandConfigRegistry()
 
 
-def postprocess_opts(tmpl_s: str) -> Callable:
+def postprocess_opts(tmpl_str: str) -> Callable:
     def decorator(func: Callable) -> Callable:
-        tmpl = tmpl_c(tmpl_s)
+        tmpl = tmpl_s(tmpl_str)
         assert tmpl is not None
 
         # attribute is later used to identify opt postprocessing methods
@@ -166,9 +176,9 @@ def postprocess_opts(tmpl_s: str) -> Callable:
     return decorator
 
 
-def command_config(command_name: str):
+def command_config(cmd_name: str):
     def decorator(cls):
-        global_command_config_entry.add_entry(command_name=command_name, config_cls=cls)
+        global_command_config_entry.add_entry(cmd_name=cmd_name, config_cls=cls)
         return cls
 
     return decorator

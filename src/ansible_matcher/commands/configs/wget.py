@@ -3,7 +3,7 @@ from src.ansible_matcher.commands.command_config import *
 
 @command_config("wget")
 class WgetConfig(CommandConfigABC):
-    entry: ClassVar[CommandTemplateParts] = tmpl_c("wget <<parameters : m>>")
+    entry: ClassVar[TemplateWords] = tmpl_s("wget <<parameters : m>>")
     opts: ClassVar[List[Opt]] = \
         [
             Opt("output document", True, False,

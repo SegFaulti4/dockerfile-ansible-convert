@@ -3,7 +3,7 @@ from src.ansible_matcher.commands.command_config import *
 
 @command_config("chmod")
 class ChmodConfig(CommandConfigABC):
-    entry: ClassVar[CommandTemplateParts] = tmpl_c("chmod <<parameters : m>>")
+    entry: ClassVar[TemplateWords] = tmpl_s("chmod <<parameters : m>>")
     opts: ClassVar[List[Opt]] = \
         [
             Opt("changes", False, False,

@@ -19,15 +19,15 @@ class TestShellParser(unittest.TestCase):
 
         # av - assert values
         assert_values = [
-            [ShellParameterObject(name="PAR_1", pos=(0, 6))],
-            [ShellParameterObject(name="PAR_2", pos=(1, 7))],
-            [ShellParameterObject(name="PAR_3", pos=(2, 8))]
+            [ShellParameter(name="PAR_1", pos=(0, 6))],
+            [ShellParameter(name="PAR_2", pos=(1, 7))],
+            [ShellParameter(name="PAR_3", pos=(2, 8))]
         ]
         for parsed, word_params_av in zip(parsed_words, assert_values):
             assert isinstance(parsed, list) and len(parsed) == 1
-            assert isinstance(parsed[0], ShellCommandObject) and len(parsed[0].parts) == 1
+            assert isinstance(parsed[0], ShellCommand) and len(parsed[0].words) == 1
 
-            word = parsed[0].parts[0]
+            word = parsed[0].words[0]
             assert isinstance(word, ShellWordObject)
             assert len(word.parts) == len(word_params_av)
             for param, param_av in zip(word.parts, word_params_av):
@@ -45,29 +45,29 @@ class TestShellParser(unittest.TestCase):
 
         assert_values = [
             ShellWordObject(value=words[0], parts=[
-                ShellParameterObject(name="PAR_1", pos=(0, 6)),
-                ShellParameterObject(name="PAR_2", pos=(7, 13))
+                ShellParameter(name="PAR_1", pos=(0, 6)),
+                ShellParameter(name="PAR_2", pos=(7, 13))
             ]),
             ShellWordObject(value=words[1], parts=[
-                ShellParameterObject(name="PAR_3", pos=(1, 7)),
-                ShellParameterObject(name="PAR_4", pos=(8, 14))
+                ShellParameter(name="PAR_3", pos=(1, 7)),
+                ShellParameter(name="PAR_4", pos=(8, 14))
             ]),
             ShellWordObject(value=words[2], parts=[
-                ShellParameterObject(name="PAR_5", pos=(0, 6)),
-                ShellParameterObject(name="PAR_6", pos=(8, 14))
+                ShellParameter(name="PAR_5", pos=(0, 6)),
+                ShellParameter(name="PAR_6", pos=(8, 14))
             ]),
             ShellWordObject(value=words[3], parts=[
-                ShellParameterObject(name="PAR_7", pos=(0, 6)),
-                ShellParameterObject(name="PAR_8", pos=(7, 13)),
-                ShellParameterObject(name="PAR_9", pos=(14, 20))
+                ShellParameter(name="PAR_7", pos=(0, 6)),
+                ShellParameter(name="PAR_8", pos=(7, 13)),
+                ShellParameter(name="PAR_9", pos=(14, 20))
             ]),
             ShellWordObject(value=words[4], parts=[])
         ]
         for parsed, word_av in zip(parsed_words, assert_values):
             assert isinstance(parsed, list) and len(parsed) == 1
-            assert isinstance(parsed[0], ShellCommandObject) and len(parsed[0].parts) == 1
+            assert isinstance(parsed[0], ShellCommand) and len(parsed[0].words) == 1
 
-            word = parsed[0].parts[0]
+            word = parsed[0].words[0]
             assert word == word_av
 
     def test_operator(self):
@@ -76,11 +76,11 @@ class TestShellParser(unittest.TestCase):
 
         # av - assert values
         assert_values = [
-            ShellOperatorAndObject(),
-            ShellOperatorOrObject(),
-            ShellOperatorOrObject(),
-            ShellOperatorAndObject(),
-            ShellOperatorEndObject()
+            ShellOperatorAnd(),
+            ShellOperatorOr(),
+            ShellOperatorOr(),
+            ShellOperatorAnd(),
+            ShellOperatorEnd()
         ]
         assert isinstance(parsed, list) and len(parsed) == 10
 
@@ -99,7 +99,7 @@ class TestShellParser(unittest.TestCase):
             print(parsed)
 
             assert isinstance(parsed, list) and len(parsed) == 1
-            assert isinstance(parsed[0], ShellAssignmentObject)
+            assert isinstance(parsed[0], ShellAssignment)
             assert parsed[0].name == name_av
             assert isinstance(parsed[0].value, ShellExpression)
 
@@ -116,10 +116,10 @@ class TestShellParser(unittest.TestCase):
         ]
         for parsed, command, part_types in zip(parsed_commands, commands, assert_types):
             assert isinstance(parsed, list) and len(parsed) == 1
-            assert isinstance(parsed[0], ShellCommandObject)
+            assert isinstance(parsed[0], ShellCommand)
 
             assert parsed[0].line == command
-            parts = parsed[0].parts
+            parts = parsed[0].words
             assert len(parts) == len(part_types)
             assert all(isinstance(part, part_type) for part, part_type in zip(parts, part_types))
 
@@ -132,7 +132,7 @@ class TestShellParser(unittest.TestCase):
 
         for parsed, command in zip(parsed_commands, commands):
             assert isinstance(parsed, list) and len(parsed) == 1
-            assert isinstance(parsed[0], ShellRawObject)
+            assert isinstance(parsed[0], ShellRaw)
             assert parsed[0].value == command
 
     def test_shell_script(self):
@@ -143,8 +143,8 @@ class TestShellParser(unittest.TestCase):
         ]
         parsed_scripts = [self.parser.parse_as_script(script) for script in scripts]
 
-        comm, raw, assign = ShellCommandObject, ShellRawObject, ShellAssignmentObject
-        a, o, e = ShellOperatorAndObject, ShellOperatorOrObject, ShellOperatorEndObject
+        comm, raw, assign = ShellCommand, ShellRaw, ShellAssignment
+        a, o, e = ShellOperatorAnd, ShellOperatorOr, ShellOperatorEnd
         assert_types = [
             [comm, a, raw],
             [comm, o, comm, a, comm, a, comm, o, comm, o, comm, a, comm, e],
@@ -165,6 +165,6 @@ class TestShellParser(unittest.TestCase):
         parsed_expr = [self.parser.parse_as_expression(expr) for expr in expressions]
 
         assert all(isinstance(parsed, ShellExpression) for parsed in parsed_expr)
-        assert len(parsed_expr[0].parts) == 1 and isinstance(parsed_expr[0].parts[0], ShellCommandObject)
-        assert len(parsed_expr[1].parts) == 1 and isinstance(parsed_expr[1].parts[0], ShellRawObject)
-        assert len(parsed_expr[2].parts) == 1 and isinstance(parsed_expr[2].parts[0], ShellCommandObject)
+        assert len(parsed_expr[0].parts) == 1 and isinstance(parsed_expr[0].parts[0], ShellCommand)
+        assert len(parsed_expr[1].parts) == 1 and isinstance(parsed_expr[1].parts[0], ShellRaw)
+        assert len(parsed_expr[2].parts) == 1 and isinstance(parsed_expr[2].parts[0], ShellCommand)

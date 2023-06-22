@@ -3,7 +3,7 @@ from src.ansible_matcher.commands.command_config import *
 
 @command_config("make")
 class MakeConfig(CommandConfigABC):
-    entry: ClassVar[CommandTemplateParts] = tmpl_c("make <<parameters : mo>>")
+    entry: ClassVar[TemplateWords] = tmpl_s("make <<parameters : mo>>")
     opts: ClassVar[List[Opt]] = \
         [
             Opt("silent", False, False,

@@ -3,7 +3,7 @@ from src.ansible_matcher.commands.command_config import *
 
 @command_config("ln")
 class LnConfig(CommandConfigABC):
-    entry: ClassVar[CommandTemplateParts] = tmpl_c("ln <<parameters : m>>")
+    entry: ClassVar[TemplateWords] = tmpl_s("ln <<parameters : m>>")
     opts: ClassVar[List[Opt]] = \
         [
             Opt("force", False, False,

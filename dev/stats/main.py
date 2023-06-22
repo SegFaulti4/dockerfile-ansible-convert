@@ -167,8 +167,8 @@ def collect_task_matcher_stats(shell_parser: ShellParser, task_matcher: TaskMatc
             try:
                 parsed = shell_parser.parse_as_script(line)
                 comm = parsed.parts[0]
-                if isinstance(comm, ShellCommandObject):
-                    task_matcher.match_command(comm.parts)
+                if isinstance(comm, ShellCommand):
+                    task_matcher.match_command(comm.words)
             except Exception as exc:
                 globalLog.info(type(exc), exc)
 
@@ -206,7 +206,7 @@ def mine_shell_commands(files_dir: str, output_file: str) -> None:
                     line.replace("\n", " ")
 
                     for comm in run_dir.script.parts:
-                        if isinstance(comm, ShellCommandObject):
+                        if isinstance(comm, ShellCommand):
                             line = comm.line
                             line.replace("\t", " ")
                             commands.append(line + "\n")

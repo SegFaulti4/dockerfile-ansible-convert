@@ -1,12 +1,12 @@
 from typing import Dict, List, Any, Tuple
 
 from src.shell.main import ShellWordObject
-from src.ansible_matcher.command_extraction import Opt, CommandCallOpts
+from src.ansible_matcher.extracted_matching.opts_extraction import Opt, CommandOpts
 
 
-def pip_extra_args(unmatched_opts: CommandCallOpts, opts_name_mapping: Dict[str, Opt],
+def pip_extra_args(unmatched_opts: CommandOpts, opts_name_mapping: Dict[str, Opt],
                    opts_alias_mapping: Dict[str, Opt], extra_args: List[str], module_params: Dict[str, Any]) \
-        -> Tuple[Dict[str, Any], CommandCallOpts]:
+        -> Tuple[Dict[str, Any], CommandOpts]:
 
     opts_copy: Dict[str, List[ShellWordObject]] = {k: v for k, v in unmatched_opts.items()}
     extra_args_opts = {opts_alias_mapping[x] for x in extra_args}

@@ -56,9 +56,9 @@ if __name__ == "__main__":
             try:
                 script = shell_parser.parse_as_script(line)
                 comm = script.parts[0]
-                if isinstance(comm, ShellCommandObject):
-                    ext = task_matcher.extract_command(comm.parts)
-                    obj = task_matcher.match_command(comm.parts, cwd=cwd, usr=usr)
+                if isinstance(comm, ShellCommand):
+                    ext = task_matcher.extract_command(comm.words)
+                    obj = task_matcher.match_command(comm.words, cwd=cwd, usr=usr)
                 else:
                     obj = None
 

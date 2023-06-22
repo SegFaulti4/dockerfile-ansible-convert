@@ -1,6 +1,7 @@
-from typing import Optional, Any, Union, Tuple, List, Dict, Callable
+from typing import Optional, Any, Tuple, List, Dict, Callable
 
-from src.ansible_matcher.template_lang import TemplatePart, CommandTemplateParts, CommandCallParts, TemplateTweaks, tmpl_c
+from src.ansible_matcher.template_lang.main import \
+    TemplatePart, TemplateWords, CommandWords, TemplateTweaks, tmpl_s
 
 
 AnsibleTasks = List[Dict[str, Any]]
@@ -11,14 +12,15 @@ _TEMPLATE_HANDLER_PASS_OPTS_ATTR = '_pass_command_opts'
 
 # TODO: add command template extraction for registered handlers
 class TemplateHandlerRegistry:
-    templates: List[Tuple[CommandTemplateParts, Callable]]
-    template_cache: Dict[str, List[Tuple[CommandTemplateParts, Callable]]]
+    templates: List[Tuple[TemplateWords, Callable]]
+    template_cache: Dict[str, List[Tuple[TemplateWords, Callable]]]
 
     def __init__(self):
         self.templates = list()
         self.template_cache = dict()
 
-    def add_entry(self, command_template: CommandTemplateParts, tmpl_handler: Callable) -> None:
+    def add_entry(self, command_template: TemplateWords, tmpl_handler: Callable) \
+            -> None:
         self.templates.append((command_template, tmpl_handler))
 
         first_part: TemplatePart = command_template[0]
@@ -29,7 +31,8 @@ class TemplateHandlerRegistry:
             self.template_cache[first_part.value] = list()
         self.template_cache[first_part.value].append((command_template, tmpl_handler))
 
-    def fetch_by_command(self, comm: CommandCallParts) -> List[Tuple[CommandTemplateParts, Callable, List[str], bool]]:
+    def fetch_by_command(self, comm: CommandWords) \
+            -> List[Tuple[TemplateWords, Callable, List[str], bool]]:
         if comm[0].parts:
             return []
         cached = self.template_cache.get(comm[0].value, [])
@@ -44,9 +47,9 @@ class TemplateHandlerRegistry:
 global_template_handler_registry = TemplateHandlerRegistry()
 
 
-def template_handler(tmpl_s: str) -> Callable:
+def template_handler(tmpl_str: str) -> Callable:
     def decorator(func: Callable) -> Callable:
-        tmpl = tmpl_c(tmpl_s)
+        tmpl = tmpl_s(tmpl_str)
         assert tmpl is not None
         global_template_handler_registry.add_entry(command_template=tmpl, tmpl_handler=func)
 

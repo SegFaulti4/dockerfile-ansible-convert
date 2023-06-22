@@ -3,7 +3,7 @@ from src.ansible_matcher.commands.command_config import *
 
 @command_config("git clone")
 class GitCloneConfig(CommandConfigABC):
-    entry: ClassVar[CommandTemplateParts] = tmpl_c("git clone <<parameters : m>>")
+    entry: ClassVar[TemplateWords] = tmpl_s("git clone <<parameters : m>>")
     opts: ClassVar[List[Opt]] = \
         [
             Opt("branch", True, False,

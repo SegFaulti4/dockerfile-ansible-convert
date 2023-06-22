@@ -1,7 +1,7 @@
 dockerfile==3.2.0
 bashlex==0.18
 PyYAML~=6.0
-ansible==7.3.0
+ansible==8.0.0
 regex~=2022.10.31
 oyaml~=1.0
 antlr4-python3-runtime~=4.11.1

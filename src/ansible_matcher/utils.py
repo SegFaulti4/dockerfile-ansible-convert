@@ -1,4 +1,4 @@
-from typing import Dict, Any, Type, Callable, List, Union
+from typing import Dict, Any, Callable, List
 
 
 def visit_dict(d_dict: Dict[str, Any], predicate: Callable, proc: Callable):

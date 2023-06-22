@@ -1,6 +1,6 @@
 from src.shell.main import *
 from src.ansible_matcher.statistics import *
-from src.ansible_matcher.command_extraction import match_extracted_call
+from src.ansible_matcher.extracted_matching import match_extracted_call
 from src.ansible_matcher.loaded_commands import *
 from src.ansible_matcher.commands.command_config import *
 from src.ansible_matcher.commands.template_handler import *
@@ -18,7 +18,7 @@ class TaskMatcher:
 
     _tweaks: TemplateTweaks
 
-    def match_command(self, comm: CommandCallParts, cwd: Optional[str] = None, usr: Optional[str] = None) \
+    def match_command(self, comm: CommandWords, cwd: Optional[str] = None, usr: Optional[str] = None) \
             -> Optional[AnsibleTasks]:
         if cwd is None:
             cwd = "/"
@@ -35,20 +35,20 @@ class TaskMatcher:
 
         # https://youtrack.jetbrains.com/issue/PY-43122/Property-is-wrongly-considered-to-be-a-callable-when-a-class-is-imported-from-a-separate-module
         # noinspection PyTypeChecker
-        entry: CommandTemplateParts = config_cls.entry
+        entry: TemplateWords = config_cls.entry
         if matched is None:
             self._stat_unmatched(comm, entry)
             return None
         self._stat_matched(comm, entry)
         return matched
 
-    def extract_command(self, comm: CommandCallParts) -> Optional[ExtractedCommandCall]:
+    def extract_command(self, comm: CommandWords) -> Optional[ExtractedCommandCall]:
         res = self._extract_command_call(comm)
         if res is None:
             return res
         return res[2]
 
-    def _extract_command_call(self, comm: CommandCallParts) \
+    def _extract_command_call(self, comm: CommandWords) \
             -> Optional[Tuple[str, Type[CommandConfigABC], ExtractedCommandCall]]:
 
         if not TaskMatcher._check_requirements(comm):
@@ -77,15 +77,15 @@ class TaskMatcher:
         return command_name, config_cls, extracted
 
     @staticmethod
-    def _check_requirements(comm: CommandCallParts) -> bool:
+    def _check_requirements(comm: CommandWords) -> bool:
         return all(isinstance(part, ShellWordObject) and
-                   all(isinstance(word_part, ShellParameterObject)
+                   all(isinstance(word_part, ShellParameter)
                        for word_part in part.parts)
                    for part in comm) \
             and comm and not comm[0].parts
 
     def _match_extracted_call(self, command_name: str, config_cls: Type[CommandConfigABC],
-                              comm: CommandCallParts, x_call: ExtractedCommandCall) -> Optional[AnsibleTasks]:
+                              comm: CommandWords, x_call: ExtractedCommandCall) -> Optional[AnsibleTasks]:
 
         registry_entries = global_template_handler_registry.fetch_by_command(comm)
 
@@ -128,7 +128,7 @@ class TaskMatcher:
             for key in filter(lambda x: x in extra_params, task):
                 task[key] = merge_dicts(task[key], extra_params[key], override=True)
 
-    def _stat_unknown(self, comm: CommandCallParts) -> None:
+    def _stat_unknown(self, comm: CommandWords) -> None:
         if not self.collect_stats:
             return
         self.stats.name.append(comm[0].value)
@@ -137,7 +137,7 @@ class TaskMatcher:
         self.stats.length.append(len(line)), self.stats.line.append(line)
         self.stats.stat_id.append(self.stat_id)
 
-    def _stat_unmatched(self, comm: CommandCallParts, entry: CommandTemplateParts) -> None:
+    def _stat_unmatched(self, comm: CommandWords, entry: TemplateWords) -> None:
         if not self.collect_stats:
             return
         self.stats.name.append(" ".join(
@@ -148,7 +148,7 @@ class TaskMatcher:
         self.stats.length.append(len(line)), self.stats.line.append(line)
         self.stats.stat_id.append(self.stat_id)
 
-    def _stat_matched(self, comm: CommandCallParts, entry: CommandTemplateParts) -> None:
+    def _stat_matched(self, comm: CommandWords, entry: TemplateWords) -> None:
         if not self.collect_stats:
             return
         self.stats.name.append(" ".join(

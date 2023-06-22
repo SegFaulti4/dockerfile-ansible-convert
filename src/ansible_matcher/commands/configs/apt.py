@@ -3,7 +3,7 @@ from src.ansible_matcher.commands.command_config import *
 
 @command_config("apt")
 class AptConfig(CommandConfigABC):
-    entry: ClassVar[CommandTemplateParts] = tmpl_c("apt-get <<parameters : m>>")
+    entry: ClassVar[TemplateWords] = tmpl_s("apt-get <<parameters : m>>")
     opts: ClassVar[List[Opt]] = \
         [
             Opt("allow-change-held-packages", False, False,

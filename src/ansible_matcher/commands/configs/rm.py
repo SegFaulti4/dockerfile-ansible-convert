@@ -3,7 +3,7 @@ from src.ansible_matcher.commands.command_config import *
 
 @command_config("rm")
 class RmConfig(CommandConfigABC):
-    entry: ClassVar[CommandTemplateParts] = tmpl_c("rm <<param : m>>")
+    entry: ClassVar[TemplateWords] = tmpl_s("rm <<param : m>>")
     opts: ClassVar[List[Opt]] = \
         [
             Opt("force", False, False,

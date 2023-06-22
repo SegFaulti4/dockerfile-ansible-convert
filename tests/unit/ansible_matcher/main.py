@@ -4,7 +4,7 @@ import logging
 
 from src.shell.bashlex.main import BashlexShellParser
 
-from src.ansible_matcher.template_lang import *
+from src.ansible_matcher.template_lang.main import *
 from src.log import globalLog
 
 
@@ -177,7 +177,7 @@ class TestCommandTemplateMatcher(unittest.TestCase):
 
     def _match_strings(self, templ_str: str, shell_str: str) -> Optional[TemplateMatchResult]:
         t = self.templ_constr.from_str(templ_str)
-        m = CommandTemplateMatcher(template=t)
+        m = TemplateMatcher(tmpl=t)
 
         words = self.shell_parser.parse_as_script(shell_str)
         words = words.parts[0].parts
@@ -185,14 +185,14 @@ class TestCommandTemplateMatcher(unittest.TestCase):
 
     def _partial_match_strings(self, templ_str: str, shell_str: str) -> Optional[Tuple[TemplateMatchResult, str]]:
         t = self.templ_constr.from_str(templ_str)
-        m = CommandTemplateMatcher(template=t)
+        m = TemplateMatcher(tmpl=t)
 
         words = self.shell_parser.parse_as_script(shell_str)
         words = words.parts[0].parts
-        r = m.match(words)
-        if r is None:
-            return r
-        return r[0], " ".join(w.value for w in r[1])
+        match_res, unmatched = m.match(words)
+        if match_res is None:
+            return None
+        return match_res, " ".join(w.value for w in unmatched)
 
     def _test_matching(self, matching: Dict, partial: bool = False):
         for i, items in enumerate(matching.items()):
@@ -351,14 +351,14 @@ class TestCommandTemplateMatcher(unittest.TestCase):
     def test_results_merging(self):
         res1 = {"field1": "var1", "field2": "var2"}
         res2 = {"field3": "var3", "field4": "var4"}
-        assert CommandTemplateMatcher.merge_match_results(res1, res2) == \
+        assert TemplateMatcher.merge_match_results(res1, res2) == \
                {"field1": "var1", "field2": "var2", "field3": "var3", "field4": "var4"}
 
         # merging doesn't allow the same field name
         # to be presented in both match results
         res1 = {"field1": "var1", "field2": "var2"}
         res2 = {"field1": "var1", "field3": "var3"}
-        assert CommandTemplateMatcher.merge_match_results(res1, res2) is None
+        assert TemplateMatcher.merge_match_results(res1, res2) is None
 
     # here you can put any tests that don't (yet) know where to put
     def test_dev(self):

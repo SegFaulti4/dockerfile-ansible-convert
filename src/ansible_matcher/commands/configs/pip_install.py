@@ -4,7 +4,7 @@ from src.ansible_matcher.commands.utils import pip_extra_args
 
 @command_config("pip install")
 class PipInstallConfig(CommandConfigABC):
-    entry: ClassVar[CommandTemplateParts] = tmpl_c("pip install <<parameters : m>>")
+    entry: ClassVar[TemplateWords] = tmpl_s("pip install <<parameters : m>>")
     opts: ClassVar[List[Opt]] = \
         [
             Opt("build", True, False,
@@ -159,10 +159,10 @@ class PipInstallConfig(CommandConfigABC):
     ]
 
     @classmethod
-    def postprocess_command_opts(cls, call_opts: CommandCallOpts, tweaks: TemplateTweaks) \
-            -> Tuple[Dict[str, Any], CommandCallOpts]:
+    def postprocess_command_opts(cls, cmd_opts: CommandOpts, tweaks: TemplateTweaks) \
+            -> Tuple[Dict[str, Any], CommandOpts]:
 
-        module_params, unmatched_opts = super().postprocess_command_opts(call_opts, tweaks)
+        module_params, unmatched_opts = super().postprocess_command_opts(cmd_opts, tweaks)
         return pip_extra_args(unmatched_opts=unmatched_opts, opts_name_mapping=cls._opts_name_mapping,
                               opts_alias_mapping=cls._opts_alias_mapping, extra_args=cls._extra_args,
                               module_params=module_params)

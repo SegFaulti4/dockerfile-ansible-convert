@@ -1,13 +1,14 @@
 import dataclasses
 from typing import Optional, Union, Tuple, List, Dict
 
-from src.shell.main import *
-from src.ansible_matcher.template_lang import \
-    TemplateField, TemplatePart, CommandCallParts, CommandTemplateParts, \
-    CommandTemplateMatcher, TemplateTweaks, TemplateMatchResult
-from src.ansible_matcher.utils import *
+from src.shell.main import ShellWordObject, ShellParameter
+from src.ansible_matcher.template_lang.main import \
+    TemplateField, TemplatePart, CommandWords, TemplateWords
 
 from src.log import globalLog
+
+CommandOpts = Dict[str, CommandWords]
+TemplateOpts = Dict[str, TemplateWords]
 
 
 class Opt:
@@ -23,23 +24,7 @@ class Opt:
         self.aliases = aliases
 
 
-CommandCallOpts = Dict[str, CommandCallParts]
-CommandTemplateOpts = Dict[str, CommandTemplateParts]
-
-
-@dataclasses.dataclass
-class ExtractedCommandCall:
-    params: CommandCallParts = dataclasses.field(default_factory=list)
-    opts: CommandCallOpts = dataclasses.field(default_factory=dict)
-
-
-@dataclasses.dataclass
-class ExtractedCommandTemplate:
-    params: CommandTemplateParts = dataclasses.field(default_factory=list)
-    opts: CommandTemplateOpts = dataclasses.field(default_factory=dict)
-
-
-class CommandOptsExtractor:
+class OptsExtractor:
     opts_map: Dict[str, Opt]
     _rt = None
 
@@ -54,28 +39,28 @@ class CommandOptsExtractor:
             opts_map = dict()
         self.opts_map = opts_map
 
-    def extract(self, comm: Union[CommandCallParts, CommandTemplateParts]) \
-            -> Optional[Union[ExtractedCommandCall, ExtractedCommandTemplate]]:
+    def extract(self, cmd: Union[CommandWords, TemplateWords]) \
+            -> Union[
+                Tuple[Optional[CommandWords], Optional[CommandOpts]],
+                Tuple[Optional[TemplateWords], Optional[TemplateOpts]]
+            ]:
+        self._extract(cmd)
+        res = None, None
 
-        self._extract(comm)
-        res = None
-
-        if self._rt is not None:
-            if all(isinstance(word, ShellWordObject) for word in comm):
-                opts = self._group_opt_args()
-                res = ExtractedCommandCall(params=self._rt.params,
-                                           opts=opts)
-
-            elif all(isinstance(part, TemplatePart) for part in comm):
-                opts = self._group_opt_args()
-                res = ExtractedCommandTemplate(params=self._rt.params,
-                                               opts=opts)
+        if self._rt is not None and \
+            all(isinstance(word, ShellWordObject)
+                for word in cmd) or \
+            all(isinstance(part, TemplatePart)
+                for part in cmd):
+            opts = self._group_opt_args()
+            res = self._rt.params, opts
 
         self._rt = None
         return res
 
-    def _extract(self, comm: Union[CommandCallParts, CommandTemplateParts]):
-        self._rt = CommandOptsExtractor.RT(words=comm)
+    def _extract(self, cmd: Union[CommandWords, TemplateWords]) \
+            -> None:
+        self._rt = OptsExtractor.RT(words=cmd)
 
         while self._rt.words:
             word = self._rt.words[0]
@@ -102,7 +87,8 @@ class CommandOptsExtractor:
                 self._rt.params.append(word)
                 self._rt.words.pop(0)
 
-    def _probe_long(self) -> Optional[bool]:
+    def _probe_long(self) \
+            -> Optional[bool]:
         word = self._rt.words.pop(0)
         eq_pos = word.value.find('=')
         if eq_pos != -1:
@@ -126,7 +112,8 @@ class CommandOptsExtractor:
         self._rt.opts.append((opt, arg))
         return True
 
-    def _probe_short(self) -> Optional[bool]:
+    def _probe_short(self) \
+            -> Optional[bool]:
         word = self._rt.words.pop(0)
 
         # try to match whole word as an option name (e.g. `gcc -dumpspecs`)
@@ -169,7 +156,8 @@ class CommandOptsExtractor:
         self._rt.opts.extend(local_opts)
         return True
 
-    def _opt_match(self, opt_name) -> Optional[Opt]:
+    def _opt_match(self, opt_name) \
+            -> Optional[Opt]:
         name_matches = [o for o in self.opts_map if o.startswith(opt_name)]
         if opt_name in name_matches:
             return self.opts_map[opt_name]
@@ -178,10 +166,12 @@ class CommandOptsExtractor:
 
     @staticmethod
     def _cut_token(token: Union[ShellWordObject, TemplatePart], start_pos: int) \
-            -> Optional[Union[ShellWordObject, TemplatePart]]:
-
+            -> Union[
+                Optional[ShellWordObject],
+                Optional[TemplatePart]
+            ]:
         if isinstance(token, ShellWordObject):
-            part_type = ShellParameterObject
+            part_type = ShellParameter
             err_msg = f"Extraction failed - can't cut shell word - {token.value}"
         elif isinstance(token, TemplatePart):
             part_type = TemplateField
@@ -198,7 +188,10 @@ class CommandOptsExtractor:
         return token
 
     def _group_opt_args(self) \
-            -> Dict[str, List[Union[ShellWordObject, TemplatePart]]]:
+            -> Union[
+                Dict[str, List[ShellWordObject]],
+                Dict[str, List[TemplatePart]]
+            ]:
         opts = dict()
         for opt, arg in self._rt.opts:
             if opt.many_args:
@@ -210,56 +203,3 @@ class CommandOptsExtractor:
             else:
                 opts[opt.name] = [arg]
         return opts
-
-
-def match_extracted_call(extracted_call: ExtractedCommandCall, extracted_tmpl: ExtractedCommandTemplate,
-                         template_tweaks: TemplateTweaks) -> Optional[Tuple[TemplateMatchResult, CommandCallOpts]]:
-    params_matcher = CommandTemplateMatcher(template=extracted_tmpl.params, template_tweaks=template_tweaks)
-    params_fields = params_matcher.full_match(extracted_call.params)
-    if params_fields is None:
-        return None
-
-    opt_match = match_extracted_call_opts(extracted_call.opts, extracted_tmpl.opts, template_tweaks=template_tweaks)
-    if opt_match is None:
-        return None
-    opt_fields, unmatched_opts = opt_match
-
-    match_res = CommandTemplateMatcher.merge_match_results(params_fields, opt_fields)
-    if match_res is None:
-        return None
-
-    return match_res, unmatched_opts
-
-
-def match_extracted_call_opts(call_opts: CommandCallOpts, tmpl_opts: CommandTemplateOpts,
-                              template_tweaks: TemplateTweaks) -> Optional[Tuple[TemplateMatchResult, CommandCallOpts]]:
-    opt_fields = dict()
-    unmatched_opts = {k: listify(v) for k, v in call_opts.items()}
-
-    for k, v in tmpl_opts.items():
-        if k not in call_opts:
-            return None
-        v = listify(v)
-
-        if not v and not unmatched_opts[k]:
-            del unmatched_opts[k]
-            continue
-        if not v or not unmatched_opts[k]:
-            return None
-
-        opt_matcher = CommandTemplateMatcher(template=v, template_tweaks=template_tweaks)
-        opt_match = opt_matcher.match(call_opts[k])
-        if opt_match is None:
-            return None
-        tmp_fields, unmatched = opt_match
-
-        opt_fields = CommandTemplateMatcher.merge_match_results(opt_fields, tmp_fields)
-        if opt_fields is None:
-            return None
-
-        if not unmatched:
-            del unmatched_opts[k]
-        else:
-            unmatched_opts[k] = unmatched
-
-    return opt_fields, unmatched_opts

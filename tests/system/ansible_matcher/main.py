@@ -138,8 +138,8 @@ def run_single_test():
 
     test = "apt-get install -y --no-install-recommends curl netcat numactl"
 
-    comm: ShellCommandObject = parser.parse_as_script(test).parts[0]
-    tasks = matcher.match_command(comm.parts, cwd='/root')
+    comm: ShellCommand = parser.parse_as_script(test).parts[0]
+    tasks = matcher.match_command(comm.words, cwd='/root')
 
     idx = 0
     cf_image = prepare_containerfile_image(test, idx)

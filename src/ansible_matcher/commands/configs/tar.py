@@ -3,7 +3,7 @@ from src.ansible_matcher.commands.command_config import *
 
 @command_config("tar")
 class TarConfig(CommandConfigABC):
-    entry: ClassVar[CommandTemplateParts] = tmpl_c("tar <<parameters : m>>")
+    entry: ClassVar[TemplateWords] = tmpl_s("tar <<parameters : m>>")
     opts: ClassVar[List[Opt]] = \
         [
             Opt("extract", False, False,

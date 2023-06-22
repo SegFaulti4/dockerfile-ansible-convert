@@ -3,7 +3,7 @@ from src.ansible_matcher.commands.command_config import *
 
 @command_config("apk")
 class ApkConfig(CommandConfigABC):
-    entry: ClassVar[CommandTemplateParts] = tmpl_c("apk <<parameters : m>>")
+    entry: ClassVar[TemplateWords] = tmpl_s("apk <<parameters : m>>")
     opts: ClassVar[List[Opt]] = \
         [
             Opt("force", False, False,

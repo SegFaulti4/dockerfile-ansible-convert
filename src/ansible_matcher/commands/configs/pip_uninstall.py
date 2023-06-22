@@ -3,7 +3,7 @@ from src.ansible_matcher.commands.command_config import *
 
 @command_config("pip uninstall")
 class PipUninstallConfig(CommandConfigABC):
-    entry: ClassVar[CommandTemplateParts] = tmpl_c("pip uninstall <<parameters : m>>")
+    entry: ClassVar[TemplateWords] = tmpl_s("pip uninstall <<parameters : m>>")
     opts: ClassVar[List[Opt]] = \
         [
             Opt("yes", False, False,

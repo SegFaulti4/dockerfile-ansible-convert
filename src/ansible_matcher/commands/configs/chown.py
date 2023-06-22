@@ -3,7 +3,7 @@ from src.ansible_matcher.commands.command_config import *
 
 @command_config("chown")
 class ChownConfig(CommandConfigABC):
-    entry: ClassVar[CommandTemplateParts] = tmpl_c("chown <<parameters : m>>")
+    entry: ClassVar[TemplateWords] = tmpl_s("chown <<parameters : m>>")
     opts: ClassVar[List[Opt]] = \
         [
             Opt("quiet", False, False,
