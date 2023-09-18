@@ -1,1 +1,1 @@
-mkdir -p /etc/chef ~/.chef
+pip3 install --index-url iu_arg --pre pip

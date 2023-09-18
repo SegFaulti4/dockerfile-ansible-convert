@@ -70,19 +70,19 @@ class AnsiblePlayContext:
             value += word.value[slice_start:param.pos[0]]
             part_pos = len(value), len(value) + len(param_val)
             value += param_val
-            part = ShellParameterObject(name=param_name, pos=part_pos)
+            part = ShellParameter(name=param_name, pos=part_pos)
             parts.append(part)
             slice_start = param.pos[1]
         value += word.value[slice_start:]
 
         return ShellWordObject(value=value, parts=parts), local_vars
 
-    def resolve_shell_command(self, command: ShellCommandObject, strict: bool = True, empty_missing: bool = False,
+    def resolve_shell_command(self, command: ShellCommand, strict: bool = True, empty_missing: bool = False,
                               override_local_env: Dict[str, str] = None) \
             -> Optional[Tuple[List[ShellWordObject], Dict[str, str]]]:
         words = []
         local_vars = {}
-        for part in command.parts:
+        for part in command.words:
             resolved = self.resolve_shell_word(part, strict, empty_missing, override_local_env=override_local_env)
             if resolved is None:
                 return None
@@ -99,7 +99,7 @@ class AnsiblePlayContext:
             -> Optional[str]:
         words: List[ShellWordObject] = []
         for part in expr.parts:
-            if isinstance(part, ShellCommandObject):
+            if isinstance(part, ShellCommand):
                 resolved = self.resolve_shell_command(part, strict, empty_missing)
                 if resolved is None:
                     return None

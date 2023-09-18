@@ -24,49 +24,61 @@ class BashlexNodeTransformer:
         for part in node.parts:
             child = BashlexNodeTransformer.transform_node(part, line)
             if not child:
-                child = [ShellRawObject(value=line[part.pos[0]:part.pos[1]])]
+                child = [ShellRaw(value=line[part.pos[0]:part.pos[1]])]
             res.extend(child)
         return res
 
     @staticmethod
     def transform_command(node: bashlex.ast.node, line) \
-            -> List[Union[ShellRawObject, ShellAssignmentObject, ShellCommandObject]]:
+            -> Union[List[ShellRaw], List[ShellAssignment], List[ShellCommand]]:
 
         comm_line = line[node.pos[0]:node.pos[1]]
-        parts = []
-        for part in node.parts:
-            child = BashlexNodeTransformer.transform_node(part, line)
-            if not child:
-                return [ShellRawObject(value=comm_line)]
-            parts.extend(child)
+        parts: List[ShellObject] = []
 
+        # node classified in bashlex as "command" might be something different (e.g. "assignment")
+        for part in node.parts:
+            transformed = BashlexNodeTransformer.transform_node(part, line)
+            if not transformed:
+                return [ShellRaw(value=comm_line)]
+            parts.extend(transformed)
+
+        # check for assignment
+        if len(parts) == 1 and isinstance(parts[0], ShellAssignment):
+            # noinspection PyTypeChecker
+            return [parts[0]]
+
+        # currently not used
         # check for export assignment
         # if len(parts) == 2 and all(isinstance(p, WordNode) for p in parts) and parts[0].value == "export":
         #    second_part = parse_bash_commands(node.parts[1].word)
         #    if len(second_part) == 1 and isinstance(second_part[0], AssignmentNode):
         #        return second_part
 
-        # check for assignment
-        if len(parts) == 1 and isinstance(parts[0], ShellAssignmentObject):
-            return [parts[0]]
+        if not (parts and
+                any(isinstance(part, ShellWordObject)
+                    for part in parts) and
+                all(isinstance(part, ShellWordObject) or isinstance(part, ShellRedirect)
+                    for part in parts)):
+            return [ShellRaw(value=comm_line)]
 
-        if ShellCommandObject.allowed_parts(parts):
-            obj = ShellCommandObject(parts=parts, line=comm_line)
-        else:
-            obj = ShellRawObject(value=comm_line)
-        return [obj]
+        # noinspection PyTypeChecker
+        words: List[ShellWordObject] = list(filter(lambda x: isinstance(x, ShellWordObject), parts))
+        # noinspection PyTypeChecker
+        redirects: List[ShellRedirect] = list(filter(lambda x: isinstance(x, ShellRedirect), parts))
+
+        return [ShellCommand(line=comm_line, words=words, redirects=redirects)]
 
     @staticmethod
-    def transform_operator(node: bashlex.ast.node, line: str) -> List[ShellOperatorObject]:
+    def transform_operator(node: bashlex.ast.node, line: str) -> List[ShellOperator]:
         if node.op == ';':
-            return [ShellOperatorEndObject()]
+            return [ShellOperatorEnd()]
         elif node.op == '&&':
-            return [ShellOperatorAndObject()]
+            return [ShellOperatorAnd()]
         elif node.op == '||':
-            return [ShellOperatorOrObject()]
+            return [ShellOperatorOr()]
 
     @staticmethod
-    def transform_assignment(node: bashlex.ast.node, line: str) -> List[ShellAssignmentObject]:
+    def transform_assignment(node: bashlex.ast.node, line: str) -> List[ShellAssignment]:
         eq_pos = node.word.find('=')
         name, value = node.word[0:eq_pos], node.word[eq_pos + 1:]
 
@@ -76,18 +88,18 @@ class BashlexNodeTransformer:
 
         # Circular dependency
         part = BashlexShellParser().parse_as_expression(value)
-        return [ShellAssignmentObject(name=name, value=part)]
+        return [ShellAssignment(name=name, value=part)]
 
     @staticmethod
-    def transform_commandsubstitution(node: bashlex.ast.node, line: str) -> List[ShellRawObject]:
-        return [ShellRawObject(value=line[node.pos[0]:node.pos[1]])]
+    def transform_commandsubstitution(node: bashlex.ast.node, line: str) -> List[ShellRaw]:
+        return [ShellRaw(value=line[node.pos[0]:node.pos[1]])]
 
     @staticmethod
-    def transform_parameter(node: bashlex.ast.node, line: str) -> List[ShellParameterObject]:
-        return [ShellParameterObject(name=node.value, pos=(node.pos[0], node.pos[1]))]
+    def transform_parameter(node: bashlex.ast.node, line: str) -> List[ShellParameter]:
+        return [ShellParameter(name=node.value, pos=(node.pos[0], node.pos[1]))]
 
     @staticmethod
-    def transform_word(node, line) -> List[Union[ShellWordObject, ShellRawObject]]:
+    def transform_word(node, line) -> List[Union[ShellWordObject, ShellRaw]]:
         parts = []
         word_line = line[node.pos[0]:node.pos[1]]
         for part in node.parts:
@@ -95,11 +107,24 @@ class BashlexNodeTransformer:
             parts.extend(BashlexNodeTransformer.transform_node(part, line))
         if ShellWordObject.allowed_parts(parts):
             return [ShellWordObject(value=word_line, parts=parts)]
-        return [ShellRawObject(value=word_line)]
+        return [ShellRaw(value=word_line)]
 
     @staticmethod
     def transform_tilde(node, line):
         return []
+
+    @staticmethod
+    def transform_redirect(node: bashlex.ast.node, line: str) -> List[Union[ShellRedirect, ShellRaw]]:
+        words = BashlexNodeTransformer.transform_node(node.output, line)
+        if len(words) != 1 or not isinstance(words[0], ShellWordObject):
+            return [ShellRaw(value=line[node.pos[0]:node.pos[1]])]
+
+        # noinspection PyTypeChecker
+        word: ShellWordObject = words[0]
+        descriptor: Optional[int] = node.input
+        rtype: str = node.type
+
+        return [ShellRedirect(rtype=rtype, descriptor=descriptor, word=word)]
 
 
 class BashlexShellParser(ShellParser):
@@ -113,7 +138,7 @@ class BashlexShellParser(ShellParser):
             # transform_node can return empty list
             # in that case we create ShellRawObject
             if not transformed:
-                res.append(ShellRawObject(value=val[node.pos[0]:node.pos[1]]))
+                res.append(ShellRaw(value=val[node.pos[0]:node.pos[1]]))
             else:
                 res.extend(transformed)
         return res

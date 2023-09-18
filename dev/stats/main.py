@@ -1,4 +1,5 @@
 import csv
+import logging
 from collections import defaultdict
 from tabulate import tabulate
 
@@ -166,8 +167,8 @@ def collect_task_matcher_stats(shell_parser: ShellParser, task_matcher: TaskMatc
             try:
                 parsed = shell_parser.parse_as_script(line)
                 comm = parsed.parts[0]
-                if isinstance(comm, ShellCommandObject):
-                    task_matcher.match_command(comm.parts)
+                if isinstance(comm, ShellCommand):
+                    task_matcher.match_command(comm.words)
             except Exception as exc:
                 globalLog.info(type(exc), exc)
 
@@ -205,7 +206,7 @@ def mine_shell_commands(files_dir: str, output_file: str) -> None:
                     line.replace("\n", " ")
 
                     for comm in run_dir.script.parts:
-                        if isinstance(comm, ShellCommandObject):
+                        if isinstance(comm, ShellCommand):
                             line = comm.line
                             line.replace("\t", " ")
                             commands.append(line + "\n")
@@ -218,11 +219,6 @@ def mine_shell_commands(files_dir: str, output_file: str) -> None:
 
 def main():
     globalLog.setLevel(logging.ERROR)
-
-    mine_shell_commands(UBUNTU_FILES_DIR, UBUNTU_SHELL_COMMANDS_MINED_FILE)
-
-    commands_file = UBUNTU_MATCHER_TESTS_FILTERED_FILE
-    collect_and_print_task_matcher_stats(commands_file)
 
     files_dir = UBUNTU_FILES_DIR
     stats_dir = UBUNTU_STATS_DIR

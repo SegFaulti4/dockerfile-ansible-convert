@@ -41,7 +41,7 @@ if __name__ == "__main__":
                     print(f"SHELL PARSER:\n{rep}\n")
 
                 if SAVE_COMMANDS:
-                    commands.extend(filter(lambda x: isinstance(x, ShellCommandObject), objs))
+                    commands.extend(filter(lambda x: isinstance(x, ShellCommand), objs))
 
             except Exception as exc:
                 print(f"{type(exc)}: {exc}")
